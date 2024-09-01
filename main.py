@@ -34,8 +34,6 @@ with open('./assets/card_values.csv', newline='') as csvfile:
     for row in reader:
         card_data[row['name']] = {'suit': row['suit'], 'rank': int(row['rank'])}
 
-print(card_data)
-
 #functions
 def updateLocations():
     i = 0
@@ -56,14 +54,14 @@ def drawCard(deck, hand):
     load_hand()
     updateLocations()
 
-def pickup_discard():
+def pickup_discard(hand):
     choice = discard_pile.cards[-1]
     hand.cards.append(choice)
     discard_pile.cards.remove(choice)
     load_hand()
     updateLocations()
 
-def discard(active_card):
+def discard(hand, active_card):
     hand.cards.remove(active_card)
     discard_pile.cards.append(active_card)
     
@@ -75,7 +73,22 @@ def load_hand():
         card_images[card.name] = pygame.image.load(f'assets/cards/{card.name}')
 
 def computer_play():
-    print("computer turn :D")
+    pickup_discard(opp_hand)
+    discard(opp_hand, opp_hand.cards[5])
+
+def sort_cards(hand):
+    sorted_hand = []
+    while hand.cards:
+        card = hand.cards.pop(0)
+        num = card_data[card.name]['rank']
+        same_rank_cards = [card]
+        for other_card in hand.cards[:]:
+            if card_data[other_card.name]['rank'] == num:
+                same_rank_cards.append(other_card)
+                hand.cards.remove(other_card)
+        sorted_hand.extend(same_rank_cards)
+    hand.cards = sorted_hand
+    updateLocations()
 
 
 background = pygame.image.load(r'./assets/background.png')
@@ -112,7 +125,7 @@ while running:
                     break
                 elif discard_rect.collidepoint(event.pos):
                     if turn == 1:
-                        pickup_discard()
+                        pickup_discard(hand)
                         if discard_pile.cards:
                             discard_top = pygame.image.load(f'assets/cards/{discard_pile.cards[-1].name}')
                         turn *= -1
@@ -131,11 +144,12 @@ while running:
                     dropped_card = card 
                     break
                 elif discard_rect.collidepoint(event.pos) and turn == -1 and active_card != None:
-                    discard(active_card)
+                    discard(hand, active_card)
                     dropped_card = None
                     discard_top = pygame.image.load(f'assets/cards/{discard_pile.cards[-1].name}')
                     turn *= -1
                     player_turn *= -1
+                    sort_cards(hand)
                     break  
                 else:
                     dropped_card = None
@@ -181,14 +195,21 @@ while running:
             card.loc = (card.loc[0], card.loc[1] + card.hover_offset)
             card.is_hovered = False
     """
-    display_surface.blit(background, (0, 0))
+    display_surface.blit(background, (0, 0)) #background
+    pygame.draw.rect(display_surface, "white", pygame.Rect(30,30,30,5)) #menu icon
+    pygame.draw.rect(display_surface, "white", pygame.Rect(30,40,30,5)) #menu icon
+    pygame.draw.rect(display_surface, "white", pygame.Rect(30,50,30,5)) #menu icon
+
     pygame.draw.rect(display_surface, "white", pygame.Rect(display_surface.get_width() * 5/9 - blue_back.get_width() / 2, display_surface.get_height() / 2 - blue_back.get_height() / 2, 73, 98), 4, border_radius=10)
     display_surface.blit(blue_back, (display_surface.get_width() * 4/9 - blue_back.get_width() / 2, display_surface.get_height() / 2 - blue_back.get_height() / 2))
     if discard_pile.cards:
         display_surface.blit(discard_top, (display_surface.get_width() * 5/9 - blue_back.get_width() / 2, display_surface.get_height() / 2 - blue_back.get_height() / 2))
-
+    """
     for card in opp_hand.cards: #draws opp_hand
         display_surface.blit(blue_back, (card.loc))
+    """
+    for card in opp_hand.cards:
+        display_surface.blit(pygame.image.load(f'assets/cards/{card.name}'), card.loc)
 
     if active_card:
         active_card_x = active_card.loc[0]
@@ -205,10 +226,12 @@ while running:
     
     if (player_turn == -1):
         computer_play()
+        sort_cards(opp_hand)
+        discard_top = pygame.image.load(f'assets/cards/{discard_pile.cards[-1].name}')
         player_turn *= -1
 
     pygame.display.flip()
-    dt = clock.tick(60) / 1000 #fps
+    dt = clock.tick(120) / 1000 #fps
 
 pygame.quit()
 
