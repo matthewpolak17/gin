@@ -1,5 +1,6 @@
 import pygame
 import random
+import csv
 from deck import Deck
 from hand import Hand
 from discard_pile import DiscardPile
@@ -26,6 +27,14 @@ active_card = None
 card_images = {}
 turn = 1
 player_turn = 1
+card_data = {}
+
+with open('./assets/card_values.csv', newline='') as csvfile:
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+        card_data[row['name']] = {'suit': row['suit'], 'rank': int(row['rank'])}
+
+print(card_data)
 
 #functions
 def updateLocations():
@@ -66,10 +75,11 @@ def load_hand():
         card_images[card.name] = pygame.image.load(f'assets/cards/{card.name}')
 
 def computer_play():
+    print("computer turn :D")
 
 
-background = pygame.image.load(r'C:/Users/polak/Desktop/GinProject/assets/background.png')
-blue_back = pygame.image.load(r'C:/Users/polak/Desktop/GinProject/assets/blueback.png')
+background = pygame.image.load(r'./assets/background.png')
+blue_back = pygame.image.load(r'./assets/blueback.png')
 blue_back = pygame.transform.scale(blue_back, (73, 98))
 draw_rect = pygame.Rect(display_surface.get_width() * 4/9 - blue_back.get_width() / 2, display_surface.get_height() / 2 - blue_back.get_height() / 2, 73, 98)
 discard_rect = pygame.Rect(display_surface.get_width() * 5/9 - blue_back.get_width() / 2, display_surface.get_height() / 2 - blue_back.get_height() / 2, 73, 98)
@@ -125,6 +135,7 @@ while running:
                     dropped_card = None
                     discard_top = pygame.image.load(f'assets/cards/{discard_pile.cards[-1].name}')
                     turn *= -1
+                    player_turn *= -1
                     break  
                 else:
                     dropped_card = None
@@ -175,11 +186,7 @@ while running:
     display_surface.blit(blue_back, (display_surface.get_width() * 4/9 - blue_back.get_width() / 2, display_surface.get_height() / 2 - blue_back.get_height() / 2))
     if discard_pile.cards:
         display_surface.blit(discard_top, (display_surface.get_width() * 5/9 - blue_back.get_width() / 2, display_surface.get_height() / 2 - blue_back.get_height() / 2))
-            
-    """
-    for card in hand.cards: #draws hand
-        display_surface.blit(card_images[card.name], (card.loc))
-    """
+
     for card in opp_hand.cards: #draws opp_hand
         display_surface.blit(blue_back, (card.loc))
 
@@ -196,7 +203,9 @@ while running:
         for card in hand.cards:
             display_surface.blit(card_images[card.name], (card.loc))
     
-    if (player_turn)
+    if (player_turn == -1):
+        computer_play()
+        player_turn *= -1
 
     pygame.display.flip()
     dt = clock.tick(60) / 1000 #fps
