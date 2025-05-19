@@ -17,7 +17,8 @@ class Card:
         self.base_x = loc[0]
         self.target_x = loc[0]
         self.hovered_x = False
-        #self.horizontal_shift // this is defined within main since it depends on the display_surface size
         self.velocity_x = 0
+
+        self.visible = True
 
 

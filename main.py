@@ -30,6 +30,16 @@ clock = pygame.time.Clock()
 displayHeight = native_height
 displayWidth = native_width
 
+
+#sfx
+pygame.mixer.init()
+thwip_sounds = [
+    pygame.mixer.Sound("gin/assets/sfx/thwip3.wav"),
+    pygame.mixer.Sound("gin/assets/sfx/thwip4.wav"),
+    pygame.mixer.Sound("gin/assets/sfx/thwip5.wav"),
+    ]
+shuffle_sound = pygame.mixer.Sound("gin/assets/sfx/shuffle.wav")
+
 #game variables
 running = True
 dropped = False
@@ -37,6 +47,7 @@ clicked = False
 round_overlay = False
 player_knock = False
 computer_knock = False
+card_flip = False
 deck = Deck()
 hand = Hand(deck)
 discard_pile = DiscardPile(deck)
@@ -48,10 +59,12 @@ active_card = None
 card_images = {}
 card_data = {}
 dt = 0
+drawn_card = None
 original_index = None
 turn = 1
 player_turn = 1
 restart_from_main_menu = False
+restart = False
 large_font = pygame.font.Font(None, 50)
 medium_font = pygame.font.Font(None, 35)
 small_font = pygame.font.Font(None, 30)
@@ -64,7 +77,7 @@ hamburger_width = 50
 hamburger_tx = -1.5 * hamburger_width
 
 menu_rect = pygame.Rect(20,20,70,58)
-menu_width = display_surface.get_width() / 4
+menu_width = display_surface.get_width() / 8
 menu_x = -1.5 * menu_width
 menu_tx = 0
 menu_speed = 2600
@@ -147,6 +160,7 @@ def drawCard(deck, hand):
     deck.cards.remove(choice)
     load_hand()
     updateLocations()
+    return choice
 
 def pickup_discard(hand):
     choice = discard_pile.cards[-1]
@@ -521,6 +535,7 @@ def show_start_screen():
                 exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:  #start game on enter key
+                    shuffle_sound.play()
                     animating = True
 
         x_offset -= 0.5
@@ -581,6 +596,134 @@ def update_menu_rects():
     s_option_rect = pygame.Rect(option_left, option_top * 4, option_width, option_height)
     qg_option_rect = pygame.Rect(option_left, option_top * 5, option_width, option_height)
 
+#drawing functions
+
+def draw_background():
+    display_surface.blit(background, (0, 0))
+
+def draw_cards():
+    #drawing the opponents hand
+    for card in opp_hand.cards:
+        display_surface.blit(blue_back, card.loc)
+
+    #outline when discard pile is empty
+    pygame.draw.rect(display_surface, "white", pygame.Rect(display_surface.get_width() * 5/9 - blue_back.get_width() / 2, display_surface.get_height() / 2 - blue_back.get_height() / 2, 73, 98), 4, border_radius=10)
+    display_surface.blit(blue_back, (display_surface.get_width() * 4/9 - blue_back.get_width() / 2, display_surface.get_height() / 2 - blue_back.get_height() / 2))
+    if discard_pile.cards:
+        display_surface.blit(discard_top, (display_surface.get_width() * 5/9 - blue_back.get_width() / 2, display_surface.get_height() / 2 - blue_back.get_height() / 2))
+
+    #drawing the hand while you're holding a card
+    if active_card:
+        active_card_x = active_card.loc[0]
+        for card in hand.cards:
+            if card.loc[0] < active_card_x: #draw all the card before the active card first
+                display_surface.blit(card_images[card.name], (card.loc))
+        display_surface.blit(card_images[active_card.name], (active_card.loc)) #draw the active card
+        for card in hand.cards:
+            if card.loc[0] > active_card_x: #draw all the cards after the active card last
+                display_surface.blit(card_images[card.name], (card.loc))
+    else:
+        for card in hand.cards:
+            if card.visible:
+                display_surface.blit(card_images[card.name], (card.loc))
+
+def draw_menu(menu_x, hamburger_x):
+    if menu_overlay: #opening the menu
+
+        hamburger_tx = -1.5 * hamburger_width
+        menu_tx = 0
+        hamburger_x = max(hamburger_x - (menu_speed * dt), hamburger_tx)
+        menu_x = min(menu_x + (menu_speed * dt), menu_tx)
+        display_surface.blit(side_overlay, (menu_x,0))
+
+        option_width = displayWidth/10
+        option_height = displayHeight/15
+        option_left = menu_x + menu_width/2 - option_width/2
+        option_top = displayHeight/11
+        r_option_rect = pygame.Rect(option_left, option_top, option_width, option_height) #retry option
+        r_option_text = medium_font.render("Retry", True, WHITE)
+        mm_option_rect = pygame.Rect(option_left, option_top*2, option_width, option_height) #main menu option
+        mm_option_text = medium_font.render("Main Menu", True, WHITE)
+        c_option_rect = pygame.Rect(option_left, option_top*3, option_width, option_height) #customize option
+        c_option_text = medium_font.render("Customize", True, WHITE)
+        s_option_rect = pygame.Rect(option_left, option_top*4, option_width, option_height) #settings option
+        s_option_text = medium_font.render("Settings", True, WHITE)
+        qg_option_rect = pygame.Rect(option_left, option_top*5, option_width, option_height) #quit game option
+        qg_option_text = medium_font.render("Quit Game", True, WHITE)
+
+        display_surface.blit(r_option_text, r_option_text.get_rect(center=r_option_rect.center)) #retry option
+        display_surface.blit(mm_option_text, mm_option_text.get_rect(center=mm_option_rect.center)) #main menu option
+        display_surface.blit(c_option_text, c_option_text.get_rect(center=c_option_rect.center)) #customize option
+        display_surface.blit(s_option_text, s_option_text.get_rect(center=s_option_rect.center)) #settings option
+        display_surface.blit(qg_option_text, qg_option_text.get_rect(center=qg_option_rect.center)) #quit game option
+
+    else: #closing the menu
+
+        display_surface.blit(side_overlay, (menu_x, 0))
+        hamburger_tx = 30
+        menu_tx = -1.5 * menu_width
+        hamburger_x = min(hamburger_x + (menu_speed * dt), hamburger_tx)
+        menu_x = max(menu_x - (menu_speed * dt), menu_tx)
+
+    #menu icon
+    pygame.draw.rect(display_surface, "white", pygame.Rect(hamburger_x,30,hamburger_width,8))
+    pygame.draw.rect(display_surface, "white", pygame.Rect(hamburger_x,45,hamburger_width,8))
+    pygame.draw.rect(display_surface, "white", pygame.Rect(hamburger_x,60,hamburger_width,8))
+
+    return menu_x, hamburger_x
+
+def draw_buttons():
+    pygame.draw.rect(display_surface, (200, 200, 200), sort_rect_rank, border_radius=8)
+    pygame.draw.rect(display_surface, BLACK, sort_rect_rank, 2, border_radius=8)
+    pygame.draw.rect(display_surface, (200, 200, 200), sort_rect_suit, border_radius=8)
+    pygame.draw.rect(display_surface, BLACK, sort_rect_suit, 2, border_radius=8)
+    display_surface.blit(sort_rank_text, sort_rank_rect)
+    display_surface.blit(sort_suit_text, sort_suit_rect)
+
+    #player knock button
+    if hand.can_knock:
+        pygame.draw.rect(display_surface, (200, 200, 200), player_knock_rect, border_radius=8)
+        pygame.draw.rect(display_surface, BLACK, player_knock_rect, 2, border_radius=8)
+        display_surface.blit(player_knock_text, knock_player_rect)
+
+    #opponent knock button
+    if opp_hand.can_knock:
+        pygame.draw.rect(display_surface, (200, 200, 200), opp_knock_rect, border_radius=8)
+        pygame.draw.rect(display_surface, BLACK, opp_knock_rect, 2, border_radius=8)
+        display_surface.blit(opp_knock_text, knock_opp_rect)
+
+def animate_card_flip(back_img, front_img, start_pos, end_pos, duration, clock, menu_x, hamburger_x):
+    frame_count = int(duration / (1000 / 60))
+    for frame in range(frame_count):
+        dt = clock.tick(60) / 1000
+        progress = frame / frame_count
+        progress_eased = 1 - (1 - progress) ** 3
+
+        x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased #moves closer to the end_pos using the difference
+        y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
+
+        if progress < 0.5:
+            scale = 1 - (2 * progress) #shrinks until it reaches 0
+            image = back_img
+        else:
+            scale = 2 * (progress - 0.5) #grows until it reaches 1
+            image = front_img
+        
+        scaled_width = max(1, int(image.get_width() * scale)) #scales the width until it reaches 100%
+        scaled_image = pygame.transform.scale(image, (scaled_width, image.get_height()))
+
+        draw_x = int(x - scaled_width // 2)
+        draw_y = int(y - image.get_height() // 2)
+
+        draw_background()
+        draw_buttons()
+        draw_cards()
+        menu_x, hamburger_x = draw_menu(menu_x, hamburger_x)
+        display_surface.blit(scaled_image, (draw_x, draw_y))
+        pygame.display.flip()
+    return menu_x, hamburger_x
+
+
 show_start_screen()
 updateLocations()
 sort_cards_rank(opp_hand)
@@ -611,7 +754,10 @@ while running:
                         restart_from_main_menu = True
                     if qg_option_rect.collidepoint(event.pos):
                         running = False
+                    if r_option_rect.collidepoint(event.pos):
+                        restart = True
 
+                #game interactions start here
                 for card in reversed(hand.cards):
                     if card == hand.cards[-1]:      #if card is on the right, it's rect is larger
                         card_rect = pygame.Rect(card.loc[0], card.loc[1], 73, 98)
@@ -629,16 +775,24 @@ while running:
                         break
                     elif draw_rect.collidepoint(event.pos):
                         if turn == 1:
-                            drawCard(deck, hand)
+                            drawn_card = drawCard(deck, hand)
+                            random.choice(thwip_sounds).play()
+                            drawn_card.visible = False
+                            menu_x, hamburger_x = animate_card_flip(blue_back, card_images[drawn_card.name], draw_rect.center, (hand.cards[-1].loc[0] + 73/2, hand.cards[-1].loc[1] + 98/2), 450, clock, menu_x, hamburger_x)
+                            drawn_card.visible = True
+                            drawn_card = None
                             horizontal_shift = (((display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
                             hand.melds = update_melds(hand)
                             if can_knock(hand.melds, hand.cards):
                                 hand.can_knock = True
                             turn *= -1
-                        break
+                            break
                     elif discard_rect.collidepoint(event.pos):
                         if turn == 1:
                             pickup_discard(hand)
+
+                            #start card flip animation
+
                             horizontal_shift = (((display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
                             hand.melds = update_melds(hand)
                             if can_knock(hand.melds, hand.cards):
@@ -778,95 +932,13 @@ while running:
 
     #---------------------------------------Drawing Starts Here---------------------------------------#
 
-    display_surface.blit(background, (0, 0)) #background
+    draw_background()
 
-    #menu overlay
-    if menu_overlay: #opening the menu
+    menu_x, hamburger_x = draw_menu(menu_x, hamburger_x)
 
-        hamburger_tx = -1.5 * hamburger_width
-        menu_tx = 0
-        hamburger_x = max(hamburger_x - (menu_speed * dt), hamburger_tx)
-        menu_x = min(menu_x + (menu_speed * dt), menu_tx)
-        display_surface.blit(side_overlay, (menu_x,0))
+    draw_buttons()
 
-        option_width = displayWidth/10
-        option_height = displayHeight/15
-        option_left = menu_x + menu_width/2 - option_width/2
-        option_top = displayHeight/11
-        r_option_rect = pygame.Rect(option_left, option_top, option_width, option_height) #retry option
-        r_option_text = medium_font.render("Retry", True, WHITE)
-        mm_option_rect = pygame.Rect(option_left, option_top*2, option_width, option_height) #main menu option
-        mm_option_text = medium_font.render("Main Menu", True, WHITE)
-        c_option_rect = pygame.Rect(option_left, option_top*3, option_width, option_height) #customize option
-        c_option_text = medium_font.render("Customize", True, WHITE)
-        s_option_rect = pygame.Rect(option_left, option_top*4, option_width, option_height) #settings option
-        s_option_text = medium_font.render("Settings", True, WHITE)
-        qg_option_rect = pygame.Rect(option_left, option_top*5, option_width, option_height) #quit game option
-        qg_option_text = medium_font.render("Quit Game", True, WHITE)
-
-        display_surface.blit(r_option_text, r_option_text.get_rect(center=r_option_rect.center)) #retry option
-        display_surface.blit(mm_option_text, mm_option_text.get_rect(center=mm_option_rect.center)) #main menu option
-        display_surface.blit(c_option_text, c_option_text.get_rect(center=c_option_rect.center)) #customize option
-        display_surface.blit(s_option_text, s_option_text.get_rect(center=s_option_rect.center)) #settings option
-        display_surface.blit(qg_option_text, qg_option_text.get_rect(center=qg_option_rect.center)) #quit game option
-
-
-    else: #closing the menu
-
-        display_surface.blit(side_overlay, (menu_x, 0))
-        hamburger_tx = 30
-        menu_tx = -1.5 * menu_width
-        hamburger_x = min(hamburger_x + (menu_speed * dt), hamburger_tx)
-        menu_x = max(menu_x - (menu_speed * dt), menu_tx)
-
-    #menu icon
-    pygame.draw.rect(display_surface, "white", pygame.Rect(hamburger_x,30,hamburger_width,8))
-    pygame.draw.rect(display_surface, "white", pygame.Rect(hamburger_x,45,hamburger_width,8))
-    pygame.draw.rect(display_surface, "white", pygame.Rect(hamburger_x,60,hamburger_width,8))
-
-    #player knock button
-    if hand.can_knock:
-        pygame.draw.rect(display_surface, (200, 200, 200), player_knock_rect, border_radius=8)
-        pygame.draw.rect(display_surface, BLACK, player_knock_rect, 2, border_radius=8)
-        display_surface.blit(player_knock_text, knock_player_rect)
-
-    #opponent knock button
-    if opp_hand.can_knock:
-        pygame.draw.rect(display_surface, (200, 200, 200), opp_knock_rect, border_radius=8)
-        pygame.draw.rect(display_surface, BLACK, opp_knock_rect, 2, border_radius=8)
-        display_surface.blit(opp_knock_text, knock_opp_rect)
-
-    #sort rect
-    pygame.draw.rect(display_surface, (200, 200, 200), sort_rect_rank, border_radius=8)
-    pygame.draw.rect(display_surface, BLACK, sort_rect_rank, 2, border_radius=8)
-    pygame.draw.rect(display_surface, (200, 200, 200), sort_rect_suit, border_radius=8)
-    pygame.draw.rect(display_surface, BLACK, sort_rect_suit, 2, border_radius=8)
-    display_surface.blit(sort_rank_text, sort_rank_rect)
-    display_surface.blit(sort_suit_text, sort_suit_rect)
-
-    #outline when discard pile is empty
-    pygame.draw.rect(display_surface, "white", pygame.Rect(display_surface.get_width() * 5/9 - blue_back.get_width() / 2, display_surface.get_height() / 2 - blue_back.get_height() / 2, 73, 98), 4, border_radius=10)
-    display_surface.blit(blue_back, (display_surface.get_width() * 4/9 - blue_back.get_width() / 2, display_surface.get_height() / 2 - blue_back.get_height() / 2))
-    if discard_pile.cards:
-        display_surface.blit(discard_top, (display_surface.get_width() * 5/9 - blue_back.get_width() / 2, display_surface.get_height() / 2 - blue_back.get_height() / 2))
-
-    #drawing the opponents hand
-    for card in opp_hand.cards:
-        display_surface.blit(blue_back, card.loc)
-
-    #drawing the hand while you're holding a card
-    if active_card:
-        active_card_x = active_card.loc[0]
-        for card in hand.cards:
-            if card.loc[0] < active_card_x: #draw all the card before the active card first
-                display_surface.blit(card_images[card.name], (card.loc))
-        display_surface.blit(card_images[active_card.name], (active_card.loc)) #draw the active card
-        for card in hand.cards:
-            if card.loc[0] > active_card_x: #draw all the cards after the active card last
-                display_surface.blit(card_images[card.name], (card.loc))
-    else:
-        for card in hand.cards:
-            display_surface.blit(card_images[card.name], (card.loc))
+    draw_cards()
     
     #round overlay
     if round_overlay:
@@ -934,6 +1006,7 @@ while running:
     if restart_from_main_menu:
         show_start_screen()
         menu_overlay = False
+        turn = 1
         deck = Deck()
         hand = Hand(deck)
         discard_pile = DiscardPile(deck)
@@ -942,6 +1015,19 @@ while running:
         sort_cards_rank(opp_hand)
         load_hand()
         restart_from_main_menu = False
+
+    #restart from game
+    if restart:
+        menu_overlay = False
+        turn = 1
+        deck = Deck()
+        hand = Hand(deck)
+        discard_pile = DiscardPile(deck)
+        opp_hand = Hand(deck)
+        updateLocations()
+        sort_cards_rank(opp_hand)
+        load_hand()
+        restart = False
 
     pygame.display.flip()
     #testing git
