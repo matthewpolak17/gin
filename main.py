@@ -112,17 +112,17 @@ knock_player_rect = player_knock_text.get_rect(center=player_knock_rect.center)
 knock_opp_rect = opp_knock_text.get_rect(center=opp_knock_rect.center)
 
 #images loaded here
-discard_top = pygame.image.load(f'gin/assets/cards/{discard_pile.cards[-1].name}')
-icon = pygame.image.load(f'gin/assets/icon.png').convert_alpha()
-background = pygame.image.load(r'gin/assets/background.png').convert_alpha()
+discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
+icon = pygame.image.load(f'./assets/icon.png').convert_alpha()
+background = pygame.image.load(r'./assets/background.png').convert_alpha()
 background = pygame.transform.scale(background, (native_width, native_height))
-blue_back = pygame.transform.scale(pygame.image.load(r'gin/assets/blueback.png'), (73, 98))
-title_background = pygame.image.load(f'gin/assets/title_background.png').convert_alpha()
+blue_back = pygame.transform.scale(pygame.image.load(r'./assets/blueback.png'), (73, 98))
+title_background = pygame.image.load(f'./assets/title_background.png').convert_alpha()
 tb_width = title_background.get_width()
 pygame.display.set_icon(icon)
 
 #card_data is filled here
-with open('gin/assets/card_values.csv', newline='') as csvfile:
+with open('./assets/card_values.csv', newline='') as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
         card_data[row['name']] = {'suit': row['suit'], 'rank': int(row['rank'])}
@@ -136,7 +136,7 @@ discard_rect = pygame.Rect(display_surface.get_width() * 5/9 - blue_back.get_wid
 def load_card_images():
     images = {}
     for name in card_data:
-        img = pygame.image.load(f'gin/assets/cards/{name}').convert_alpha()
+        img = pygame.image.load(f'./assets/cards/{name}').convert_alpha()
         images[name] = pygame.transform.smoothscale(img, (73, 98))
     return images
 
@@ -188,7 +188,7 @@ def discard(hand, active_card):
 
 def load_hand():
     for card in hand.cards:
-        card_images[card.name] = pygame.image.load(f'gin/assets/cards/{card.name}')
+        card_images[card.name] = pygame.image.load(f'./assets/cards/{card.name}')
 
 def get_meld_type_from_card(focus_card, melds):
     for meld in melds:
@@ -602,7 +602,7 @@ def show_start_screen():
 
             waiting = False
 
-        title_font = pygame.font.Font('gin/assets/fonts/Mermaid1001.ttf', round(title_size))
+        title_font = pygame.font.Font('./assets/fonts/Mermaid1001.ttf', round(title_size))
         title_text = title_font.render("Gin Rummy", True, (255,222,133))
         title_text.set_alpha(text_alpha)
         title_rect = title_text.get_rect(center=(displayWidth / 2, displayHeight * 5/12))
@@ -653,10 +653,10 @@ def draw_cards(surface):
     #discard pile
     if discard_pile.cards:
         if len(discard_pile.cards) > 1:
-            discard_top = pygame.image.load(f'gin/assets/cards/{discard_pile.cards[len(discard_pile.cards) - 2].name}')
+            discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[len(discard_pile.cards) - 2].name}')
             surface.blit(discard_top, (surface.get_width() * 5/9 - blue_back.get_width() / 2, surface.get_height() / 2 - blue_back.get_height() / 2))
         if discard_pile.cards[-1].visible:
-            discard_top = pygame.image.load(f'gin/assets/cards/{discard_pile.cards[-1].name}')
+            discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
             surface.blit(discard_top, (surface.get_width() * 5/9 - blue_back.get_width() / 2, surface.get_height() / 2 - blue_back.get_height() / 2))
 
     #drawing the hand while you're holding a card
@@ -780,10 +780,10 @@ def animate_card_flip(back_img, front_img, start_pos, end_pos, duration, clock, 
             #discard pile
             if discard_pile.cards:
                 if len(discard_pile.cards) > 1:
-                    discard_top = pygame.image.load(f'gin/assets/cards/{discard_pile.cards[len(discard_pile.cards) - 2].name}')
+                    discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[len(discard_pile.cards) - 2].name}')
                     surface.blit(discard_top, (surface.get_width() * 5/9 - blue_back.get_width() / 2, surface.get_height() / 2 - blue_back.get_height() / 2))
                 if discard_pile.cards[-1].visible:
-                    discard_top = pygame.image.load(f'gin/assets/cards/{discard_pile.cards[-1].name}')
+                    discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
                     surface.blit(discard_top, (surface.get_width() * 5/9 - blue_back.get_width() / 2, surface.get_height() / 2 - blue_back.get_height() / 2))
 
             index = opp_hand.cards.index(card)
@@ -830,10 +830,10 @@ def animate_card_slide_move(front_img, start_pos, end_pos, duration, clock, menu
             #discard pile
             if discard_pile.cards:
                 if len(discard_pile.cards) > 1:
-                    discard_top = pygame.image.load(f'gin/assets/cards/{discard_pile.cards[len(discard_pile.cards) - 2].name}')
+                    discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[len(discard_pile.cards) - 2].name}')
                     surface.blit(discard_top, (surface.get_width() * 5/9 - blue_back.get_width() / 2, surface.get_height() / 2 - blue_back.get_height() / 2))
                 if discard_pile.cards[-1].visible:
-                    discard_top = pygame.image.load(f'gin/assets/cards/{discard_pile.cards[-1].name}')
+                    discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
                     surface.blit(discard_top, (surface.get_width() * 5/9 - blue_back.get_width() / 2, surface.get_height() / 2 - blue_back.get_height() / 2))
 
             index = opp_hand.cards.index(card)
@@ -950,7 +950,7 @@ while running:
                             if can_knock(hand.melds, hand.cards):
                                 hand.can_knock = True
                             if discard_pile.cards:
-                                discard_top = pygame.image.load(f'gin/assets/cards/{discard_pile.cards[-1].name}')
+                                discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
                             turn *= -1
                             break
                     elif sort_rect_rank.collidepoint(event.pos):
@@ -1002,7 +1002,7 @@ while running:
                 if discard_rect.collidepoint(event.pos) and turn == -1:
                     discard(hand, active_card)
                     horizontal_shift = (((display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
-                    discard_top = pygame.image.load(f'gin/assets/cards/{discard_pile.cards[-1].name}')
+                    discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
                     turn *= -1
                     player_turn *= -1
                 updateLocations()
@@ -1149,7 +1149,7 @@ while running:
     if (player_turn == -1):
         computer_play(menu_x, hamburger_x)
         sort_cards_rank(opp_hand)
-        discard_top = pygame.image.load(f'gin/assets/cards/{discard_pile.cards[-1].name}')
+        discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
         player_turn *= -1
 
     #restart from title screen
