@@ -35,12 +35,12 @@ game_surface = pygame.Surface((displayWidth, displayHeight))
 #sfx
 pygame.mixer.init()
 thwip_sounds = [
-    pygame.mixer.Sound("gin/assets/sfx/thwip3.wav"),
-    pygame.mixer.Sound("gin/assets/sfx/thwip4.wav"),
-    pygame.mixer.Sound("gin/assets/sfx/thwip5.wav"),
+    pygame.mixer.Sound("./assets/sfx/thwip3.wav"),
+    pygame.mixer.Sound("./assets/sfx/thwip4.wav"),
+    pygame.mixer.Sound("./assets/sfx/thwip5.wav"),
     ]
-shuffle_sound = pygame.mixer.Sound("gin/assets/sfx/shuffle.wav")
-slide_sound = pygame.mixer.Sound("gin/assets/sfx/slide1.wav")
+shuffle_sound = pygame.mixer.Sound("./assets/sfx/shuffle.wav")
+slide_sound = pygame.mixer.Sound("./assets/sfx/slide1.wav")
 
 #game variables
 running = True
