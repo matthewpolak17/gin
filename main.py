@@ -16,7 +16,7 @@ from discard_pile import DiscardPile
 
 #game displays on second monitor for debugging
 monitors = get_monitors()
-second_monitor = monitors[1]
+second_monitor = monitors[0]
 os.environ['SDL_VIDEO_WINDOW_POS'] = f"{second_monitor.x},{second_monitor.y}"
 
 #screen setup
