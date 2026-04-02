@@ -8,11 +8,13 @@ import pygame
 import random
 import csv
 import os
+from itertools import combinations
 from screeninfo import get_monitors
 from collections import defaultdict
 from deck import Deck
 from hand import Hand
 from discard_pile import DiscardPile
+
 
 #game displays on second monitor for debugging
 monitors = get_monitors()
@@ -133,6 +135,10 @@ knock_rect = pygame.Rect(display_surface.get_width() - 60, display_surface.get_h
 opp_knock_rect = pygame.Rect(display_surface.get_width() - 60, display_surface.get_height() - 90, 30, 10)
 discard_rect = pygame.Rect(display_surface.get_width() * 5/9 - blue_back.get_width() / 2, display_surface.get_height() / 2 - blue_back.get_height() / 2, 73, 98)
 
+#text
+player_score_text = None
+opp_score_text = None
+
 def load_card_images():
     images = {}
     for name in card_data:
@@ -229,23 +235,8 @@ def update_melds(this_hand):
         if len(run) >= 3:
             all_melds.append(run[:])
 
-
-    if player_turn == 1:
-        print("All Current Melds Identified")
-        for i, meld in enumerate(all_melds, start=1):
-            print("Meld " + str(i))
-            for card in meld:
-                print(str(card_data[card.name]["rank"]) + " " + card_data[card.name]["suit"])
-        print(f'\n')
-
-    best_melds = None
-
-    #old stuff below
-
     best_melds = []
-    best_covered = set()
-
-    from itertools import combinations
+    best_deadwood = float('inf')
 
     for r in range(1, len(all_melds) + 1):
         for combo in combinations(all_melds, r):
@@ -259,9 +250,15 @@ def update_melds(this_hand):
                 if not valid:
                     break
                 used.update(meld)
-            if valid and len(used) > len(best_covered):
-                best_melds = list(combo)
-                best_covered = used
+            if valid:
+                deadwood = 0
+                for card in this_hand.cards:
+                    if card not in used:
+                        rank = card_data[card.name]["rank"]
+                        deadwood += min(rank, 10)
+                if deadwood < best_deadwood:
+                    best_deadwood = deadwood
+                    best_melds = list(combo)
 
     return best_melds
 
@@ -288,7 +285,7 @@ def calculate_deadwood(melds, cards):
             meld_cards.append(card)
     for card in cards:
         if card not in meld_cards:
-            deadwood += card_data[card.name]["rank"]
+            deadwood += min(card_data[card.name]["rank"], 10)
 
     return deadwood
 
@@ -385,6 +382,29 @@ def sort_cards_rank(hand):
         sorted_hand.append(greatest_card)
     hand.cards = sorted_hand
     updateLocations()
+
+def calculate_round_score(knocker_hand, defender_hand):
+    knocker_deadwood = calculate_deadwood(knocker_hand.melds, knocker_hand.cards)
+    
+    #find defender's deadwood cards
+    defender_meld_cards = [card for meld in defender_hand.melds for card in meld]
+    defender_deadwood = [card for card in defender_hand.cards if card not in defender_meld_cards]
+    
+    #lay off defender's deadwood onto knocker's melds
+    laid_off = []
+    for meld in knocker_hand.melds:
+        for card in defender_deadwood:
+            if can_contribute(card, meld) and card not in laid_off:
+                laid_off.append(card)
+    
+    #calculate defender's remaining deadwood score
+    defender_deadwood_score = 0
+    for card in defender_deadwood:
+        if card not in laid_off:
+            rank = card_data[card.name]["rank"]
+            defender_deadwood_score += min(rank, 10)  # fixes the face card bug too
+    
+    return knocker_deadwood, defender_deadwood_score
 
 def computer_play(menu_x, hamburger_x):
     #find computer melds
@@ -541,13 +561,24 @@ def computer_play(menu_x, hamburger_x):
 
     #knocking/gin logic
     opp_hand.melds = update_melds(opp_hand)
+    deadwood = calculate_deadwood(opp_hand.melds, opp_hand.cards)
 
-    #deadwood = calculate_deadwood(opp_hand.melds, opp_hand.cards)
+    if deadwood == 0:
+        opp_hand.can_knock = True
+        opp_hand.can_gin = True
+    elif deadwood <= 10:
+        opp_hand.can_knock = True
+        opp_hand.can_gin = False
 
-    #if deadwood == 0:
-        #opp_hand.can_knock = True
-    #elif deadwood <= 10:
-        #opp_hand.can_knock = True
+    if opp_hand.can_gin:
+        round_overlay = True
+        computer_knock = True
+        opp_hand.can_knock = False
+        opp_hand.can_gin = False
+    elif opp_hand.can_knock:
+        round_overlay = True
+        computer_knock = True
+        opp_hand.can_knock = False
 
 def show_start_screen():
     #moving background
@@ -648,7 +679,8 @@ def draw_cards(surface):
     #drawing the opponents hand
     for card in opp_hand.cards:
         if card.visible:
-            surface.blit(blue_back, card.loc)
+            #surface.blit(blue_back, card.loc)
+            surface.blit(card_images[card.name], card.loc)
 
     #discard pile
     if discard_pile.cards:
@@ -1097,53 +1129,30 @@ while running:
         overlay.fill((0, 0, 0, 120))
         display_surface.blit(overlay, (0, 0))
         continue_text = small_font.render("Press ENTER to continue", True, WHITE)
-        hand.melds = update_melds(hand)
-        opp_hand.melds = update_melds(opp_hand)
-        
+
+        if player_knock or computer_knock:
+            hand.melds = update_melds(hand)
+            opp_hand.melds = update_melds(opp_hand)
     
-        if player_knock: #player knock logic
-            opp_meld_cards = []
-            opp_deadwood = []
-            opp_deadwood_score = 0
-            player_deadwood_score = calculate_deadwood(hand.melds, hand.cards)
-            laid_off = []
-            for meld in opp_hand.melds:
-                for card in meld:
-                    opp_meld_cards.append(card)
-            for card in opp_hand.cards:
-                if card not in opp_meld_cards:
-                    opp_deadwood.append(card)
-            
-            for meld in hand.melds:
-                for card in opp_deadwood:
-                    if can_contribute(card, meld):
-                        if card not in laid_off:
-                            laid_off.append(card)
+            if player_knock:    #player knock logic
+                player_deadwood_score, opp_deadwood_score = calculate_round_score(hand, opp_hand)
+                player_knock = False
 
-            for card in opp_deadwood:
-                if card not in laid_off:
-                    if card_data[card.name]["rank"] > 10:
-                        opp_deadwood_score += 10
-                    else:
-                        opp_deadwood_score += card_data[card.name]["rank"]
-            
-            player_knock = False
+            else:               #computer knock logic
+                opp_deadwood_score, player_deadwood_score = calculate_round_score(opp_hand, hand)
+                computer_knock = False
 
-        else:
-
-            pass #opponent knock logic [WIP]
-
-        if opp_deadwood_score > player_deadwood_score:
-            hand.score += (opp_deadwood_score - player_deadwood_score)
+            if opp_deadwood_score > player_deadwood_score:
+                hand.score += (opp_deadwood_score - player_deadwood_score)
         
 
-        player_score_text = small_font.render(f"Player: {player_deadwood_score}", True, WHITE)
-        opp_score_text = small_font.render(f"Opponent: {opp_deadwood_score}", True, WHITE)
+            player_score_text = small_font.render(f"Player: {player_deadwood_score}", True, WHITE)
+            opp_score_text = small_font.render(f"Opponent: {opp_deadwood_score}", True, WHITE)
 
-
-        display_surface.blit(continue_text, continue_text.get_rect(center=(displayWidth // 2, displayHeight * 2/3)))
-        display_surface.blit(player_score_text, player_score_text.get_rect(center=(displayWidth // 2, displayHeight * 1/3)))
-        display_surface.blit(opp_score_text, opp_score_text.get_rect(center=(displayWidth // 2, (displayHeight * 1/3) + 25)))
+        if player_score_text and opp_score_text:
+            display_surface.blit(continue_text, continue_text.get_rect(center=(displayWidth // 2, displayHeight * 2/3)))
+            display_surface.blit(player_score_text, player_score_text.get_rect(center=(displayWidth // 2, displayHeight * 1/3)))
+            display_surface.blit(opp_score_text, opp_score_text.get_rect(center=(displayWidth // 2, (displayHeight * 1/3) + 25)))
     
     #advance the turn
     if (player_turn == -1):
