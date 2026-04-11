@@ -25,7 +25,7 @@ os.environ['SDL_VIDEO_WINDOW_POS'] = f"{second_monitor.x},{second_monitor.y}"
 pygame.init()
 info = pygame.display.Info()
 native_width, native_height = info.current_w, info.current_h
-flags = pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF
+flags = pygame.NOFRAME | pygame.HWSURFACE | pygame.DOUBLEBUF
 display_surface = pygame.display.set_mode((native_width, native_height), flags)
 pygame.display.set_caption("Gin Rummy")
 clock = pygame.time.Clock()
@@ -68,6 +68,7 @@ opp_drawn_card = None
 original_index = None
 turn = 1
 player_turn = 1
+knocking = False
 restart_from_main_menu = False
 restart = False
 large_font = pygame.font.Font(None, 50)
@@ -210,18 +211,23 @@ def update_melds(this_hand):
     rank_groups = defaultdict(list)
     suit_groups = defaultdict(list)
 
-    for card in this_hand.cards:  
-        rank = card_data[card.name]["rank"] #creates lists of cards of the same rank
-        suit = card_data[card.name]["suit"] #creates lists of cards of the same suit
+    for card in this_hand.cards:
+        rank = card_data[card.name]["rank"]
+        suit = card_data[card.name]["suit"]
         rank_groups[rank].append(card)
         suit_groups[suit].append((rank, card))
 
     all_melds = []
 
+    # sets - also generate all valid sub-sets of 3 from groups of 4
     for cards in rank_groups.values():
         if len(cards) >= 3:
-            all_melds.append(cards) #sets
+            all_melds.append(cards[:])
+            if len(cards) == 4:
+                for i in range(4):
+                    all_melds.append([c for j, c in enumerate(cards) if j != i])
 
+    # runs - generate all valid sub-runs of length 3+
     for suit, cards in suit_groups.items():
         cards.sort()
         run = [cards[0][1]]
@@ -230,13 +236,20 @@ def update_melds(this_hand):
                 run.append(cards[i][1])
             else:
                 if len(run) >= 3:
-                    all_melds.append(run[:])
+                    for start in range(len(run)):
+                        for end in range(start + 3, len(run) + 1):
+                            all_melds.append(run[start:end])
                 run = [cards[i][1]]
         if len(run) >= 3:
-            all_melds.append(run[:])
+            for start in range(len(run)):
+                for end in range(start + 3, len(run) + 1):
+                    all_melds.append(run[start:end])
+
+    if not all_melds:
+        return []
 
     best_melds = []
-    best_deadwood = float('inf')
+    best_deadwood = 100
 
     for r in range(1, len(all_melds) + 1):
         for combo in combinations(all_melds, r):
@@ -254,8 +267,7 @@ def update_melds(this_hand):
                 deadwood = 0
                 for card in this_hand.cards:
                     if card not in used:
-                        rank = card_data[card.name]["rank"]
-                        deadwood += min(rank, 10)
+                        deadwood += min(card_data[card.name]["rank"], 10)
                 if deadwood < best_deadwood:
                     best_deadwood = deadwood
                     best_melds = list(combo)
@@ -384,27 +396,35 @@ def sort_cards_rank(hand):
     updateLocations()
 
 def calculate_round_score(knocker_hand, defender_hand):
-    knocker_deadwood = calculate_deadwood(knocker_hand.melds, knocker_hand.cards)
+    knocker_melds = update_melds(knocker_hand)
+    defender_melds = update_melds(defender_hand)
     
-    #find defender's deadwood cards
-    defender_meld_cards = [card for meld in defender_hand.melds for card in meld]
-    defender_deadwood = [card for card in defender_hand.cards if card not in defender_meld_cards]
+    knocker_deadwood = calculate_deadwood(knocker_melds, knocker_hand.cards)
     
-    #lay off defender's deadwood onto knocker's melds
+    # only consider cards that are actually deadwood for the defender
+    defender_meld_cards = [card for meld in defender_melds for card in meld]
+    defender_deadwood_cards = [card for card in defender_hand.cards if card not in defender_meld_cards]
+    
+    # lay off defender's deadwood onto knocker's melds
+    # skip layoff entirely if knocker has gin
     laid_off = []
-    for meld in knocker_hand.melds:
-        for card in defender_deadwood:
-            if can_contribute(card, meld) and card not in laid_off:
-                laid_off.append(card)
+    if knocker_deadwood > 0:
+        for meld in knocker_melds:
+            for card in defender_deadwood_cards:
+                if can_contribute(card, meld) and card not in laid_off:
+                    laid_off.append(card)
+
+    # calculate defender's remaining deadwood after layoffs
+    defender_deadwood_score = sum(
+        min(card_data[card.name]["rank"], 10)
+        for card in defender_deadwood_cards
+        if card not in laid_off
+    )
     
-    #calculate defender's remaining deadwood score
-    defender_deadwood_score = 0
-    for card in defender_deadwood:
-        if card not in laid_off:
-            rank = card_data[card.name]["rank"]
-            defender_deadwood_score += min(rank, 10)  # fixes the face card bug too
-    
-    return knocker_deadwood, defender_deadwood_score
+    if defender_deadwood_score <= knocker_deadwood:  # undercut
+        return 0, (knocker_deadwood - defender_deadwood_score) + 25
+    else:
+        return defender_deadwood_score - knocker_deadwood, 0
 
 def computer_play(menu_x, hamburger_x):
 
@@ -414,7 +434,7 @@ def computer_play(menu_x, hamburger_x):
     discard_card = discard_pile.cards[-1]
     opp_hand.cards.append(discard_card)
     simulated_melds = update_melds(opp_hand)
-    simulated_deadwood = calculate_deadwood(opp_hand.melds, opp_hand.cards)
+    simulated_deadwood = calculate_deadwood(simulated_melds, opp_hand.cards)
     opp_hand.cards.remove(discard_card)
 
     pickup_dis = False
@@ -462,7 +482,7 @@ def computer_play(menu_x, hamburger_x):
     if deadwood == 0:
         opp_hand.can_knock = True
         opp_hand.can_gin = True
-    elif can_knock(opp_hand.melds, opp_hand.cards):
+    elif deadwood <= 10:
         opp_hand.can_knock = True
         opp_hand.can_gin = False
     
@@ -474,180 +494,6 @@ def computer_play(menu_x, hamburger_x):
         opp_hand.can_gin = False
     
     return menu_x, hamburger_x
-
-    #------------------------------------------------------------------------------- old below
-    # #find computer melds
-    # opp_hand.melds = update_melds(opp_hand)
-    # meld_cards = []
-    # for meld in opp_hand.melds:
-    #     for card in meld:
-    #         meld_cards.append(card)
-    
-    # #pickup logic
-    # pickup_dis = False   
-    # for card in opp_hand.cards:
-    #     if (abs(card_data[discard_pile.cards[-1].name]["rank"] - card_data[card.name]["rank"]) == 1 and 
-    #         card_data[discard_pile.cards[-1].name]["suit"] == card_data[card.name]["suit"] and
-    #         (get_meld_type_from_card(card, opp_hand.melds) == "run" or get_meld_type_from_card(card, opp_hand.melds) == "none")):
-    #         opp_drawn_card = pickup_discard(opp_hand)
-    #         pickup_dis = True
-    #         break
-    #     elif (card_data[discard_pile.cards[-1].name]["rank"] == card_data[card.name]["rank"] and
-    #         (get_meld_type_from_card(card, opp_hand.melds) == "set" or get_meld_type_from_card(card, opp_hand.melds) == "none")):
-    #         opp_drawn_card = pickup_discard(opp_hand)
-    #         pickup_dis = True
-    #         break
-
-    # if not pickup_dis:
-    #     opp_drawn_card = drawCard(deck, opp_hand)
-    #     sort_cards_rank(opp_hand)
-
-    # if pickup_dis:
-    #     menu_x, hamburger_x = animate_card_flip(card_images[opp_drawn_card.name], blue_back, discard_rect.center, (opp_drawn_card.loc[0] + 73/2, opp_drawn_card.loc[1] + 98/2), card_movement_speed, clock, menu_x, hamburger_x, game_surface, opp_drawn_card, -1)
-    # else:
-    #     menu_x, hamburger_x = animate_card_slide_move(blue_back, draw_rect.center, (opp_drawn_card.loc[0], opp_drawn_card.loc[1]), card_movement_speed, clock, menu_x, hamburger_x, game_surface, opp_drawn_card, -1)
-
-    # #update melds after pickup
-    # opp_hand.melds = update_melds(opp_hand)
-    # meld_cards = []
-    # for meld in opp_hand.melds:
-    #     for card in meld:
-    #         meld_cards.append(card)
-
-    # #discard logic
-    # keep = []
-    # for card in opp_hand.cards:
-    #     for other_card in opp_hand.cards:
-    #         if (card_data[card.name]["rank"] == card_data[other_card.name]["rank"] and 
-    #             card != other_card):
-    #             keep.append(card)
-    #         elif (card_data[card.name]["suit"] == card_data[other_card.name]["suit"] and 
-    #             abs(card_data[card.name]["rank"] - card_data[other_card.name]["rank"]) == 1 and
-    #             card != other_card):
-    #             keep.append(card)
-    
-    # pos_cards = [] #piece of shit cards
-    # for card in opp_hand.cards:
-    #     if card not in keep:
-    #         pos_cards.append(card)
-    # greatest_pos = 0
-    # pos = None
-    # for card in pos_cards:
-    #     if card_data[card.name]["rank"] > greatest_pos:
-    #         greatest_pos = card_data[card.name]["rank"]
-    #         pos = card
-
-    # if pos:
-    #     menu_x, hamburger_x = animate_card_flip(blue_back, card_images[pos.name], (pos.loc[0] + 73/2, pos.loc[1] + 98/2), discard_rect.center, card_movement_speed, clock, menu_x, hamburger_x, game_surface, pos, -1)
-    #     discard(opp_hand, pos)
-    # else:
-    #     invaluables = []
-
-    #     for card in opp_hand.cards:
-    #         for dis in discard_pile.cards:
-
-    #             if (card_data[card.name]["rank"] == card_data[dis.name]["rank"] and
-    #                 card not in meld_cards):
-    #                 invaluables.append(card)
-    #                 break
-
-    #             elif (card_data[card.name]["suit"] == card_data[dis.name]["suit"] and 
-    #                 abs(card_data[card.name]["rank"] - card_data[dis.name]["rank"]) == 1 and
-    #                 card not in meld_cards):
-    #                 invaluables.append(card)
-    #                 break
-
-    #     trash = None
-
-    #     if invaluables:
-    #         greatest_num = 0
-    #         for card in invaluables:
-    #             if card_data[card.name]["rank"] > greatest_num:
-    #                 greatest_num = card_data[card.name]["rank"]
-    #                 trash = card
-    #         menu_x, hamburger_x = animate_card_flip(blue_back, card_images[trash.name], (trash.loc[0] + 73/2, trash.loc[1] + 98/2), discard_rect.center, card_movement_speed, clock, menu_x, hamburger_x, game_surface, trash, -1)
-    #         discard(opp_hand, trash)
-
-    #     else:
-    #         cts = [] #contributes to set
-    #         ctr = [] #contributes to run
-    #         for card in opp_hand.cards:
-    #             for other_card in opp_hand.cards:
-    #                 if card != other_card:
-    #                     if (card_data[card.name]["rank"] == card_data[other_card.name]["rank"]):
-    #                         if (num_of_melds(other_card, opp_hand.melds) == 1 and 
-    #                             get_meld_type_from_card(other_card, opp_hand.melds) == "run" and 
-    #                             get_meld_type_from_card(card, opp_hand.melds) == "none"):
-    #                             menu_x, hamburger_x = animate_card_flip(blue_back, card_images[card.name], (card.loc[0] + 73/2, card.loc[1] + 98/2), discard_rect.center, card_movement_speed, clock, menu_x, hamburger_x, game_surface, card, -1)
-    #                             discard(opp_hand, card)
-    #                             return
-    #                         cts.append(card)
-    #                     elif (card_data[card.name]["suit"] == card_data[other_card.name]["suit"] and
-    #                         abs(card_data[card.name]["rank"] - card_data[other_card.name]["rank"]) == 1):
-    #                         if (num_of_melds(other_card, opp_hand.melds) == 1 and 
-    #                             get_meld_type_from_card(other_card, opp_hand.melds) == "set" and 
-    #                             get_meld_type_from_card(card, opp_hand.melds) == "none"):
-    #                             menu_x, hamburger_x = animate_card_flip(blue_back, card_images[card.name], (card.loc[0] + 73/2, card.loc[1] + 98/2), discard_rect.center, card_movement_speed, clock, menu_x, hamburger_x, game_surface, card, -1)
-    #                             discard(opp_hand, card)
-    #                             return
-    #                         ctr.append(card)
-
-    #         greatest_num = 0
-    #         greatest_card = None
-    #         both = []
-    #         for card in opp_hand.cards:
-    #             if card in cts and card in ctr:
-    #                 both.append(card)
-    #         for card in both:
-    #             if card_data[card.name]["rank"] > greatest_num:
-    #                 greatest_card = card
-    #                 greatest_num = card_data[card.name]["rank"]
-
-    #         if not both:
-    #             for card in opp_hand.cards:
-    #                 if card_data[card.name]["rank"] > greatest_num:
-    #                     greatest_card = card
-    #                     greatest_num = card_data[card.name]["rank"]
-    #             menu_x, hamburger_x = animate_card_flip(blue_back, card_images[greatest_card.name], (greatest_card.loc[0] + 73/2, greatest_card.loc[1] + 98/2), discard_rect.center, card_movement_speed, clock, menu_x, hamburger_x, game_surface, greatest_card, -1)                
-    #             discard(opp_hand, greatest_card)
-    #             return
-
-    #         random_number = random.randint(0, 1)
-    #         for card in opp_hand.cards:
-    #             if random_number == 0:
-    #                 if (card_data[card.name]["rank"] == card_data[greatest_card.name]["rank"] and
-    #                     card != greatest_card):
-    #                     menu_x, hamburger_x = animate_card_flip(blue_back, card_images[card.name], (card.loc[0] + 73/2, card.loc[1] + 98/2), discard_rect.center, card_movement_speed, clock, menu_x, hamburger_x, game_surface, card, -1)
-    #                     discard(opp_hand, card)
-    #                     return
-    #             else:
-    #                 if (abs(card_data[card.name]["rank"] - card_data[greatest_card.name]["rank"]) == 1 and
-    #                     card_data[card.name]["suit"] == card_data[greatest_card.name]["suit"] and 
-    #                     card != greatest_card):
-    #                     menu_x, hamburger_x = animate_card_flip(blue_back, card_images[card.name], (card.loc[0] + 73/2, card.loc[1] + 98/2), discard_rect.center, card_movement_speed, clock, menu_x, hamburger_x, game_surface, card, -1)
-    #                     discard(opp_hand, card)
-    #                     return
-
-    # #knocking/gin logic
-    # opp_hand.melds = update_melds(opp_hand)
-    # deadwood = calculate_deadwood(opp_hand.melds, opp_hand.cards)
-
-    # if deadwood == 0:
-    #     opp_hand.can_knock = True
-    #     opp_hand.can_gin = True
-    # elif deadwood <= 10:
-    #     opp_hand.can_knock = True
-    #     opp_hand.can_gin = False
-
-    # if opp_hand.can_gin:
-    #     round_overlay = True
-    #     computer_knock = True
-    #     opp_hand.can_knock = False
-    #     opp_hand.can_gin = False
-    # elif opp_hand.can_knock:
-    #     round_overlay = True
-    #     computer_knock = True
-    #     opp_hand.can_knock = False
 
 def show_start_screen():
     #moving background
@@ -986,11 +832,39 @@ while running:
                 running = False
             if event.key == pygame.K_RETURN:
                 
-                melds = update_melds(hand)
-                for i, meld in enumerate(melds, start=1):
-                    print("Meld " + str(i))
-                    for card in meld:
-                        print(str(card_data[card.name]["rank"]) + " " + card_data[card.name]["suit"])
+                if round_overlay:
+                    if hand.score >= 100 or opp_hand.score >= 100:
+                        print("game over")
+                    else:
+                        # save scores
+                        saved_player_score = hand.score
+                        saved_opp_score = opp_hand.score
+                        
+                        # reset everything
+                        deck = Deck()
+                        hand = Hand(deck)
+                        discard_pile = DiscardPile(deck)
+                        opp_hand = Hand(deck)
+                        
+                        # restore scores
+                        hand.score = saved_player_score
+                        opp_hand.score = saved_opp_score
+                        
+                        # reset round state
+                        round_overlay = False
+                        player_knock = False
+                        computer_knock = False
+                        knocking = False
+                        turn = 1
+                        player_turn = 1
+                        player_score_text = None
+                        opp_score_text = None
+                        
+                        updateLocations()
+                        sort_cards_rank(opp_hand)
+                        load_hand()
+                        horizontal_shift = (((display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
+
 
 
         #game mouse detection
@@ -1036,6 +910,8 @@ while running:
                             drawn_card = None
                             horizontal_shift = (((display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
                             hand.melds = update_melds(hand)
+                            print(f"Melds: {[[card_data[c.name]['rank'] for c in meld] for meld in hand.melds]}")
+                            print(f"Can knock: {can_knock(hand.melds, hand.cards)}")
                             if can_knock(hand.melds, hand.cards):
                                 hand.can_knock = True
                             turn *= -1
@@ -1059,8 +935,7 @@ while running:
                     elif sort_rect_suit.collidepoint(event.pos):
                         sort_cards_suit(hand)
                     elif player_knock_rect.collidepoint(event.pos):
-                        round_overlay = True
-                        player_knock = True
+                        knocking = True
 
         elif event.type == pygame.MOUSEMOTION and clicked == True:
             if active_card:
@@ -1104,8 +979,15 @@ while running:
                     discard(hand, active_card)
                     horizontal_shift = (((display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
                     discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
-                    turn *= -1
-                    player_turn *= -1
+
+                    if knocking:
+                        round_overlay = True
+                        player_knock = True
+                        knocking = False
+                    else:
+                        turn *= -1
+                        player_turn *= -1
+
                 updateLocations()
 
                 for card in hand.cards:
@@ -1204,19 +1086,19 @@ while running:
             opp_hand.melds = update_melds(opp_hand)
     
             if player_knock:    #player knock logic
-                player_deadwood_score, opp_deadwood_score = calculate_round_score(hand, opp_hand)
+                player_score, opp_score = calculate_round_score(hand, opp_hand)
+                hand.score += player_score
+                opp_hand.score += opp_score
                 player_knock = False
 
             else:               #computer knock logic
-                opp_deadwood_score, player_deadwood_score = calculate_round_score(opp_hand, hand)
+                opp_score, player_score = calculate_round_score(opp_hand, hand)
+                hand.score += player_score
+                opp_hand.score += opp_score
                 computer_knock = False
 
-            if opp_deadwood_score > player_deadwood_score:
-                hand.score += (opp_deadwood_score - player_deadwood_score)
-        
-
-            player_score_text = small_font.render(f"Player: {player_deadwood_score}", True, WHITE)
-            opp_score_text = small_font.render(f"Opponent: {opp_deadwood_score}", True, WHITE)
+            player_score_text = small_font.render(f"Player: {hand.score}", True, WHITE)
+            opp_score_text = small_font.render(f"Opponent: {opp_hand.score}", True, WHITE)
 
         if player_score_text and opp_score_text:
             display_surface.blit(continue_text, continue_text.get_rect(center=(displayWidth // 2, displayHeight * 2/3)))
