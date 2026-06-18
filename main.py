@@ -8,42 +8,34 @@ import random
 import csv
 import os
 from itertools import combinations
-from screeninfo import get_monitors
 from collections import defaultdict
 from deck import Deck
 from hand import Hand
 from discard_pile import DiscardPile
+from monitor_setup import Monitor
+from sfx import Sfx
+from renderer import Renderer
+from screen import Screen
 
-#comment here down for tempmain.py
-
-#game displays on second monitor for debugging
-monitors = get_monitors()
-second_monitor = monitors[0]
-os.environ['SDL_VIDEO_WINDOW_POS'] = f"{second_monitor.x},{second_monitor.y}"
+monitor = Monitor()
+screen = Screen()
+sfx = Sfx()
+renderer = Renderer()
 
 #screen setup
 pygame.init()
-info = pygame.display.Info()
-native_width, native_height = info.current_w, info.current_h
-flags = pygame.NOFRAME | pygame.HWSURFACE | pygame.DOUBLEBUF
-display_surface = pygame.display.set_mode((native_width, native_height), flags)
-pygame.display.set_caption("Gin Rummy")
+#screen.display_height = monitor.screen.display_height
+#screen.display_width = monitor.screen.display_width
+#flags = pygame.NOFRAME | pygame.HWSURFACE | pygame.DOUBLEBUF
+#screen.display_surface = pygame.display.set_mode((screen.display_width, screen.display_height), flags)
+#pygame.display.set_caption("Gin Rummy")
 clock = pygame.time.Clock()
-displayHeight = native_height
-displayWidth = native_width
-title_surface = pygame.Surface((displayWidth, displayHeight))
-game_surface = pygame.Surface((displayWidth, displayHeight))
-networking_surface = pygame.Surface((displayWidth, displayHeight))
+#screen.display_height = screen.display_height
+#screen.display_width = screen.display_width
+title_surface = pygame.Surface((screen.display_width, screen.display_height))
+game_surface = pygame.Surface((screen.display_width, screen.display_height))
+networking_surface = pygame.Surface((screen.display_width, screen.display_height))
 
-#sfx
-pygame.mixer.init()
-thwip_sounds = [
-    pygame.mixer.Sound("./assets/sfx/thwip3.wav"),
-    pygame.mixer.Sound("./assets/sfx/thwip4.wav"),
-    pygame.mixer.Sound("./assets/sfx/thwip5.wav"),
-    ]
-shuffle_sound = pygame.mixer.Sound("./assets/sfx/shuffle.wav")
-slide_sound = pygame.mixer.Sound("./assets/sfx/slide1.wav")
 
 #game variables
 running = True
@@ -58,7 +50,7 @@ hand = Hand(deck)
 discard_pile = DiscardPile(deck)
 opp_hand = Hand(deck)
 original_loc = (0, 0)
-horizontal_shift = (((display_surface.get_width() / 3) / len(hand.cards)) * 0.8) #determines how far to hover cards horizontally
+horizontal_shift = (((screen.display_surface.get_width() / 3) / len(hand.cards)) * 0.8) #determines how far to hover cards horizontally
 discard_top = None
 active_card = None
 card_images = {}
@@ -86,36 +78,36 @@ hamburger_width = 50
 hamburger_tx = -1.5 * hamburger_width
 
 menu_rect = pygame.Rect(20,20,70,58)
-menu_width = display_surface.get_width() / 8
+menu_width = screen.display_surface.get_width() / 8
 menu_x = -1.5 * menu_width
 menu_tx = 0
 menu_speed = 2600
 menu_overlay = False
-main_menu_overlay_rect = pygame.Rect(menu_width, 0, display_surface.get_width() - menu_width, displayHeight)
+main_menu_overlay_rect = pygame.Rect(menu_width, 0, screen.display_surface.get_width() - menu_width, screen.display_height)
 
-side_overlay = pygame.Surface((menu_width, displayHeight), pygame.SRCALPHA)
+side_overlay = pygame.Surface((menu_width, screen.display_height), pygame.SRCALPHA)
 side_overlay.fill((0, 0, 0,  80))
 
 start_text = small_font.render("Press ENTER to Start", True, (255,222,133))
-start_rect = start_text.get_rect(center=(displayWidth // 2, displayHeight // 2))
+start_rect = start_text.get_rect(center=(screen.display_width // 2, screen.display_height // 2))
 
 multiplayer_text = small_font.render("Press SHIFT for Multiplayer", True, (255,222,133))
-multiplayer_rect = multiplayer_text.get_rect(center=(displayWidth // 2, displayHeight // 1.85))
+multiplayer_rect = multiplayer_text.get_rect(center=(screen.display_width // 2, screen.display_height // 1.85))
 
 multiplayer_menu_text = small_font.render("Start a room here", True, WHITE)
-multiplayer_menu_rect = multiplayer_menu_text.get_rect(center=(displayWidth // 2, displayHeight // 2))
+multiplayer_menu_rect = multiplayer_menu_text.get_rect(center=(screen.display_width // 2, screen.display_height // 2))
 
 #sorting buttons
-sort_rect_rank = pygame.Rect(displayWidth * 2/3, displayHeight * 0.75, 80, 40)
-sort_rect_suit = pygame.Rect(displayWidth * 2/3, displayHeight * 0.8, 80, 40)
+sort_rect_rank = pygame.Rect(screen.display_width * 2/3, screen.display_height * 0.75, 80, 40)
+sort_rect_suit = pygame.Rect(screen.display_width * 2/3, screen.display_height * 0.8, 80, 40)
 sort_rank_text = small_font.render("Rank", True, BLACK)
 sort_suit_text = small_font.render("Suit", True, BLACK)
 sort_rank_rect = sort_rank_text.get_rect(center=sort_rect_rank.center)
 sort_suit_rect = sort_suit_text.get_rect(center=sort_rect_suit.center)
 
 #knocking buttons
-player_knock_rect = pygame.Rect(displayWidth * 2/3, displayHeight * 0.70, 80, 40)
-opp_knock_rect = pygame.Rect(displayWidth * 2/3, displayHeight * 0.2, 80, 40)
+player_knock_rect = pygame.Rect(screen.display_width * 2/3, screen.display_height * 0.70, 80, 40)
+opp_knock_rect = pygame.Rect(screen.display_width * 2/3, screen.display_height * 0.2, 80, 40)
 player_knock_text = small_font.render("Knock", True, BLACK)
 opp_knock_text = small_font.render("Knock", True, BLACK)
 knock_player_rect = player_knock_text.get_rect(center=player_knock_rect.center)
@@ -125,11 +117,12 @@ knock_opp_rect = opp_knock_text.get_rect(center=opp_knock_rect.center)
 discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
 icon = pygame.image.load(f'./assets/icon.png').convert_alpha()
 background = pygame.image.load(r'./assets/background.png').convert_alpha()
-background = pygame.transform.scale(background, (native_width, native_height))
+background = pygame.transform.scale(background, (screen.display_width, screen.display_height))
 networking_background = pygame.image.load(r'./assets/networking_background.jpg').convert_alpha()
-networking_background = pygame.transform.scale(networking_background, (native_width, native_height))
+networking_background = pygame.transform.scale(networking_background, (screen.display_width, screen.display_height))
 blue_back = pygame.transform.scale(pygame.image.load(r'./assets/blueback.png'), (73, 98))
 title_background = pygame.image.load(f'./assets/title_background.png').convert_alpha()
+title_background = pygame.transform.scale(title_background, (screen.display_width, screen.display_height))
 tb_width = title_background.get_width()
 pygame.display.set_icon(icon)
 
@@ -140,10 +133,10 @@ with open('./assets/card_values.csv', newline='') as csvfile:
         card_data[row['name']] = {'suit': row['suit'], 'rank': int(row['rank'])}
 
 #rects
-draw_rect = pygame.Rect(display_surface.get_width() * 4/9 - blue_back.get_width() / 2, display_surface.get_height() / 2 - blue_back.get_height() / 2, 73, 98)
-knock_rect = pygame.Rect(display_surface.get_width() - 60, display_surface.get_height() - 30, 30, 10)
-opp_knock_rect = pygame.Rect(display_surface.get_width() - 60, display_surface.get_height() - 90, 30, 10)
-discard_rect = pygame.Rect(display_surface.get_width() * 5/9 - blue_back.get_width() / 2, display_surface.get_height() / 2 - blue_back.get_height() / 2, 73, 98)
+draw_rect = pygame.Rect(screen.display_surface.get_width() * 4/9 - blue_back.get_width() / 2, screen.display_surface.get_height() / 2 - blue_back.get_height() / 2, 73, 98)
+knock_rect = pygame.Rect(screen.display_surface.get_width() - 60, screen.display_surface.get_height() - 30, 30, 10)
+opp_knock_rect = pygame.Rect(screen.display_surface.get_width() - 60, screen.display_surface.get_height() - 90, 30, 10)
+discard_rect = pygame.Rect(screen.display_surface.get_width() * 5/9 - blue_back.get_width() / 2, screen.display_surface.get_height() / 2 - blue_back.get_height() / 2, 73, 98)
 
 #text
 player_score_text = None
@@ -163,7 +156,7 @@ card_images = load_card_images()
 #functions
 def updateLocations():
     def set_card_positions(cards, y_offset, spacing_scale=0.8):
-        win_width = display_surface.get_width()
+        win_width = screen.display_surface.get_width()
         max_spacing = (win_width / 3) / len(cards)
         spacing = max_spacing * spacing_scale
         total_width = spacing * (len(cards) - 1)
@@ -178,7 +171,7 @@ def updateLocations():
             card.base_x = x_pos
             card.target_x = x_pos
 
-    mid_y = display_surface.get_height() / 2
+    mid_y = screen.display_surface.get_height() / 2
     set_card_positions(hand.cards, 1.5 * mid_y)
     set_card_positions(opp_hand.cards, 0.5 * mid_y - 98)
 
@@ -535,8 +528,8 @@ def show_start_screen():
         x_offset -= 0.5
         if x_offset <= -tb_width:
             x_offset = 0
-        display_surface.blit(title_background, (int(x_offset), 0))
-        display_surface.blit(title_background, (int(x_offset + tb_width), 0))
+        screen.display_surface.blit(title_background, (int(x_offset), 0))
+        screen.display_surface.blit(title_background, (int(x_offset + tb_width), 0))
 
         if animating and frame < anim_frames:
             factor = frame / anim_frames
@@ -555,10 +548,10 @@ def show_start_screen():
                 if x_offset <= -tb_width:
                     x_offset = 0
 
-                display_surface.blit(title_background, (int(x_offset), 0))
-                display_surface.blit(title_background, (int(x_offset + tb_width), 0))
-                display_surface.blit(start_text, start_rect)
-                display_surface.blit(multiplayer_text, multiplayer_rect)
+                screen.display_surface.blit(title_background, (int(x_offset), 0))
+                screen.display_surface.blit(title_background, (int(x_offset + tb_width), 0))
+                screen.display_surface.blit(start_text, start_rect)
+                screen.display_surface.blit(multiplayer_text, multiplayer_rect)
 
                 pygame.display.flip()
                 background_clock.tick(200)
@@ -568,10 +561,10 @@ def show_start_screen():
         title_font = pygame.font.Font('./assets/fonts/Mermaid1001.ttf', round(title_size))
         title_text = title_font.render("Gin Rummy", True, (255,222,133))
         title_text.set_alpha(text_alpha)
-        title_rect = title_text.get_rect(center=(displayWidth / 2, displayHeight * 5/12))
-        display_surface.blit(title_text, title_rect)
-        display_surface.blit(start_text, start_rect)
-        display_surface.blit(multiplayer_text, multiplayer_rect)
+        title_rect = title_text.get_rect(center=(screen.display_width / 2, screen.display_height * 5/12))
+        screen.display_surface.blit(title_text, title_rect)
+        screen.display_surface.blit(start_text, start_rect)
+        screen.display_surface.blit(multiplayer_text, multiplayer_rect)
 
         pygame.display.flip()
         background_clock.tick(200)
@@ -580,10 +573,10 @@ def show_start_screen():
 def update_menu_rects():
     global r_option_rect, mm_option_rect, c_option_rect, s_option_rect, qg_option_rect
 
-    option_width = displayWidth / 10
-    option_height = displayHeight / 15
+    option_width = screen.display_width / 10
+    option_height = screen.display_height / 15
     option_left = menu_x + menu_width / 2 - option_width / 2
-    option_top = displayHeight / 11
+    option_top = screen.display_height / 11
 
     r_option_rect = pygame.Rect(option_left, option_top, option_width, option_height)
     mm_option_rect = pygame.Rect(option_left, option_top * 2, option_width, option_height)
@@ -657,10 +650,10 @@ def draw_menu(menu_x, hamburger_x, surface):
         menu_x = min(menu_x + (menu_speed * dt), menu_tx)
         surface.blit(side_overlay, (menu_x,0))
 
-        option_width = displayWidth/10
-        option_height = displayHeight/15
+        option_width = screen.display_width/10
+        option_height = screen.display_height/15
         option_left = menu_x + menu_width/2 - option_width/2
-        option_top = displayHeight/11
+        option_top = screen.display_height/11
         r_option_rect = pygame.Rect(option_left, option_top, option_width, option_height) #retry option
         r_option_text = medium_font.render("Retry", True, WHITE)
         mm_option_rect = pygame.Rect(option_left, option_top*2, option_width, option_height) #main menu option
@@ -773,7 +766,7 @@ def animate_card_flip(back_img, front_img, start_pos, end_pos, duration, clock, 
                 surface.blit(card_images[player_card.name], player_card.loc)
         
         menu_x, hamburger_x = draw_menu(menu_x, hamburger_x, surface)
-        display_surface.blit(surface, (0,0))
+        screen.display_surface.blit(surface, (0,0))
         pygame.display.flip()
     card.visible = True
     return menu_x, hamburger_x  
@@ -823,7 +816,7 @@ def animate_card_slide_move(front_img, start_pos, end_pos, duration, clock, menu
                 surface.blit(card_images[player_card.name], player_card.loc)
         
         menu_x, hamburger_x = draw_menu(menu_x, hamburger_x, surface)
-        display_surface.blit(surface, (0,0))
+        screen.display_surface.blit(surface, (0,0))
         pygame.display.flip()
     card.visible = True
     return menu_x, hamburger_x 
@@ -833,33 +826,33 @@ def update_title_background(x_offset):
     if x_offset <= -tb_width:
         x_offset = 0
 
-    display_surface.blit(title_background, (int(x_offset), 0))
-    display_surface.blit(title_background, (int(x_offset + tb_width), 0))
-    display_surface.blit(start_text, start_rect)
-    display_surface.blit(multiplayer_text, multiplayer_rect)
+    screen.display_surface.blit(title_background, (int(x_offset), 0))
+    screen.display_surface.blit(title_background, (int(x_offset + tb_width), 0))
+    screen.display_surface.blit(start_text, start_rect)
+    screen.display_surface.blit(multiplayer_text, multiplayer_rect)
 
 updateLocations()
 sort_cards_rank(opp_hand)
 load_hand()
 x_offset, singleplayer = show_start_screen() #menu starts here and waits for enter or shift
-shuffle_sound.play()
+sfx.shuffle_sound.play()
 
 #shows the screen wipe
 if singleplayer:
     draw_game_screen(menu_x, hamburger_x, game_surface)
-    for wipe_x in range(0, displayWidth + 1, wipe_speed):
+    for wipe_x in range(0, screen.display_width + 1, wipe_speed):
         update_title_background(x_offset)
         x_offset -= 0.5
-        display_surface.blit(game_surface, (0, 0), area=pygame.Rect(0, 0, wipe_x, displayHeight))
+        screen.display_surface.blit(game_surface, (0, 0), area=pygame.Rect(0, 0, wipe_x, screen.display_height))
         print(wipe_x)
         pygame.display.flip()
         clock.tick(200)
 else: #else multiplayer
     draw_networking_screen(menu_x, hamburger_x, networking_surface)
-    for wipe_x in range(displayWidth, -1, -wipe_speed):
+    for wipe_x in range(screen.display_width, -1, -wipe_speed):
         update_title_background(x_offset)
         x_offset -= 0.5
-        display_surface.blit(networking_surface, (0,0), area=pygame.Rect(-wipe_x, 0, displayWidth, displayHeight))
+        screen.display_surface.blit(networking_surface, (0,0), area=pygame.Rect(-wipe_x, 0, screen.display_width, screen.display_height))
         print(wipe_x)
         pygame.display.flip()
         clock.tick(200)
@@ -905,7 +898,7 @@ while running:
                         updateLocations()
                         sort_cards_rank(opp_hand)
                         load_hand()
-                        horizontal_shift = (((display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
+                        horizontal_shift = (((screen.display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
 
 
 
@@ -934,7 +927,7 @@ while running:
                         if card == hand.cards[-1]:      #if card is on the right, it's rect is larger
                             card_rect = pygame.Rect(card.loc[0], card.loc[1], 73, 98)
                         else:                           #else we need to modify the rect to match the size
-                            card_rect = pygame.Rect(card.loc[0], card.loc[1], ((display_surface.get_width() / 3) / (len(hand.cards) - 1)) * 0.8, 98)
+                            card_rect = pygame.Rect(card.loc[0], card.loc[1], ((screen.display_surface.get_width() / 3) / (len(hand.cards) - 1)) * 0.8, 98)
 
                         if card_rect.collidepoint(event.pos): #if mousedown on a card rect
                             clicked = True
@@ -947,11 +940,11 @@ while running:
                             break
                         elif draw_rect.collidepoint(event.pos):
                             if turn == 1:
-                                random.choice(thwip_sounds).play()
+                                random.choice(sfx.thwip_sounds).play()
                                 drawn_card = drawCard(deck, hand)
                                 menu_x, hamburger_x = animate_card_flip(blue_back, card_images[drawn_card.name], draw_rect.center, (hand.cards[-1].loc[0] + 73/2, hand.cards[-1].loc[1] + 98/2), card_movement_speed, clock, menu_x, hamburger_x, game_surface, drawn_card, turn)
                                 drawn_card = None
-                                horizontal_shift = (((display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
+                                horizontal_shift = (((screen.display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
                                 hand.melds = update_melds(hand)
                                 print(f"Melds: {[[card_data[c.name]['rank'] for c in meld] for meld in hand.melds]}")
                                 print(f"Can knock: {can_knock(hand.melds, hand.cards)}")
@@ -961,11 +954,11 @@ while running:
                                 break
                         elif discard_rect.collidepoint(event.pos):
                             if turn == 1:
-                                slide_sound.play()
+                                sfx.slide_sound.play()
                                 drawn_card = pickup_discard(hand)
                                 menu_x, hamburger_x = animate_card_slide_move(card_images[drawn_card.name], discard_rect.center, (hand.cards[-1].loc[0], hand.cards[-1].loc[1]), card_movement_speed, clock, menu_x, hamburger_x, game_surface, drawn_card, turn)
                                 drawn_card = None
-                                horizontal_shift = (((display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
+                                horizontal_shift = (((screen.display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
                                 hand.melds = update_melds(hand)
                                 if can_knock(hand.melds, hand.cards):
                                     hand.can_knock = True
@@ -1020,7 +1013,7 @@ while running:
 
                     if discard_rect.collidepoint(event.pos) and turn == -1:
                         discard(hand, active_card)
-                        horizontal_shift = (((display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
+                        horizontal_shift = (((screen.display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
                         discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
 
                         if knocking:
@@ -1063,7 +1056,7 @@ while running:
     for card in reversed(hand.cards):
         if card.dragging:
             continue
-        width = 73 if card == hand.cards[-1] else (display_surface.get_width() / 3) / max(len(hand.cards) - 1, 1) * 0.8
+        width = 73 if card == hand.cards[-1] else (screen.display_surface.get_width() / 3) / max(len(hand.cards) - 1, 1) * 0.8
         rect = pygame.Rect(card.loc[0], card.base_y, width, 98)
         if rect.collidepoint((mouse_x, mouse_y)):
             hover_candidate_y = card
@@ -1127,20 +1120,20 @@ while running:
     #---------------------------------------Drawing Starts Here---------------------------------------#
 
     if singleplayer:
-        draw_background(display_surface)
-        menu_x, hamburger_x = draw_menu(menu_x, hamburger_x, display_surface)
-        draw_buttons(display_surface)
-        draw_cards(display_surface)
+        draw_background(screen.display_surface)
+        menu_x, hamburger_x = draw_menu(menu_x, hamburger_x, screen.display_surface)
+        draw_buttons(screen.display_surface)
+        draw_cards(screen.display_surface)
     else:
-        draw_networking_background(display_surface)
-        menu_x, hamburger_x = draw_menu(menu_x, hamburger_x, display_surface)
-        display_surface.blit(multiplayer_menu_text, multiplayer_menu_rect)
+        draw_networking_background(screen.display_surface)
+        menu_x, hamburger_x = draw_menu(menu_x, hamburger_x, screen.display_surface)
+        screen.display_surface.blit(multiplayer_menu_text, multiplayer_menu_rect)
 
     #round overlay
     if round_overlay:
-        overlay = pygame.Surface(display_surface.get_size(), pygame.SRCALPHA)
+        overlay = pygame.Surface(screen.display_surface.get_size(), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 120))
-        display_surface.blit(overlay, (0, 0))
+        screen.display_surface.blit(overlay, (0, 0))
         continue_text = small_font.render("Press ENTER to continue", True, WHITE)
 
         if player_knock or computer_knock:
@@ -1163,9 +1156,9 @@ while running:
             opp_score_text = small_font.render(f"Opponent: {opp_hand.score}", True, WHITE)
 
         if player_score_text and opp_score_text:
-            display_surface.blit(continue_text, continue_text.get_rect(center=(displayWidth // 2, displayHeight * 2/3)))
-            display_surface.blit(player_score_text, player_score_text.get_rect(center=(displayWidth // 2, displayHeight * 1/3)))
-            display_surface.blit(opp_score_text, opp_score_text.get_rect(center=(displayWidth // 2, (displayHeight * 1/3) + 25)))
+            screen.display_surface.blit(continue_text, continue_text.get_rect(center=(screen.display_width // 2, screen.display_height * 2/3)))
+            screen.display_surface.blit(player_score_text, player_score_text.get_rect(center=(screen.display_width // 2, screen.display_height * 1/3)))
+            screen.display_surface.blit(opp_score_text, opp_score_text.get_rect(center=(screen.display_width // 2, (screen.display_height * 1/3) + 25)))
     
     #advance the turn
     if (player_turn == -1):
@@ -1188,24 +1181,24 @@ while running:
         sort_cards_rank(opp_hand)
         load_hand()
         x_offset, singleplayer = show_start_screen()
-        shuffle_sound.play()
+        sfx.shuffle_sound.play()
 
         #shows the screen wipe
         if singleplayer:
             draw_game_screen(menu_x, hamburger_x, game_surface)
-            for wipe_x in range(0, displayWidth + 1, wipe_speed):
+            for wipe_x in range(0, screen.display_width + 1, wipe_speed):
                 update_title_background(x_offset)
                 x_offset -= 0.5
-                display_surface.blit(game_surface, (0, 0), area=pygame.Rect(0, 0, wipe_x, displayHeight))
+                screen.display_surface.blit(game_surface, (0, 0), area=pygame.Rect(0, 0, wipe_x, screen.display_height))
                 print(wipe_x)
                 pygame.display.flip()
                 clock.tick(200)
         else:
             draw_networking_screen(menu_x, hamburger_x, networking_surface)
-            for wipe_x in range(displayWidth, -1, -wipe_speed):
+            for wipe_x in range(screen.display_width, -1, -wipe_speed):
                 update_title_background(x_offset)
                 x_offset -= 0.5
-                display_surface.blit(networking_surface, (0,0), area=pygame.Rect(-wipe_x, 0, displayWidth, displayHeight))
+                screen.display_surface.blit(networking_surface, (0,0), area=pygame.Rect(-wipe_x, 0, screen.display_width, screen.display_height))
                 print(wipe_x)
                 pygame.display.flip()
                 clock.tick(200)
