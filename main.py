@@ -1137,7 +1137,6 @@ while running:
         overlay.fill((0, 0, 0, 120))
         screen.display_surface.blit(overlay, (0, 0))
 
-        #continue_text = small_font.render("Press ENTER to continue", True, WHITE)
 
         if player_knock or computer_knock:
             hand.melds = update_melds(hand)
@@ -1154,9 +1153,6 @@ while running:
                 hand.score += player_score
                 opp_hand.score += opp_score
                 computer_knock = False
-
-            #player_score_text = small_font.render(f"Player: {hand.score}", True, WHITE)
-            #opp_score_text = small_font.render(f"Opponent: {opp_hand.score}", True, WHITE)
 
             text_renderer.update_score_text(hand.score, opp_hand.score)
 
@@ -1175,11 +1171,11 @@ while running:
 
     #restart from title screen
     if restart_from_main_menu:
-        text_renderer = TextRenderer()
         menu_overlay = False
         menu_x = -1.5 * menu_width
         hamburger_x = 30
         turn = 1
+        text_renderer = TextRenderer()
         deck = Deck()
         hand = Hand(deck)
         discard_pile = DiscardPile(deck)
