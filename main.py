@@ -14,16 +14,20 @@ from hand import Hand
 from discard_pile import DiscardPile
 from monitor_setup import Monitor
 from sfx import Sfx
-from renderer import Renderer
+from ui_elements.text_renderer import TextRenderer
 from screen import Screen
+from colors import Colors
+
+pygame.init()
 
 monitor = Monitor()
 screen = Screen()
 sfx = Sfx()
-renderer = Renderer()
+text_renderer = TextRenderer()
+colors = Colors()
 
 #screen setup
-pygame.init()
+#pygame.init()
 #screen.display_height = monitor.screen.display_height
 #screen.display_width = monitor.screen.display_width
 #flags = pygame.NOFRAME | pygame.HWSURFACE | pygame.DOUBLEBUF
@@ -64,13 +68,13 @@ player_turn = 1
 knocking = False
 restart_from_main_menu = False
 restart = False
-large_font = pygame.font.Font(None, 50)
-medium_font = pygame.font.Font(None, 35)
-small_font = pygame.font.Font(None, 30)
+# large_font = pygame.font.Font(None, 50)
+# medium_font = pygame.font.Font(None, 35)
+# small_font = pygame.font.Font(None, 30)
 wipe_speed = 40
 card_movement_speed = 600
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
+# WHITE = (255, 255, 255)
+# BLACK = (0, 0, 0)
 
 #menu variables
 hamburger_x = 30
@@ -88,30 +92,30 @@ main_menu_overlay_rect = pygame.Rect(menu_width, 0, screen.display_surface.get_w
 side_overlay = pygame.Surface((menu_width, screen.display_height), pygame.SRCALPHA)
 side_overlay.fill((0, 0, 0,  80))
 
-start_text = small_font.render("Press ENTER to Start", True, (255,222,133))
-start_rect = start_text.get_rect(center=(screen.display_width // 2, screen.display_height // 2))
+#start_text = small_font.render("Press ENTER to Start", True, (255,222,133))
+start_rect = text_renderer.start_text.get_rect(center=(screen.display_width // 2, screen.display_height // 2))
 
-multiplayer_text = small_font.render("Press SHIFT for Multiplayer", True, (255,222,133))
-multiplayer_rect = multiplayer_text.get_rect(center=(screen.display_width // 2, screen.display_height // 1.85))
+#multiplayer_text = small_font.render("Press SHIFT for Multiplayer", True, (255,222,133))
+multiplayer_rect = text_renderer.multiplayer_text.get_rect(center=(screen.display_width // 2, screen.display_height // 1.85))
 
-multiplayer_menu_text = small_font.render("Start a room here", True, WHITE)
-multiplayer_menu_rect = multiplayer_menu_text.get_rect(center=(screen.display_width // 2, screen.display_height // 2))
+#multiplayer_menu_text = small_font.render("Start a room here", True, WHITE)
+multiplayer_menu_rect = text_renderer.multiplayer_menu_text.get_rect(center=(screen.display_width // 2, screen.display_height // 2))
 
 #sorting buttons
 sort_rect_rank = pygame.Rect(screen.display_width * 2/3, screen.display_height * 0.75, 80, 40)
 sort_rect_suit = pygame.Rect(screen.display_width * 2/3, screen.display_height * 0.8, 80, 40)
-sort_rank_text = small_font.render("Rank", True, BLACK)
-sort_suit_text = small_font.render("Suit", True, BLACK)
-sort_rank_rect = sort_rank_text.get_rect(center=sort_rect_rank.center)
-sort_suit_rect = sort_suit_text.get_rect(center=sort_rect_suit.center)
+#sort_rank_text = small_font.render("Rank", True, BLACK)
+#sort_suit_text = small_font.render("Suit", True, BLACK)
+sort_rank_rect = text_renderer.sort_rank_text.get_rect(center=sort_rect_rank.center)
+sort_suit_rect = text_renderer.sort_suit_text.get_rect(center=sort_rect_suit.center)
 
 #knocking buttons
 player_knock_rect = pygame.Rect(screen.display_width * 2/3, screen.display_height * 0.70, 80, 40)
 opp_knock_rect = pygame.Rect(screen.display_width * 2/3, screen.display_height * 0.2, 80, 40)
-player_knock_text = small_font.render("Knock", True, BLACK)
-opp_knock_text = small_font.render("Knock", True, BLACK)
-knock_player_rect = player_knock_text.get_rect(center=player_knock_rect.center)
-knock_opp_rect = opp_knock_text.get_rect(center=opp_knock_rect.center)
+#player_knock_text = small_font.render("Knock", True, BLACK)
+#opp_knock_text = small_font.render("Knock", True, BLACK)
+knock_player_rect = text_renderer.player_knock_text.get_rect(center=player_knock_rect.center)
+knock_opp_rect = text_renderer.opp_knock_text.get_rect(center=opp_knock_rect.center)
 
 #images loaded here
 discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
@@ -139,8 +143,8 @@ opp_knock_rect = pygame.Rect(screen.display_surface.get_width() - 60, screen.dis
 discard_rect = pygame.Rect(screen.display_surface.get_width() * 5/9 - blue_back.get_width() / 2, screen.display_surface.get_height() / 2 - blue_back.get_height() / 2, 73, 98)
 
 #text
-player_score_text = None
-opp_score_text = None
+#player_score_text = None
+#opp_score_text = None
 
 def load_card_images():
     images = {}
@@ -532,10 +536,8 @@ def show_start_screen():
         screen.display_surface.blit(title_background, (int(x_offset + tb_width), 0))
 
         if animating and frame < anim_frames:
-            factor = frame / anim_frames
-            exponential = 1 - (1-factor) ** 2
-            title_size = 140 + 40 * exponential
-            text_alpha = (255 * (1 - exponential))
+            text_renderer.update_title(frame, anim_frames)
+            #text_alpha = (255 * (1 - exponential))
             frame += 2
         elif animating and frame >= anim_frames: #continues to scroll the background after the title fades
             for i in range(15): #waits 15 frames
@@ -550,21 +552,21 @@ def show_start_screen():
 
                 screen.display_surface.blit(title_background, (int(x_offset), 0))
                 screen.display_surface.blit(title_background, (int(x_offset + tb_width), 0))
-                screen.display_surface.blit(start_text, start_rect)
-                screen.display_surface.blit(multiplayer_text, multiplayer_rect)
+                screen.display_surface.blit(text_renderer.start_text, start_rect)
+                screen.display_surface.blit(text_renderer.multiplayer_text, multiplayer_rect)
 
                 pygame.display.flip()
                 background_clock.tick(200)
 
             waiting = False
 
-        title_font = pygame.font.Font('./assets/fonts/Mermaid1001.ttf', round(title_size))
-        title_text = title_font.render("Gin Rummy", True, (255,222,133))
-        title_text.set_alpha(text_alpha)
-        title_rect = title_text.get_rect(center=(screen.display_width / 2, screen.display_height * 5/12))
-        screen.display_surface.blit(title_text, title_rect)
-        screen.display_surface.blit(start_text, start_rect)
-        screen.display_surface.blit(multiplayer_text, multiplayer_rect)
+        #title_font = pygame.font.Font('./assets/fonts/Mermaid1001.ttf', round(title_size))
+        #title_text = text_renderer.title_font.render("Gin Rummy", True, (255,222,133))
+        #text_renderer.set_alpha(text_renderer.title_text, text_alpha)
+        title_rect = text_renderer.title_text.get_rect(center=(screen.display_width / 2, screen.display_height * 5/12))
+        screen.display_surface.blit(text_renderer.title_text, title_rect)
+        screen.display_surface.blit(text_renderer.start_text, start_rect)
+        screen.display_surface.blit(text_renderer.multiplayer_text, multiplayer_rect)
 
         pygame.display.flip()
         background_clock.tick(200)
@@ -597,7 +599,7 @@ def draw_background(surface):
 def draw_networking_screen(menu_x, hamburger_x, surface):
     draw_networking_background(surface)
     menu_x, hamburger_x = draw_menu(menu_x, hamburger_x, surface)
-    surface.blit(multiplayer_menu_text, multiplayer_menu_rect)
+    surface.blit(text_renderer.multiplayer_menu_text, multiplayer_menu_rect)
     
 def draw_networking_background(surface):
         surface.blit(networking_background, (0,0))
@@ -655,21 +657,21 @@ def draw_menu(menu_x, hamburger_x, surface):
         option_left = menu_x + menu_width/2 - option_width/2
         option_top = screen.display_height/11
         r_option_rect = pygame.Rect(option_left, option_top, option_width, option_height) #retry option
-        r_option_text = medium_font.render("Retry", True, WHITE)
+        #r_option_text = medium_font.render("Retry", True, WHITE)
         mm_option_rect = pygame.Rect(option_left, option_top*2, option_width, option_height) #main menu option
-        mm_option_text = medium_font.render("Main Menu", True, WHITE)
+        #mm_option_text = medium_font.render("Main Menu", True, WHITE)
         c_option_rect = pygame.Rect(option_left, option_top*3, option_width, option_height) #customize option
-        c_option_text = medium_font.render("Customize", True, WHITE)
+        #c_option_text = medium_font.render("Customize", True, WHITE)
         s_option_rect = pygame.Rect(option_left, option_top*4, option_width, option_height) #settings option
-        s_option_text = medium_font.render("Settings", True, WHITE)
+        #s_option_text = medium_font.render("Settings", True, WHITE)
         qg_option_rect = pygame.Rect(option_left, option_top*5, option_width, option_height) #quit game option
-        qg_option_text = medium_font.render("Quit Game", True, WHITE)
+        #qg_option_text = medium_font.render("Quit Game", True, WHITE)
 
-        surface.blit(r_option_text, r_option_text.get_rect(center=r_option_rect.center)) #retry option
-        surface.blit(mm_option_text, mm_option_text.get_rect(center=mm_option_rect.center)) #main menu option
-        surface.blit(c_option_text, c_option_text.get_rect(center=c_option_rect.center)) #customize option
-        surface.blit(s_option_text, s_option_text.get_rect(center=s_option_rect.center)) #settings option
-        surface.blit(qg_option_text, qg_option_text.get_rect(center=qg_option_rect.center)) #quit game option
+        surface.blit(text_renderer.r_option_text, text_renderer.r_option_text.get_rect(center=r_option_rect.center)) #retry option
+        surface.blit(text_renderer.mm_option_text, text_renderer.mm_option_text.get_rect(center=mm_option_rect.center)) #main menu option
+        surface.blit(text_renderer.c_option_text, text_renderer.c_option_text.get_rect(center=c_option_rect.center)) #customize option
+        surface.blit(text_renderer.s_option_text, text_renderer.s_option_text.get_rect(center=s_option_rect.center)) #settings option
+        surface.blit(text_renderer.qg_option_text, text_renderer.qg_option_text.get_rect(center=qg_option_rect.center)) #quit game option
 
         
 
@@ -690,23 +692,23 @@ def draw_menu(menu_x, hamburger_x, surface):
 
 def draw_buttons(surface):
     pygame.draw.rect(surface, (200, 200, 200), sort_rect_rank, border_radius=8)
-    pygame.draw.rect(surface, BLACK, sort_rect_rank, 2, border_radius=8)
+    pygame.draw.rect(surface, colors.BLACK, sort_rect_rank, 2, border_radius=8)
     pygame.draw.rect(surface, (200, 200, 200), sort_rect_suit, border_radius=8)
-    pygame.draw.rect(surface, BLACK, sort_rect_suit, 2, border_radius=8)
-    surface.blit(sort_rank_text, sort_rank_rect)
-    surface.blit(sort_suit_text, sort_suit_rect)
+    pygame.draw.rect(surface, colors.BLACK, sort_rect_suit, 2, border_radius=8)
+    surface.blit(text_renderer.sort_rank_text, sort_rank_rect)
+    surface.blit(text_renderer.sort_suit_text, sort_suit_rect)
 
     #player knock button
     if hand.can_knock:
         pygame.draw.rect(surface, (200, 200, 200), player_knock_rect, border_radius=8)
-        pygame.draw.rect(surface, BLACK, player_knock_rect, 2, border_radius=8)
-        surface.blit(player_knock_text, knock_player_rect)
+        pygame.draw.rect(surface, colors.BLACK, player_knock_rect, 2, border_radius=8)
+        surface.blit(text_renderer.player_knock_text, knock_player_rect)
 
     #opponent knock button
     if opp_hand.can_knock:
         pygame.draw.rect(surface, (200, 200, 200), opp_knock_rect, border_radius=8)
-        pygame.draw.rect(surface, BLACK, opp_knock_rect, 2, border_radius=8)
-        surface.blit(opp_knock_text, knock_opp_rect)
+        pygame.draw.rect(surface, colors.BLACK, opp_knock_rect, 2, border_radius=8)
+        surface.blit(text_renderer.opp_knock_text, knock_opp_rect)
 
 def animate_card_flip(back_img, front_img, start_pos, end_pos, duration, clock, menu_x, hamburger_x, surface, card, turn):
     if turn == 1:
@@ -828,8 +830,8 @@ def update_title_background(x_offset):
 
     screen.display_surface.blit(title_background, (int(x_offset), 0))
     screen.display_surface.blit(title_background, (int(x_offset + tb_width), 0))
-    screen.display_surface.blit(start_text, start_rect)
-    screen.display_surface.blit(multiplayer_text, multiplayer_rect)
+    screen.display_surface.blit(text_renderer.start_text, start_rect)
+    screen.display_surface.blit(text_renderer.multiplayer_text, multiplayer_rect)
 
 updateLocations()
 sort_cards_rank(opp_hand)
@@ -892,8 +894,8 @@ while running:
                         knocking = False
                         turn = 1
                         player_turn = 1
-                        player_score_text = None
-                        opp_score_text = None
+                        text_renderer.player_score_text = None
+                        text_renderer.opp_score_text = None
                         
                         updateLocations()
                         sort_cards_rank(opp_hand)
@@ -1127,14 +1129,15 @@ while running:
     else:
         draw_networking_background(screen.display_surface)
         menu_x, hamburger_x = draw_menu(menu_x, hamburger_x, screen.display_surface)
-        screen.display_surface.blit(multiplayer_menu_text, multiplayer_menu_rect)
+        screen.display_surface.blit(text_renderer.multiplayer_menu_text, multiplayer_menu_rect)
 
     #round overlay
     if round_overlay:
         overlay = pygame.Surface(screen.display_surface.get_size(), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 120))
         screen.display_surface.blit(overlay, (0, 0))
-        continue_text = small_font.render("Press ENTER to continue", True, WHITE)
+
+        #continue_text = small_font.render("Press ENTER to continue", True, WHITE)
 
         if player_knock or computer_knock:
             hand.melds = update_melds(hand)
@@ -1152,13 +1155,16 @@ while running:
                 opp_hand.score += opp_score
                 computer_knock = False
 
-            player_score_text = small_font.render(f"Player: {hand.score}", True, WHITE)
-            opp_score_text = small_font.render(f"Opponent: {opp_hand.score}", True, WHITE)
+            #player_score_text = small_font.render(f"Player: {hand.score}", True, WHITE)
+            #opp_score_text = small_font.render(f"Opponent: {opp_hand.score}", True, WHITE)
 
-        if player_score_text and opp_score_text:
-            screen.display_surface.blit(continue_text, continue_text.get_rect(center=(screen.display_width // 2, screen.display_height * 2/3)))
-            screen.display_surface.blit(player_score_text, player_score_text.get_rect(center=(screen.display_width // 2, screen.display_height * 1/3)))
-            screen.display_surface.blit(opp_score_text, opp_score_text.get_rect(center=(screen.display_width // 2, (screen.display_height * 1/3) + 25)))
+            text_renderer.update_score_text(hand.score, opp_hand.score)
+
+
+        if text_renderer.player_score_text and text_renderer.opp_score_text:
+            screen.display_surface.blit(text_renderer.continue_text, text_renderer.continue_text.get_rect(center=(screen.display_width // 2, screen.display_height * 2/3)))
+            screen.display_surface.blit(text_renderer.player_score_text, text_renderer.player_score_text.get_rect(center=(screen.display_width // 2, screen.display_height * 1/3)))
+            screen.display_surface.blit(text_renderer.opp_score_text, text_renderer.opp_score_text.get_rect(center=(screen.display_width // 2, (screen.display_height * 1/3) + 25)))
     
     #advance the turn
     if (player_turn == -1):
@@ -1169,6 +1175,7 @@ while running:
 
     #restart from title screen
     if restart_from_main_menu:
+        text_renderer = TextRenderer()
         menu_overlay = False
         menu_x = -1.5 * menu_width
         hamburger_x = 30
