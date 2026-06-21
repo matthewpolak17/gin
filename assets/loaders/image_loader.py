@@ -6,6 +6,7 @@ class ImageLoader:
         self.screen = screen
 
         self.blue_back = pygame.transform.scale(pygame.image.load(r'./assets/blueback.png'), (73, 98))
+        self.card_images = {}
 
         self.set_background()
         self.set_networking_background()
@@ -30,7 +31,6 @@ class ImageLoader:
         self.title_background_width = self.title_background.get_width()
 
     def create_card_images(self, card_data):
-        self.card_images = {}
         for name in card_data:
             img = pygame.image.load(f'./assets/cards/{name}').convert_alpha()
             self.card_images[name] = pygame.transform.smoothscale(img, (constants.CARD_WIDTH, constants.CARD_HEIGHT))
