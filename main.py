@@ -13,7 +13,7 @@ from deck import Deck
 from hand import Hand
 from discard_pile import DiscardPile
 from monitor_setup import Monitor
-from sfx import Sfx
+from mixer import Mixer
 from ui_elements.text_renderer import TextRenderer
 #from screen import Screen
 from ui_elements.rects import Rects
@@ -26,7 +26,7 @@ pygame.init()
 
 monitor = Monitor()
 #screen = Screen()
-sfx = Sfx()
+mixer = Mixer()
 #text_renderer = TextRenderer()
 #rects = Rects(screen, text_renderer)
 #image_loader = ImageLoader(screen)
@@ -861,7 +861,7 @@ updateLocations()
 sort_cards_rank(opp_hand)
 load_hand()
 x_offset, singleplayer = show_start_screen() #menu starts here and waits for enter or shift
-sfx.shuffle_sound.play()
+mixer.shuffle_sound.play()
 
 #shows the screen wipe
 if singleplayer:
@@ -873,6 +873,8 @@ if singleplayer:
         pygame.display.flip()
         clock.tick(200)
 else: #else multiplayer
+    mixer.play_menu_music()
+
     draw_networking_screen(drawer.surface_loader.networking_surface)
     for wipe_x in range(drawer.screen.display_width, -1, -wipe_speed):
         update_title_background(x_offset)
@@ -884,6 +886,9 @@ else: #else multiplayer
 while running:
     dt = clock.tick(200) / 1000 #fps
     for event in pygame.event.get():
+        
+        mixer.handle_music_event(event)
+
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
@@ -964,7 +969,7 @@ while running:
                             break
                         elif drawer.rects.draw_rect.collidepoint(event.pos):
                             if turn == 1:
-                                random.choice(sfx.thwip_sounds).play()
+                                random.choice(mixer.thwip_sounds).play()
                                 drawn_card = drawCard(deck, hand)
                                 animate_card_flip(drawer.image_loader.blue_back, drawer.image_loader.card_images[drawn_card.name], drawer.rects.draw_rect.center, (hand.cards[-1].loc[0] + 73/2, hand.cards[-1].loc[1] + 98/2), card_movement_speed, drawer.surface_loader.game_surface, drawn_card, turn)
                                 drawn_card = None
@@ -976,7 +981,7 @@ while running:
                                 break
                         elif drawer.rects.discard_rect.collidepoint(event.pos):
                             if turn == 1:
-                                sfx.slide_sound.play()
+                                mixer.slide_sound.play()
                                 drawn_card = pickup_discard(hand)
                                 animate_card_slide_move(drawer.image_loader.card_images[drawn_card.name], drawer.rects.discard_rect.center, (hand.cards[-1].loc[0], hand.cards[-1].loc[1]), card_movement_speed, drawer.surface_loader.game_surface, drawn_card, turn)
                                 drawn_card = None
@@ -1210,7 +1215,7 @@ while running:
         sort_cards_rank(opp_hand)
         load_hand()
         x_offset, singleplayer = show_start_screen()
-        sfx.shuffle_sound.play()
+        mixer.shuffle_sound.play()
 
         #shows the screen wipe
         if singleplayer:
