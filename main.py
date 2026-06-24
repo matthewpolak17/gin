@@ -82,8 +82,8 @@ restart = False
 # large_font = pygame.font.Font(None, 50)
 # medium_font = pygame.font.Font(None, 35)
 # small_font = pygame.font.Font(None, 30)
-wipe_speed = 40
-card_movement_speed = 600
+constants.TITLE_WIPE_SPEED = 40
+#card_movement_speed = 600
 # WHITE = (255, 255, 255)
 # BLACK = (0, 0, 0)
 
@@ -468,9 +468,9 @@ def computer_play():
     
     #animate card movement
     if pickup_dis:
-        animate_card_flip(drawer.image_loader.card_images[opp_drawn_card.name], drawer.image_loader.blue_back, drawer.rects.discard_rect.center, (opp_drawn_card.loc[0] + 73/2, opp_drawn_card.loc[1] + 98/2), card_movement_speed, drawer.surface_loader.game_surface, opp_drawn_card, -1)
+        animate_card_flip(drawer.image_loader.card_images[opp_drawn_card.name], drawer.image_loader.blue_back, drawer.rects.discard_rect.center, (opp_drawn_card.loc[0] + 73/2, opp_drawn_card.loc[1] + 98/2), constants.CARD_MOVEMENT_SPEED, drawer.surface_loader.game_surface, opp_drawn_card, -1)
     else:
-        animate_card_slide_move(drawer.image_loader.blue_back, drawer.rects.draw_rect.center, (opp_drawn_card.loc[0], opp_drawn_card.loc[1]), card_movement_speed, drawer.surface_loader.game_surface, opp_drawn_card, -1)
+        animate_card_slide_move(drawer.image_loader.blue_back, drawer.rects.draw_rect.center, (opp_drawn_card.loc[0], opp_drawn_card.loc[1]), constants.CARD_MOVEMENT_SPEED, drawer.surface_loader.game_surface, opp_drawn_card, -1)
 
     #update melds after pickup
     opp_hand.melds = update_melds(opp_hand)
@@ -495,7 +495,7 @@ def computer_play():
     if best_discard is None:
         best_discard = opp_hand.cards[-1]
 
-    animate_card_flip(drawer.image_loader.blue_back, drawer.image_loader.card_images[best_discard.name], (best_discard.loc[0] + 73/2, best_discard.loc[1] + 98/2), drawer.rects.discard_rect.center, card_movement_speed, drawer.surface_loader.game_surface, best_discard, -1)
+    animate_card_flip(drawer.image_loader.blue_back, drawer.image_loader.card_images[best_discard.name], (best_discard.loc[0] + 73/2, best_discard.loc[1] + 98/2), drawer.rects.discard_rect.center, constants.CARD_MOVEMENT_SPEED, drawer.surface_loader.game_surface, best_discard, -1)
     discard(opp_hand, best_discard)
 
     opp_hand.melds = update_melds(opp_hand)
@@ -521,9 +521,6 @@ def show_start_screen():
     #moving background
     x_offset = 0.0
     background_clock = pygame.time.Clock()
-
-    # text_alpha = 255
-    # title_size = 140
     animating = False
     anim_frames = 60
     frame = 0
@@ -546,8 +543,8 @@ def show_start_screen():
         x_offset -= 0.5
         if x_offset <= -drawer.image_loader.title_background_width:
             x_offset = 0
-        screen.display_surface.blit(drawer.image_loader.title_background, (int(x_offset), 0))
-        screen.display_surface.blit(drawer.image_loader.title_background, (int(x_offset + drawer.image_loader.title_background_width), 0))
+        # # # screen.display_surface.blit(drawer.image_loader.title_background, (int(x_offset), 0))
+        # # # screen.display_surface.blit(drawer.image_loader.title_background, (int(x_offset + drawer.image_loader.title_background_width), 0))
 
         if animating and frame < anim_frames:
             drawer.text_renderer.update_title(frame, anim_frames)
@@ -564,10 +561,10 @@ def show_start_screen():
                 if x_offset <= -drawer.image_loader.title_background_width:
                     x_offset = 0
 
-                screen.display_surface.blit(drawer.image_loader.title_background, (int(x_offset), 0))
-                screen.display_surface.blit(drawer.image_loader.title_background, (int(x_offset + drawer.image_loader.title_background_width), 0))
-                screen.display_surface.blit(drawer.text_renderer.start_text, drawer.rects.start_rect)
-                screen.display_surface.blit(drawer.text_renderer.multiplayer_text, drawer.rects.multiplayer_rect)
+                # # # screen.display_surface.blit(drawer.image_loader.title_background, (int(x_offset), 0))
+                # # # screen.display_surface.blit(drawer.image_loader.title_background, (int(x_offset + drawer.image_loader.title_background_width), 0))
+                # # # screen.display_surface.blit(drawer.text_renderer.start_text, drawer.rects.start_rect)
+                # # # screen.display_surface.blit(drawer.text_renderer.multiplayer_text, drawer.rects.multiplayer_rect)
 
                 pygame.display.flip()
                 background_clock.tick(200)
@@ -578,7 +575,7 @@ def show_start_screen():
         #title_text = text_renderer.title_font.render("Gin Rummy", True, (255,222,133))
         #text_renderer.set_alpha(text_renderer.title_text, text_alpha)
         title_rect = drawer.text_renderer.title_text.get_rect(center=(screen.display_width / 2, screen.display_height * 5/12))
-        screen.display_surface.blit(drawer.text_renderer.title_text, title_rect)
+        # # # screen.display_surface.blit(drawer.text_renderer.title_text, title_rect)
         screen.display_surface.blit(drawer.text_renderer.start_text, drawer.rects.start_rect)
         screen.display_surface.blit(drawer.text_renderer.multiplayer_text, drawer.rects.multiplayer_rect)
 
@@ -602,9 +599,9 @@ def show_start_screen():
 
 #drawing functions
 #def draw_game_screen(menu_x, hamburger_x, surface):
-def draw_game_screen():
+def draw_game_screen(): #maybe change to create game screen later
     draw_background(drawer.surface_loader.game_surface)
-    draw_menu(drawer.surface_loader.game_surface)
+    drawer.draw_menu(drawer.surface_loader.game_surface, menu_active, dt)
     draw_buttons(drawer.surface_loader.game_surface)
     draw_cards(drawer.surface_loader.game_surface)
     screen.display_surface.blit(drawer.surface_loader.game_surface, (0,0))
@@ -616,7 +613,7 @@ def draw_networking_screen(dt):
     drawer.surface_loader.networking_surface.blit(drawer.image_loader.networking_background, (0,0))
     drawer.surface_loader.networking_surface.blit(drawer.text_renderer.multiplayer_menu_text, drawer.rects.multiplayer_menu_rect)
     animator.animate_loading(dt, drawer.surface_loader.networking_surface)
-    draw_menu(drawer.surface_loader.networking_surface)
+    drawer.draw_menu(drawer.surface_loader.networking_surface, menu_active, dt)
     screen.display_surface.blit(drawer.surface_loader.networking_surface, (0,0))
 
 def draw_cards(surface):
@@ -660,51 +657,51 @@ def draw_cards(surface):
                 surface.blit(drawer.image_loader.card_images[card.name], (card.loc))
          
 #def draw_menu(menu_x, hamburger_x, surface):
-def draw_menu(surface):
-    if menu_active: #opening the menu
-        #hamburger_tx = -1.5 * hamburger_width
-        screen.hamburger_x = max(screen.hamburger_x - (constants.MENU_SPEED * dt), -1.5 * constants.HAMBURGER_WIDTH) #moves the hamburger from the other value to x=-1.5 * hamburger_width
-        screen.menu_x = min(screen.menu_x + (constants.MENU_SPEED * dt), 0)
-        drawer.rects.update_option_rects()
-        #surface.blit(side_overlay, (menu_x, 0))
-        surface.blit(drawer.surface_loader.side_overlay, (screen.menu_x, 0))
-        #option_width = screen.display_width/10
-        #option_height = screen.display_height/15
-        #option_left = menu_x + screen.menu_width/2 - option_width/2
-        #option_top = screen.display_height/11
-        #r_option_rect = pygame.Rect(option_left, option_top, option_width, option_height) #retry option
-        #r_option_text = medium_font.render("Retry", True, WHITE)
-        #mm_option_rect = pygame.Rect(option_left, option_top*2, option_width, option_height) #main menu option
-        #mm_option_text = medium_font.render("Main Menu", True, WHITE)
-        #c_option_rect = pygame.Rect(option_left, option_top*3, option_width, option_height) #customize option
-        #c_option_text = medium_font.render("Customize", True, WHITE)
-        #s_option_rect = pygame.Rect(option_left, option_top*4, option_width, option_height) #settings option
-        #s_option_text = medium_font.render("Settings", True, WHITE)
-        #qg_option_rect = pygame.Rect(option_left, option_top*5, option_width, option_height) #quit game option
-        #qg_option_text = medium_font.render("Quit Game", True, WHITE)
-        surface.blit(drawer.text_renderer.r_option_text, drawer.text_renderer.r_option_text.get_rect(center=drawer.rects.r_option_rect.center)) #retry option
-        surface.blit(drawer.text_renderer.mm_option_text, drawer.text_renderer.mm_option_text.get_rect(center=drawer.rects.mm_option_rect.center)) #main menu option
-        surface.blit(drawer.text_renderer.c_option_text, drawer.text_renderer.c_option_text.get_rect(center=drawer.rects.c_option_rect.center)) #customize option
-        surface.blit(drawer.text_renderer.s_option_text, drawer.text_renderer.s_option_text.get_rect(center=drawer.rects.s_option_rect.center)) #settings option
-        surface.blit(drawer.text_renderer.qg_option_text, drawer.text_renderer.qg_option_text.get_rect(center=drawer.rects.qg_option_rect.center)) #quit game option
+# def draw_menu(surface):
+#     if menu_active: #opening the menu
+#         #hamburger_tx = -1.5 * hamburger_width
+#         screen.hamburger_x = max(screen.hamburger_x - (constants.MENU_SPEED * dt), -1.5 * constants.HAMBURGER_WIDTH) #moves the hamburger from the other value to x=-1.5 * hamburger_width
+#         screen.menu_x = min(screen.menu_x + (constants.MENU_SPEED * dt), 0)
+#         drawer.rects.update_option_rects()
+#         #surface.blit(side_overlay, (menu_x, 0))
+#         surface.blit(drawer.surface_loader.side_overlay, (screen.menu_x, 0))
+#         #option_width = screen.display_width/10
+#         #option_height = screen.display_height/15
+#         #option_left = menu_x + screen.menu_width/2 - option_width/2
+#         #option_top = screen.display_height/11
+#         #r_option_rect = pygame.Rect(option_left, option_top, option_width, option_height) #retry option
+#         #r_option_text = medium_font.render("Retry", True, WHITE)
+#         #mm_option_rect = pygame.Rect(option_left, option_top*2, option_width, option_height) #main menu option
+#         #mm_option_text = medium_font.render("Main Menu", True, WHITE)
+#         #c_option_rect = pygame.Rect(option_left, option_top*3, option_width, option_height) #customize option
+#         #c_option_text = medium_font.render("Customize", True, WHITE)
+#         #s_option_rect = pygame.Rect(option_left, option_top*4, option_width, option_height) #settings option
+#         #s_option_text = medium_font.render("Settings", True, WHITE)
+#         #qg_option_rect = pygame.Rect(option_left, option_top*5, option_width, option_height) #quit game option
+#         #qg_option_text = medium_font.render("Quit Game", True, WHITE)
+#         surface.blit(drawer.text_renderer.r_option_text, drawer.text_renderer.r_option_text.get_rect(center=drawer.rects.r_option_rect.center)) #retry option
+#         surface.blit(drawer.text_renderer.mm_option_text, drawer.text_renderer.mm_option_text.get_rect(center=drawer.rects.mm_option_rect.center)) #main menu option
+#         surface.blit(drawer.text_renderer.c_option_text, drawer.text_renderer.c_option_text.get_rect(center=drawer.rects.c_option_rect.center)) #customize option
+#         surface.blit(drawer.text_renderer.s_option_text, drawer.text_renderer.s_option_text.get_rect(center=drawer.rects.s_option_rect.center)) #settings option
+#         surface.blit(drawer.text_renderer.qg_option_text, drawer.text_renderer.qg_option_text.get_rect(center=drawer.rects.qg_option_rect.center)) #quit game option
 
-    else: #closing the menu
+#     else: #closing the menu
 
-        surface.blit(drawer.surface_loader.side_overlay, (screen.menu_x, 0))
-        screen.hamburger_x = min(screen.hamburger_x + (constants.MENU_SPEED * dt), 30) #moves the hamburger from x=30 to the other value
-        screen.menu_x = max(screen.menu_x - (constants.MENU_SPEED * dt), -1.5 * screen.menu_width)
-        drawer.rects.update_option_rects()
+#         surface.blit(drawer.surface_loader.side_overlay, (screen.menu_x, 0))
+#         screen.hamburger_x = min(screen.hamburger_x + (constants.MENU_SPEED * dt), 30) #moves the hamburger from x=30 to the other value
+#         screen.menu_x = max(screen.menu_x - (constants.MENU_SPEED * dt), -1.5 * screen.menu_width)
+#         drawer.rects.update_option_rects()
 
-        surface.blit(drawer.text_renderer.r_option_text, drawer.text_renderer.r_option_text.get_rect(center=drawer.rects.r_option_rect.center)) #retry option
-        surface.blit(drawer.text_renderer.mm_option_text, drawer.text_renderer.mm_option_text.get_rect(center=drawer.rects.mm_option_rect.center)) #main menu option
-        surface.blit(drawer.text_renderer.c_option_text, drawer.text_renderer.c_option_text.get_rect(center=drawer.rects.c_option_rect.center)) #customize option
-        surface.blit(drawer.text_renderer.s_option_text, drawer.text_renderer.s_option_text.get_rect(center=drawer.rects.s_option_rect.center)) #settings option
-        surface.blit(drawer.text_renderer.qg_option_text, drawer.text_renderer.qg_option_text.get_rect(center=drawer.rects.qg_option_rect.center)) #quit game option
+#         surface.blit(drawer.text_renderer.r_option_text, drawer.text_renderer.r_option_text.get_rect(center=drawer.rects.r_option_rect.center)) #retry option
+#         surface.blit(drawer.text_renderer.mm_option_text, drawer.text_renderer.mm_option_text.get_rect(center=drawer.rects.mm_option_rect.center)) #main menu option
+#         surface.blit(drawer.text_renderer.c_option_text, drawer.text_renderer.c_option_text.get_rect(center=drawer.rects.c_option_rect.center)) #customize option
+#         surface.blit(drawer.text_renderer.s_option_text, drawer.text_renderer.s_option_text.get_rect(center=drawer.rects.s_option_rect.center)) #settings option
+#         surface.blit(drawer.text_renderer.qg_option_text, drawer.text_renderer.qg_option_text.get_rect(center=drawer.rects.qg_option_rect.center)) #quit game option
 
-    #menu icon
-    pygame.draw.rect(surface, "white", pygame.Rect(screen.hamburger_x,30,constants.HAMBURGER_WIDTH,8))
-    pygame.draw.rect(surface, "white", pygame.Rect(screen.hamburger_x,45,constants.HAMBURGER_WIDTH,8))
-    pygame.draw.rect(surface, "white", pygame.Rect(screen.hamburger_x,60,constants.HAMBURGER_WIDTH,8))
+#     #menu icon
+#     pygame.draw.rect(surface, "white", pygame.Rect(screen.hamburger_x,30,constants.HAMBURGER_WIDTH,8))
+#     pygame.draw.rect(surface, "white", pygame.Rect(screen.hamburger_x,45,constants.HAMBURGER_WIDTH,8))
+#     pygame.draw.rect(surface, "white", pygame.Rect(screen.hamburger_x,60,constants.HAMBURGER_WIDTH,8))
 
     ##return hamburger_x
 
@@ -733,7 +730,6 @@ def animate_card_flip(back_img, front_img, start_pos, end_pos, duration, surface
         card.visible = False
     frame_count = int(duration / (1000 / 60))
     for frame in range(frame_count):
-        #dt = clock.tick(200) / 1000
         progress = frame / frame_count
         progress_eased = 1 - (1 - progress) ** 3
 
@@ -787,7 +783,7 @@ def animate_card_flip(back_img, front_img, start_pos, end_pos, duration, surface
             for player_card in hand.cards: #player hand
                 surface.blit(drawer.image_loader.card_images[player_card.name], player_card.loc)
         
-        draw_menu(surface)
+        drawer.draw_menu(surface, menu_active, dt)
         screen.display_surface.blit(surface, (0,0))
         pygame.display.flip()
     card.visible = True
@@ -838,19 +834,19 @@ def animate_card_slide_move(front_img, start_pos, end_pos, duration, surface, ca
             for player_card in hand.cards: #player hand
                 surface.blit(drawer.image_loader.card_images[player_card.name], player_card.loc)
         
-        draw_menu(surface)
+        drawer.draw_menu(surface, menu_active, dt)
         screen.display_surface.blit(surface, (0,0))
         pygame.display.flip()
     card.visible = True
     #return hamburger_x 
 
-def update_title_background(x_offset):
-    x_offset -= 0.5
-    if x_offset <= -drawer.image_loader.title_background_width:
-        x_offset = 0
+def update_title_background(test):
+    test -= dt
+    if test <= -drawer.image_loader.title_background_width:
+        test = 0
 
-    screen.display_surface.blit(drawer.image_loader.title_background, (int(x_offset), 0))
-    screen.display_surface.blit(drawer.image_loader.title_background, (int(x_offset + drawer.image_loader.title_background_width), 0))
+    screen.display_surface.blit(drawer.image_loader.title_background, (int(test), 0))
+    screen.display_surface.blit(drawer.image_loader.title_background, (int(test + drawer.image_loader.title_background_width), 0))  
     screen.display_surface.blit(drawer.text_renderer.start_text, drawer.rects.start_rect)
     screen.display_surface.blit(drawer.text_renderer.multiplayer_text, drawer.rects.multiplayer_rect)
 
@@ -860,30 +856,45 @@ load_hand()
 x_offset, singleplayer = show_start_screen() #menu starts here and waits for enter or shift
 mixer.shuffle_sound.play()
 
+
+
 #shows the screen wipe
-if singleplayer:
-    draw_game_screen()
-    for wipe_x in range(0, screen.display_width + 1, wipe_speed):
-        update_title_background(x_offset)
-        x_offset -= 0.5
-        screen.display_surface.blit(drawer.surface_loader.game_surface, (0, 0), area=pygame.Rect(0, 0, wipe_x, screen.display_height))
-        pygame.display.flip()
-        clock.tick(200)
-else: #else multiplayer
-
-    draw_networking_screen(dt)
-    for wipe_x in range(screen.display_width, -1, -wipe_speed):
-        update_title_background(x_offset)
-        x_offset -= 0.5
-        screen.display_surface.blit(drawer.surface_loader.networking_surface, (0,0), area=pygame.Rect(-wipe_x, 0, screen.display_width, screen.display_height))
-        pygame.display.flip()
-        clock.tick(200)
-
-    mixer.start_networking_music()
+# if singleplayer and not animator.title_wipe.finished:
+#     draw_game_screen()
+#     #animator.animate_title_wipe(dt, drawer.surface_loader.game_surface)
+#     test = 0
+#     for wipe_x in range(0, screen.display_width + 1, constants.TITLE_WIPE_SPEED):
+#         #update_title_background(test)
+#         #update_title_background(x_offset)
+#         #x_offset -= 0.5
+#         #screen.display_surface.blit(drawer.surface_loader.game_surface, (0, 0), area=pygame.Rect(0, 0, wipe_x, screen.display_height))
+#         pygame.display.flip()
+#         clock.tick(200)
 
 while running:
-    dt = clock.tick(60) / 1000 #fps
-    print(dt)
+    dt = clock.tick(200) / 1000 #fps 
+
+    if singleplayer and not animator.title_wipe.finished:
+        draw_game_screen()
+        animator.animate_title_background(dt, drawer.surface_loader.game_surface)
+        animator.animate_title_wipe(dt, drawer.surface_loader.game_surface)
+
+
+#COME BACK TO THIS AFTER FINISHING THE TITLE WIPE
+
+
+
+    # else: #else multiplayer:
+
+    #     draw_networking_screen(dt)
+    #     for wipe_x in range(screen.display_width, -1, -constants.TITLE_WIPE_SPEED):
+    #         update_title_background(x_offset)
+    #         x_offset -= 0.5
+    #         screen.display_surface.blit(drawer.surface_loader.networking_surface, (0,0), area=pygame.Rect(-wipe_x, 0, screen.display_width, screen.display_height))
+    #         pygame.display.flip()
+    #         clock.tick(200)
+
+    #     mixer.start_networking_music()
 
     for event in pygame.event.get():
 
@@ -970,7 +981,7 @@ while running:
                             if turn == 1:
                                 random.choice(mixer.thwip_sounds).play()
                                 drawn_card = drawCard(deck, hand)
-                                animate_card_flip(drawer.image_loader.blue_back, drawer.image_loader.card_images[drawn_card.name], drawer.rects.draw_rect.center, (hand.cards[-1].loc[0] + 73/2, hand.cards[-1].loc[1] + 98/2), card_movement_speed, drawer.surface_loader.game_surface, drawn_card, turn)
+                                animate_card_flip(drawer.image_loader.blue_back, drawer.image_loader.card_images[drawn_card.name], drawer.rects.draw_rect.center, (hand.cards[-1].loc[0] + 73/2, hand.cards[-1].loc[1] + 98/2), constants.CARD_MOVEMENT_SPEED, drawer.surface_loader.game_surface, drawn_card, turn)
                                 drawn_card = None
                                 horizontal_shift = (((screen.display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
                                 hand.melds = update_melds(hand)
@@ -982,7 +993,7 @@ while running:
                             if turn == 1:
                                 mixer.slide_sound.play()
                                 drawn_card = pickup_discard(hand)
-                                animate_card_slide_move(drawer.image_loader.card_images[drawn_card.name], drawer.rects.discard_rect.center, (hand.cards[-1].loc[0], hand.cards[-1].loc[1]), card_movement_speed, drawer.surface_loader.game_surface, drawn_card, turn)
+                                animate_card_slide_move(drawer.image_loader.card_images[drawn_card.name], drawer.rects.discard_rect.center, (hand.cards[-1].loc[0], hand.cards[-1].loc[1]), constants.CARD_MOVEMENT_SPEED, drawer.surface_loader.game_surface, drawn_card, turn)
                                 drawn_card = None
                                 horizontal_shift = (((screen.display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
                                 hand.melds = update_melds(hand)
@@ -1222,7 +1233,7 @@ while running:
         if singleplayer:
             draw_game_screen()
             #draw_game_screen(screen.display_surface)
-            for wipe_x in range(0, screen.display_width + 1, wipe_speed):
+            for wipe_x in range(0, screen.display_width + 1, constants.TITLE_WIPE_SPEED):
                 update_title_background(x_offset)
                 x_offset -= 0.5
                 screen.display_surface.blit(drawer.surface_loader.game_surface, (0, 0), area=pygame.Rect(0, 0, wipe_x, screen.display_height))
@@ -1230,7 +1241,7 @@ while running:
                 clock.tick(200)
         else:
             draw_networking_screen(dt)
-            for wipe_x in range(screen.display_width, -1, -wipe_speed):
+            for wipe_x in range(screen.display_width, -1, -constants.TITLE_WIPE_SPEED):
                 update_title_background(x_offset)
                 x_offset -= 0.5
                 screen.display_surface.blit(drawer.surface_loader.networking_surface, (0,0), area=pygame.Rect(-wipe_x, 0, screen.display_width, screen.display_height))

@@ -1,35 +1,28 @@
+from animation import Animation
+
 class Animator:
     def __init__(self, drawer):
         self.drawer = drawer
         self.frame = 0
         self.frame_timer = 0
+        self.loading = Animation(0.05, 11)
+        self.title_wipe = Animation(0.05, self.drawer.screen.display_width)
+        self.title_background = Animation(0.05, self.drawer.screen.display_width)
 
     def animate_loading(self, dt, surface):
+        self.loading.update(dt)
+        self.drawer.draw_loading_frame(self.drawer.image_loader.loading_frames[self.frame], surface)
 
-        self.frame_timer += dt
+    def animate_title_wipe(self, dt, surface):
+        self.title_wipe.update(dt)
+        self.drawer.draw_title_wipe_frame(self.title_wipe.frame, surface)
+        self.title_wipe.mark_finished()
 
-        if self.frame < 11:
-            if self.frame_timer >= 0.05:
-                self.frame_timer = 0
-                self.frame += 1
-        else:
-            self.frame = 0
+    def animate_title_background(self, dt, surface):
+        self.title_background.update(dt)
+        self.drawer.draw_title_background_frame(self.title_background.frame, surface)
 
-        frames = {
-            0: self.drawer.image_loader.loading_frame_0,
-            1: self.drawer.image_loader.loading_frame_1,
-            2: self.drawer.image_loader.loading_frame_2,
-            3: self.drawer.image_loader.loading_frame_3,
-            4: self.drawer.image_loader.loading_frame_4,
-            5: self.drawer.image_loader.loading_frame_5,
-            6: self.drawer.image_loader.loading_frame_6,
-            7: self.drawer.image_loader.loading_frame_7,
-            8: self.drawer.image_loader.loading_frame_8,
-            9: self.drawer.image_loader.loading_frame_9,
-            10: self.drawer.image_loader.loading_frame_10,
-            11: self.drawer.image_loader.loading_frame_11
-        }
-       
-        self.drawer.draw_loading_frame(frames[self.frame], surface)
+
+
 
 

@@ -23,7 +23,7 @@ class ImageLoader:
         self.background = pygame.transform.scale(self.background, (self.screen.display_width, self.screen.display_height))
 
     def set_networking_background(self):
-        self.networking_background = pygame.image.load(r'./assets/images/networking_background.jpg').convert_alpha()
+        self.networking_background = pygame.image.load(r'./assets/images/black.png').convert_alpha()
         self.networking_background = pygame.transform.scale(self.networking_background, (self.screen.display_width, self.screen.display_height))
 
     def set_title_background(self):
@@ -37,15 +37,8 @@ class ImageLoader:
             self.card_images[name] = pygame.transform.smoothscale(img, (constants.CARD_WIDTH, constants.CARD_HEIGHT))
 
     def set_loading_images(self):
-        self.loading_frame_0 = pygame.image.load(r'./assets/images/loading_frame_0.png').convert_alpha()
-        self.loading_frame_1 = pygame.image.load(r'./assets/images/loading_frame_1.png').convert_alpha()
-        self.loading_frame_2 = pygame.image.load(r'./assets/images/loading_frame_2.png').convert_alpha()
-        self.loading_frame_3 = pygame.image.load(r'./assets/images/loading_frame_3.png').convert_alpha()
-        self.loading_frame_4 = pygame.image.load(r'./assets/images/loading_frame_4.png').convert_alpha()
-        self.loading_frame_5 = pygame.image.load(r'./assets/images/loading_frame_5.png').convert_alpha()
-        self.loading_frame_6 = pygame.image.load(r'./assets/images/loading_frame_6.png').convert_alpha()
-        self.loading_frame_7 = pygame.image.load(r'./assets/images/loading_frame_7.png').convert_alpha()
-        self.loading_frame_8 = pygame.image.load(r'./assets/images/loading_frame_8.png').convert_alpha()
-        self.loading_frame_9 = pygame.image.load(r'./assets/images/loading_frame_9.png').convert_alpha()
-        self.loading_frame_10 = pygame.image.load(r'./assets/images/loading_frame_10.png').convert_alpha()
-        self.loading_frame_11 = pygame.image.load(r'./assets/images/loading_frame_11.png').convert_alpha()
+        self.loading_frames = []
+        for i in range(12):
+            image = pygame.image.load(f"./assets/images/loading_frame_{i}.png").convert_alpha()
+            image = pygame.transform.smoothscale(image, (self.screen.display_width // 50, self.screen.display_width // 50)) #width x width
+            self.loading_frames.append(image)
