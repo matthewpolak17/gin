@@ -8,6 +8,8 @@ class StateManager:
         self.states = {}
         self.running = True
         self.menu_active = False
+        self.restart_from_main_menu = False
+        self.restart = False
 
     def add_state(self, name, state):
         self.states[name] = state
@@ -15,7 +17,6 @@ class StateManager:
     def set(self, name):
         if self.active_state:
             self.active_state.exit()
-            
         self.active_state = self.states[name]
     
     def handle_event(self, event):

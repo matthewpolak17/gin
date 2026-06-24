@@ -964,25 +964,25 @@ while state_manager.running:
 
 
         #game mouse detection singleplayer
-        if singleplayer:
+        # if singleplayer:
             
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
+        #     if event.type == pygame.MOUSEBUTTONDOWN:
+        #         if event.button == 1:
                     
-                    if context.drawer.rects.menu_rect.collidepoint(event.pos):
-                        menu_active = True
+        #             if context.drawer.rects.menu_rect.collidepoint(event.pos):
+        #                 menu_active = True
 
-                    if context.drawer.rects.main_menu_overlay_rect.collidepoint(event.pos): #close the menu if it's open and you click off
-                        menu_active = False
+        #             if context.drawer.rects.main_menu_overlay_rect.collidepoint(event.pos): #close the menu if it's open and you click off
+        #                 menu_active = False
                     
-                    if menu_active: #menu options
-                        context.drawer.rects.update_option_rects()
-                        if context.drawer.rects.mm_option_rect.collidepoint(event.pos):
-                            restart_from_main_menu = True
-                        if context.drawer.rects.qg_option_rect.collidepoint(event.pos):
-                            state_manager.running = False
-                        if context.drawer.rects.r_option_rect.collidepoint(event.pos):
-                            restart = True
+        #             if menu_active: #menu options
+        #                 context.drawer.rects.update_option_rects()
+        #                 if context.drawer.rects.mm_option_rect.collidepoint(event.pos):
+        #                     restart_from_main_menu = True
+        #                 if context.drawer.rects.qg_option_rect.collidepoint(event.pos):
+        #                     state_manager.running = False
+        #                 if context.drawer.rects.r_option_rect.collidepoint(event.pos):
+        #                     restart = True
 
                     #game interactions start here
                     for card in reversed(context.hand.cards):
