@@ -6,58 +6,69 @@
 import pygame
 import random
 import csv
-import constants
+# import context.engine.constants as constants
 from itertools import combinations
 from collections import defaultdict
-from deck import Deck
-from hand import Hand
-from discard_pile import DiscardPile
-from monitor_setup import Monitor
-from mixer import Mixer
-from ui_elements.text_renderer import TextRenderer
-from screen import Screen
-from ui_elements.rects import Rects
+# from context.game_components.deck import Deck
+# from context.game_components.hand import Hand
+# from context.game_components.discard_pile import DiscardPile
+# from context.engine.monitor_setup import Monitor
+# from context.engine.audio import Audio
+# from context.engine.managers.text_renderer import TextRenderer
+# from context.engine.context.screen import context.screen
+#from context.engine.rects import Rects
 #from assets.loaders.image_loader import ImageLoader
 #from assets.loaders.surface_loader import SurfaceLoader
-from drawer import Drawer
-from animator import Animator
+# from context.engine.managers.drawer import Drawer
+# from context.engine.managers.animator import Animator
+from game_context import GameContext
+from state_manager import StateManager
+from states.title_state import TitleState
+from states.game_state import GameState
+from states.networking_state import NetworkingState
 
 
 pygame.init()
 
-monitor = Monitor()
-screen = Screen()
-mixer = Mixer()
+# monitor = Monitor()
+# context.screen = context.screen()
+context = GameContext()
+state_manager = StateManager()
+state_manager.add_state("title", TitleState(state_manager, context))
+state_manager.add_state("game", GameState(state_manager, context))
+state_manager.add_state("networking", NetworkingState(state_manager, context))
+state_manager.set("title")
+# audio = Audio()
 #text_renderer = TextRenderer()
-#rects = Rects(screen, text_renderer)
-#image_loader = ImageLoader(screen)
-#surface_loader = SurfaceLoader(screen)
-drawer = Drawer(screen)
-animator = Animator(drawer)
-clock = pygame.time.Clock()
+#rects = Rects(context.screen, text_renderer)
+#image_loader = ImageLoader(context.screen)
+#surface_loader = SurfaceLoader(context.screen)
+# drawer = Drawer(context.screen)
+# animator = Animator(drawer)
+# clock = pygame.time.Clock()
 
-deck = Deck()
-hand = Hand(deck)
-discard_pile = DiscardPile(deck)
-opp_hand = Hand(deck)
+# deck = Deck()
+# hand = Hand(deck)
+# discard_pile = DiscardPile(deck)
+# opp_hand = Hand(deck)
 
-#screen setup
+#context.screen setup
 #pygame.init()
-#screen.display_height = monitor.screen.display_height
-#screen.display_width = monitor.screen.display_width
+#context.screen.display_height = monitor.context.screen.display_height
+#context.screen.display_width = monitor.context.screen.display_width
 #flags = pygame.NOFRAME | pygame.HWSURFACE | pygame.DOUBLEBUF
-#screen.display_surface = pygame.display.set_mode((screen.display_width, screen.display_height), flags)
+#context.screen.display_surface = pygame.display.set_mode((context.screen.display_width, context.screen.display_height), flags)
 #pygame.display.set_caption("Gin Rummy")
 #clock = pygame.time.Clock()
-#screen.display_height = screen.display_height
-#screen.display_width = screen.display_width
-#title_surface = pygame.Surface((screen.display_width, screen.display_height))
-#game_surface = pygame.Surface((screen.display_width, screen.display_height))
-#networking_surface = pygame.Surface((screen.display_width, screen.display_height))
+#context.screen.display_height = context.screen.display_height
+#context.screen.display_width = context.screen.display_width
+#title_surface = pygame.Surface((context.screen.display_width, context.screen.display_height))
+#game_surface = pygame.Surface((context.screen.display_width, context.screen.display_height))
+#networking_surface = pygame.Surface((context.screen.display_width, context.screen.display_height))
 
 
 #game variables
-running = True
+#running = True
 dropped = False
 clicked = False
 round_overlay = False
@@ -65,7 +76,7 @@ player_knock = False
 computer_knock = False
 card_flip = False
 original_loc = (0, 0)
-horizontal_shift = (((screen.display_surface.get_width() / 3) / len(hand.cards)) * 0.8) #determines how far to hover cards horizontally
+horizontal_shift = (((context.screen.display_surface.get_width() / 3) / len(context.hand.cards)) * 0.8) #determines how far to hover cards horizontally
 #discard_top = None
 active_card = None
 #card_images = {}
@@ -82,7 +93,7 @@ restart = False
 # large_font = pygame.font.Font(None, 50)
 # medium_font = pygame.font.Font(None, 35)
 # small_font = pygame.font.Font(None, 30)
-constants.TITLE_WIPE_SPEED = 40
+#constants.TITLE_WIPE_SPEED = 40
 #card_movement_speed = 600
 # WHITE = (255, 255, 255)
 # BLACK = (0, 0, 0)
@@ -93,27 +104,27 @@ constants.TITLE_WIPE_SPEED = 40
 #hamburger_tx = -1.5 * hamburger_width
 
 #menu_rect = pygame.Rect(20,20,70,58)
-#menu_width = screen.display_surface.get_width() / 8
-#menu_x = -1.5 * screen.menu_width
+#menu_width = context.screen.display_surface.get_width() / 8
+#menu_x = -1.5 * context.screen.menu_width
 #menu_speed = 2600
 menu_active = False
-#main_menu_overlay_rect = pygame.Rect(screen.menu_width, 0, screen.display_surface.get_width() - screen.menu_width, screen.display_height)
+#main_menu_overlay_rect = pygame.Rect(context.screen.menu_width, 0, context.screen.display_surface.get_width() - context.screen.menu_width, context.screen.display_height)
 
-#side_overlay = pygame.Surface((screen.menu_width, screen.display_height), pygame.SRCALPHA)
+#side_overlay = pygame.Surface((context.screen.menu_width, context.screen.display_height), pygame.SRCALPHA)
 #side_overlay.fill((0, 0, 0,  80))
 
 #start_text = small_font.render("Press ENTER to Start", True, (255,222,133))
-#start_rect = text_renderer.start_text.get_rect(center=(screen.display_width // 2, screen.display_height // 2))
+#start_rect = text_renderer.start_text.get_rect(center=(context.screen.display_width // 2, context.screen.display_height // 2))
 
 #multiplayer_text = small_font.render("Press SHIFT for Multiplayer", True, (255,222,133))
-#multiplayer_rect = text_renderer.multiplayer_text.get_rect(center=(screen.display_width // 2, screen.display_height // 1.85))
+#multiplayer_rect = text_renderer.multiplayer_text.get_rect(center=(context.screen.display_width // 2, context.screen.display_height // 1.85))
 
 #multiplayer_menu_text = small_font.render("Start a room here", True, WHITE)
-#multiplayer_menu_rect = text_renderer.multiplayer_menu_text.get_rect(center=(screen.display_width // 2, screen.display_height // 2))
+#multiplayer_menu_rect = text_renderer.multiplayer_menu_text.get_rect(center=(context.screen.display_width // 2, context.screen.display_height // 2))
 
 #sorting buttons
-# sort_rect_rank = pygame.Rect(screen.display_width * 2/3, screen.display_height * 0.75, 80, 40)
-# sort_rect_suit = pygame.Rect(screen.display_width * 2/3, screen.display_height * 0.8, 80, 40)
+# sort_rect_rank = pygame.Rect(context.screen.display_width * 2/3, context.screen.display_height * 0.75, 80, 40)
+# sort_rect_suit = pygame.Rect(context.screen.display_width * 2/3, context.screen.display_height * 0.8, 80, 40)
 #sort_rank_text = small_font.render("Rank", True, BLACK)
 #sort_suit_text = small_font.render("Suit", True, BLACK)
 #get rid of these two below
@@ -121,8 +132,8 @@ menu_active = False
 # sort_suit_rect = text_renderer.sort_suit_text.get_rect(center=sort_rect_suit.center)
 
 #knocking buttons
-#player_knock_rect = pygame.Rect(screen.display_width * 2/3, screen.display_height * 0.70, 80, 40)
-#opp_knock_rect = pygame.Rect(screen.display_width * 2/3, screen.display_height * 0.2, 80, 40)
+#player_knock_rect = pygame.Rect(context.screen.display_width * 2/3, context.screen.display_height * 0.70, 80, 40)
+#opp_knock_rect = pygame.Rect(context.screen.display_width * 2/3, context.screen.display_height * 0.2, 80, 40)
 #player_knock_text = small_font.render("Knock", True, BLACK)
 #opp_knock_text = small_font.render("Knock", True, BLACK)
 
@@ -131,12 +142,12 @@ menu_active = False
 #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
 #icon = pygame.image.load(f'./assets/icon.png').convert_alpha()
 #background = pygame.image.load(r'./assets/background.png').convert_alpha()
-#background = pygame.transform.scale(background, (screen.display_width, screen.display_height))
+#background = pygame.transform.scale(background, (context.screen.display_width, context.screen.display_height))
 # networking_background = pygame.image.load(r'./assets/networking_background.jpg').convert_alpha()
-# networking_background = pygame.transform.scale(networking_background, (screen.display_width, screen.display_height))
+# networking_background = pygame.transform.scale(networking_background, (context.screen.display_width, context.screen.display_height))
 #blue_back = pygame.transform.scale(pygame.image.load(r'./assets/blueback.png'), (73, 98))
 #title_background = pygame.image.load(f'./assets/title_background.png').convert_alpha()
-#title_background = pygame.transform.scale(title_background, (screen.display_width, screen.display_height))
+#title_background = pygame.transform.scale(title_background, (context.screen.display_width, context.screen.display_height))
 #tb_width = image_loader.title_background.get_width()
 #pygame.display.set_icon(icon)
 
@@ -146,7 +157,7 @@ with open('./assets/card_values.csv', newline='') as csvfile:
     for row in reader:
         card_data[row['name']] = {'suit': row['suit'], 'rank': int(row['rank'])}
 
-drawer.image_loader.create_card_images(card_data)
+context.drawer.image_loader.create_card_images(card_data)
 
 #all card images loaded here
 # card_images = {}
@@ -155,10 +166,10 @@ drawer.image_loader.create_card_images(card_data)
 #     card_images[name] = pygame.transform.smoothscale(img, (constants.CARD_WIDTH, constants.CARD_HEIGHT))
 
 #rects
-#draw_rect = pygame.Rect(screen.display_surface.get_width() * 4/9 - blue_back.get_width() / 2, screen.display_surface.get_height() / 2 - blue_back.get_height() / 2, 73, 98)
-#knock_rect = pygame.Rect(screen.display_surface.get_width() - 60, screen.display_surface.get_height() - 30, 30, 10)
-#opp_knock_rect = pygame.Rect(screen.display_surface.get_width() - 60, screen.display_surface.get_height() - 90, 30, 10)
-#discard_rect = pygame.Rect(screen.display_surface.get_width() * 5/9 - blue_back.get_width() / 2, screen.display_surface.get_height() / 2 - blue_back.get_height() / 2, 73, 98)
+#draw_rect = pygame.Rect(context.screen.display_surface.get_width() * 4/9 - blue_back.get_width() / 2, context.screen.display_surface.get_height() / 2 - blue_back.get_height() / 2, 73, 98)
+#knock_rect = pygame.Rect(context.screen.display_surface.get_width() - 60, context.screen.display_surface.get_height() - 30, 30, 10)
+#opp_knock_rect = pygame.Rect(context.screen.display_surface.get_width() - 60, context.screen.display_surface.get_height() - 90, 30, 10)
+#discard_rect = pygame.Rect(context.screen.display_surface.get_width() * 5/9 - blue_back.get_width() / 2, context.screen.display_surface.get_height() / 2 - blue_back.get_height() / 2, 73, 98)
 
 #knock_player_rect = text_renderer.player_knock_text.get_rect(center=rects.player_knock_rect.center)
 #knock_opp_rect = text_renderer.opp_knock_text.get_rect(center=rects.opp_knock_rect.center)
@@ -174,7 +185,7 @@ drawer.image_loader.create_card_images(card_data)
 #functions
 def updateLocations():
     def set_card_positions(cards, y_offset, spacing_scale=0.8):
-        win_width = screen.display_surface.get_width()
+        win_width = context.screen.display_surface.get_width()
         max_spacing = (win_width / 3) / len(cards)
         spacing = max_spacing * spacing_scale
         total_width = spacing * (len(cards) - 1)
@@ -189,9 +200,9 @@ def updateLocations():
             card.base_x = x_pos
             card.target_x = x_pos
 
-    mid_y = screen.display_surface.get_height() / 2
-    set_card_positions(hand.cards, 1.5 * mid_y)
-    set_card_positions(opp_hand.cards, 0.5 * mid_y - 98)
+    mid_y = context.screen.display_surface.get_height() / 2
+    set_card_positions(context.hand.cards, 1.5 * mid_y)
+    set_card_positions(context.opp_hand.cards, 0.5 * mid_y - 98)
 
 def drawCard(deck, hand):
     choice = random.choice(deck.cards)
@@ -202,22 +213,22 @@ def drawCard(deck, hand):
     return choice
 
 def pickup_discard(hand):
-    choice = discard_pile.cards[-1]
+    choice = context.discard_pile.cards[-1]
     hand.cards.append(choice)
-    discard_pile.cards.remove(choice)
+    context.discard_pile.cards.remove(choice)
     load_hand()
     updateLocations()
     return choice
 
 def discard(hand, active_card):
     hand.cards.remove(active_card)
-    discard_pile.cards.append(active_card)
+    context.discard_pile.cards.append(active_card)
     load_hand()
     updateLocations()
 
 def load_hand():
-    for card in hand.cards:
-        drawer.image_loader.card_images[card.name] = pygame.image.load(f'./assets/cards/{card.name}')
+    for card in context.hand.cards:
+        context.drawer.image_loader.card_images[card.name] = pygame.image.load(f'./assets/cards/{card.name}')
 
 def get_meld_type_from_card(focus_card, melds):
     for meld in melds:
@@ -450,70 +461,70 @@ def calculate_round_score(knocker_hand, defender_hand):
 
 def computer_play():
 
-    opp_hand.melds = update_melds(opp_hand)
-    current_deadwood = calculate_deadwood(opp_hand.melds, opp_hand.cards)
+    context.opp_hand.melds = update_melds(context.opp_hand)
+    current_deadwood = calculate_deadwood(context.opp_hand.melds, context.opp_hand.cards)
 
-    discard_card = discard_pile.cards[-1]
-    opp_hand.cards.append(discard_card)
-    simulated_melds = update_melds(opp_hand)
-    simulated_deadwood = calculate_deadwood(simulated_melds, opp_hand.cards)
-    opp_hand.cards.remove(discard_card)
+    discard_card = context.discard_pile.cards[-1]
+    context.opp_hand.cards.append(discard_card)
+    simulated_melds = update_melds(context.opp_hand)
+    simulated_deadwood = calculate_deadwood(simulated_melds, context.opp_hand.cards)
+    context.opp_hand.cards.remove(discard_card)
 
     pickup_dis = False
     if simulated_deadwood < current_deadwood:
-        opp_drawn_card = pickup_discard(opp_hand)
+        opp_drawn_card = pickup_discard(context.opp_hand)
         pickup_dis = True
     else:
-        opp_drawn_card = drawCard(deck, opp_hand)
+        opp_drawn_card = drawCard(context.deck, context.opp_hand)
     
     #animate card movement
     if pickup_dis:
-        animate_card_flip(drawer.image_loader.card_images[opp_drawn_card.name], drawer.image_loader.blue_back, drawer.rects.discard_rect.center, (opp_drawn_card.loc[0] + 73/2, opp_drawn_card.loc[1] + 98/2), constants.CARD_MOVEMENT_SPEED, drawer.surface_loader.game_surface, opp_drawn_card, -1)
+        animate_card_flip(context.drawer.image_loader.card_images[opp_drawn_card.name], context.drawer.image_loader.blue_back, context.drawer.rects.discard_rect.center, (opp_drawn_card.loc[0] + 73/2, opp_drawn_card.loc[1] + 98/2), context.constants.CARD_MOVEMENT_SPEED, context.drawer.surface_loader.game_surface, opp_drawn_card, -1)
     else:
-        animate_card_slide_move(drawer.image_loader.blue_back, drawer.rects.draw_rect.center, (opp_drawn_card.loc[0], opp_drawn_card.loc[1]), constants.CARD_MOVEMENT_SPEED, drawer.surface_loader.game_surface, opp_drawn_card, -1)
+        animate_card_slide_move(context.drawer.image_loader.blue_back, context.drawer.rects.draw_rect.center, (opp_drawn_card.loc[0], opp_drawn_card.loc[1]), context.constants.CARD_MOVEMENT_SPEED, context.drawer.surface_loader.game_surface, opp_drawn_card, -1)
 
     #update melds after pickup
-    opp_hand.melds = update_melds(opp_hand)
+    context.opp_hand.melds = update_melds(context.opp_hand)
     
     best_discard = None
     best_deadwood = float('inf')
 
-    for card in opp_hand.cards:
-        in_meld = any(card in meld for meld in opp_hand.melds)
+    for card in context.opp_hand.cards:
+        in_meld = any(card in meld for meld in context.opp_hand.melds)
         if in_meld:
             continue
         
-        opp_hand.cards.remove(card)
-        simulated_melds = update_melds(opp_hand)
-        simulated_deadwood = calculate_deadwood(simulated_melds, opp_hand.cards)
-        opp_hand.cards.append(card)
+        context.opp_hand.cards.remove(card)
+        simulated_melds = update_melds(context.opp_hand)
+        simulated_deadwood = calculate_deadwood(simulated_melds, context.opp_hand.cards)
+        context.opp_hand.cards.append(card)
 
         if simulated_deadwood < best_deadwood:
             best_deadwood = simulated_deadwood
             best_discard = card
 
     if best_discard is None:
-        best_discard = opp_hand.cards[-1]
+        best_discard = context.opp_hand.cards[-1]
 
-    animate_card_flip(drawer.image_loader.blue_back, drawer.image_loader.card_images[best_discard.name], (best_discard.loc[0] + 73/2, best_discard.loc[1] + 98/2), drawer.rects.discard_rect.center, constants.CARD_MOVEMENT_SPEED, drawer.surface_loader.game_surface, best_discard, -1)
-    discard(opp_hand, best_discard)
+    animate_card_flip(context.drawer.image_loader.blue_back, context.drawer.image_loader.card_images[best_discard.name], (best_discard.loc[0] + 73/2, best_discard.loc[1] + 98/2), context.drawer.rects.discard_rect.center, context.constants.CARD_MOVEMENT_SPEED, context.drawer.surface_loader.game_surface, best_discard, -1)
+    discard(context.opp_hand, best_discard)
 
-    opp_hand.melds = update_melds(opp_hand)
-    deadwood = calculate_deadwood(opp_hand.melds, opp_hand.cards)
+    context.opp_hand.melds = update_melds(context.opp_hand)
+    deadwood = calculate_deadwood(context.opp_hand.melds, context.opp_hand.cards)
 
     if deadwood == 0:
-        opp_hand.can_knock = True
-        opp_hand.can_gin = True
+        context.opp_hand.can_knock = True
+        context.opp_hand.can_gin = True
     elif deadwood <= 10:
-        opp_hand.can_knock = True
-        opp_hand.can_gin = False
+        context.opp_hand.can_knock = True
+        context.opp_hand.can_gin = False
     
-    if opp_hand.can_gin or opp_hand.can_knock:
+    if context.opp_hand.can_gin or context.opp_hand.can_knock:
         global round_overlay, computer_knock
         round_overlay = True
         computer_knock = True
-        opp_hand.can_knock = False
-        opp_hand.can_gin = False
+        context.opp_hand.can_knock = False
+        context.opp_hand.can_gin = False
     
     #return hamburger_x
 
@@ -541,13 +552,13 @@ def show_start_screen():
                     
 
         x_offset -= 0.5
-        if x_offset <= -drawer.image_loader.title_background_width:
+        if x_offset <= -context.drawer.image_loader.title_background_width:
             x_offset = 0
-        # # # screen.display_surface.blit(drawer.image_loader.title_background, (int(x_offset), 0))
-        # # # screen.display_surface.blit(drawer.image_loader.title_background, (int(x_offset + drawer.image_loader.title_background_width), 0))
+        context.screen.display_surface.blit(context.drawer.image_loader.title_background, (int(x_offset), 0))
+        context.screen.display_surface.blit(context.drawer.image_loader.title_background, (int(x_offset + context.drawer.image_loader.title_background_width), 0))
 
         if animating and frame < anim_frames:
-            drawer.text_renderer.update_title(frame, anim_frames)
+            context.drawer.text_renderer.update_title(frame, anim_frames)
             #text_alpha = (255 * (1 - exponential))
             frame += 2
         elif animating and frame >= anim_frames: #continues to scroll the background after the title fades
@@ -558,13 +569,13 @@ def show_start_screen():
                         exit()
                 
                 x_offset -= 0.5
-                if x_offset <= -drawer.image_loader.title_background_width:
+                if x_offset <= -context.drawer.image_loader.title_background_width:
                     x_offset = 0
 
-                # # # screen.display_surface.blit(drawer.image_loader.title_background, (int(x_offset), 0))
-                # # # screen.display_surface.blit(drawer.image_loader.title_background, (int(x_offset + drawer.image_loader.title_background_width), 0))
-                # # # screen.display_surface.blit(drawer.text_renderer.start_text, drawer.rects.start_rect)
-                # # # screen.display_surface.blit(drawer.text_renderer.multiplayer_text, drawer.rects.multiplayer_rect)
+                # # # context.screen.display_surface.blit(context.drawer.image_loader.title_background, (int(x_offset), 0))
+                # # # context.screen.display_surface.blit(context.drawer.image_loader.title_background, (int(x_offset + context.drawer.image_loader.title_background_width), 0))
+                # # # context.screen.display_surface.blit(context.drawer.text_renderer.start_text, context.drawer.rects.start_rect)
+                # # # context.screen.display_surface.blit(context.drawer.text_renderer.multiplayer_text, context.drawer.rects.multiplayer_rect)
 
                 pygame.display.flip()
                 background_clock.tick(200)
@@ -574,10 +585,10 @@ def show_start_screen():
         #title_font = pygame.font.Font('./assets/fonts/Mermaid1001.ttf', round(title_size))
         #title_text = text_renderer.title_font.render("Gin Rummy", True, (255,222,133))
         #text_renderer.set_alpha(text_renderer.title_text, text_alpha)
-        title_rect = drawer.text_renderer.title_text.get_rect(center=(screen.display_width / 2, screen.display_height * 5/12))
-        # # # screen.display_surface.blit(drawer.text_renderer.title_text, title_rect)
-        screen.display_surface.blit(drawer.text_renderer.start_text, drawer.rects.start_rect)
-        screen.display_surface.blit(drawer.text_renderer.multiplayer_text, drawer.rects.multiplayer_rect)
+        title_rect = context.drawer.text_renderer.title_text.get_rect(center=(context.screen.display_width / 2, context.screen.display_height * 5/12))
+        # # # context.screen.display_surface.blit(context.drawer.text_renderer.title_text, title_rect)
+        context.screen.display_surface.blit(context.drawer.text_renderer.start_text, context.drawer.rects.start_rect)
+        context.screen.display_surface.blit(context.drawer.text_renderer.multiplayer_text, context.drawer.rects.multiplayer_rect)
 
         pygame.display.flip()
         background_clock.tick(200)
@@ -586,10 +597,10 @@ def show_start_screen():
 # def update_menu_rects():
 #     global r_option_rect, mm_option_rect, c_option_rect, s_option_rect, qg_option_rect
 
-#     option_width = screen.display_width / 10
-#     option_height = screen.display_height / 15
-#     option_left = screen.menu_x + screen.menu_width / 2 - option_width / 2
-#     option_top = screen.display_height / 11
+#     option_width = context.screen.display_width / 10
+#     option_height = context.screen.display_height / 15
+#     option_left = context.screen.menu_x + context.screen.menu_width / 2 - option_width / 2
+#     option_top = context.screen.display_height / 11
 
 #     r_option_rect = pygame.Rect(option_left, option_top, option_width, option_height)
 #     mm_option_rect = pygame.Rect(option_left, option_top * 2, option_width, option_height)
@@ -598,77 +609,77 @@ def show_start_screen():
 #     qg_option_rect = pygame.Rect(option_left, option_top * 5, option_width, option_height)
 
 #drawing functions
-#def draw_game_screen(menu_x, hamburger_x, surface):
-def draw_game_screen(): #maybe change to create game screen later
-    draw_background(drawer.surface_loader.game_surface)
-    drawer.draw_menu(drawer.surface_loader.game_surface, menu_active, dt)
-    draw_buttons(drawer.surface_loader.game_surface)
-    draw_cards(drawer.surface_loader.game_surface)
-    screen.display_surface.blit(drawer.surface_loader.game_surface, (0,0))
+#def draw_game_context.screen(menu_x, hamburger_x, surface):
+def draw_game_screen(): #maybe change to create game context.screen later
+    draw_background(context.drawer.surface_loader.game_surface)
+    context.drawer.draw_menu(context.drawer.surface_loader.game_surface, menu_active, dt)
+    draw_buttons(context.drawer.surface_loader.game_surface)
+    draw_cards(context.drawer.surface_loader.game_surface)
+    context.screen.display_surface.blit(context.drawer.surface_loader.game_surface, (0,0))
 
 def draw_background(surface):
-    surface.blit(drawer.image_loader.background, (0,0))
+    surface.blit(context.drawer.image_loader.background, (0,0))
 
 def draw_networking_screen(dt):
-    drawer.surface_loader.networking_surface.blit(drawer.image_loader.networking_background, (0,0))
-    drawer.surface_loader.networking_surface.blit(drawer.text_renderer.multiplayer_menu_text, drawer.rects.multiplayer_menu_rect)
-    animator.animate_loading(dt, drawer.surface_loader.networking_surface)
-    drawer.draw_menu(drawer.surface_loader.networking_surface, menu_active, dt)
-    screen.display_surface.blit(drawer.surface_loader.networking_surface, (0,0))
+    context.drawer.surface_loader.networking_surface.blit(context.drawer.image_loader.networking_background, (0,0))
+    context.drawer.surface_loader.networking_surface.blit(context.drawer.text_renderer.multiplayer_menu_text, context.drawer.rects.multiplayer_menu_rect)
+    context.animator.animate_loading(dt, context.drawer.surface_loader.networking_surface)
+    context.drawer.draw_menu(context.drawer.surface_loader.networking_surface, menu_active, dt)
+    context.screen.display_surface.blit(context.drawer.surface_loader.networking_surface, (0,0))
 
 def draw_cards(surface):
 
     #draw pile
-    surface.blit(drawer.image_loader.blue_back, (surface.get_width() * 4/9 - constants.CARD_WIDTH / 2, surface.get_height() / 2 - constants.CARD_HEIGHT / 2))
+    surface.blit(context.drawer.image_loader.blue_back, (surface.get_width() * 4/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
 
     #outline when discard pile is empty
-    pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - constants.CARD_WIDTH / 2, surface.get_height() / 2 - constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
+    pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
     
     #drawing the opponents hand
-    for card in opp_hand.cards:
+    for card in context.opp_hand.cards:
         if card.visible:
             #surface.blit(blue_back, card.loc)
-            surface.blit(drawer.image_loader.card_images[card.name], card.loc)
+            surface.blit(context.drawer.image_loader.card_images[card.name], card.loc)
 
     #discard pile
-    if discard_pile.cards:
-        if len(discard_pile.cards) > 1:
+    if context.discard_pile.cards:
+        if len(context.discard_pile.cards) > 1:
             #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[len(discard_pile.cards) - 2].name}')
-            discard_top = drawer.image_loader.card_images[discard_pile.cards[-2].name]
-            surface.blit(discard_top, (surface.get_width() * 5/9 - constants.CARD_WIDTH / 2, surface.get_height() / 2 - constants.CARD_HEIGHT / 2))
-        if discard_pile.cards[-1].visible:
+            discard_top = context.drawer.image_loader.card_images[context.discard_pile.cards[-2].name]
+            surface.blit(discard_top, (surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
+        if context.discard_pile.cards[-1].visible:
             #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
-            discard_top = drawer.image_loader.card_images[discard_pile.cards[-1].name]
-            surface.blit(discard_top, (surface.get_width() * 5/9 - constants.CARD_WIDTH / 2, surface.get_height() / 2 - constants.CARD_HEIGHT / 2))
+            discard_top = context.drawer.image_loader.card_images[context.discard_pile.cards[-1].name]
+            surface.blit(discard_top, (surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
 
     #drawing the hand while you're holding a card
     if active_card:
         active_card_x = active_card.loc[0]
-        for card in hand.cards:
+        for card in context.hand.cards:
             if card.loc[0] < active_card_x: #draw all the card before the active card first
-                surface.blit(drawer.image_loader.card_images[card.name], (card.loc))
-        surface.blit(drawer.image_loader.card_images[active_card.name], (active_card.loc)) #draw the active card
-        for card in hand.cards:
+                surface.blit(context.drawer.image_loader.card_images[card.name], (card.loc))
+        surface.blit(context.drawer.image_loader.card_images[active_card.name], (active_card.loc)) #draw the active card
+        for card in context.hand.cards:
             if card.loc[0] > active_card_x: #draw all the cards after the active card last
-                surface.blit(drawer.image_loader.card_images[card.name], (card.loc))
+                surface.blit(context.drawer.image_loader.card_images[card.name], (card.loc))
     else:
-        for card in hand.cards:
+        for card in context.hand.cards:
             if card.visible:
-                surface.blit(drawer.image_loader.card_images[card.name], (card.loc))
+                surface.blit(context.drawer.image_loader.card_images[card.name], (card.loc))
          
 #def draw_menu(menu_x, hamburger_x, surface):
 # def draw_menu(surface):
 #     if menu_active: #opening the menu
 #         #hamburger_tx = -1.5 * hamburger_width
-#         screen.hamburger_x = max(screen.hamburger_x - (constants.MENU_SPEED * dt), -1.5 * constants.HAMBURGER_WIDTH) #moves the hamburger from the other value to x=-1.5 * hamburger_width
-#         screen.menu_x = min(screen.menu_x + (constants.MENU_SPEED * dt), 0)
-#         drawer.rects.update_option_rects()
+#         context.screen.hamburger_x = max(context.screen.hamburger_x - (constants.MENU_SPEED * dt), -1.5 * constants.HAMBURGER_WIDTH) #moves the hamburger from the other value to x=-1.5 * hamburger_width
+#         context.screen.menu_x = min(context.screen.menu_x + (constants.MENU_SPEED * dt), 0)
+#         context.drawer.rects.update_option_rects()
 #         #surface.blit(side_overlay, (menu_x, 0))
-#         surface.blit(drawer.surface_loader.side_overlay, (screen.menu_x, 0))
-#         #option_width = screen.display_width/10
-#         #option_height = screen.display_height/15
-#         #option_left = menu_x + screen.menu_width/2 - option_width/2
-#         #option_top = screen.display_height/11
+#         surface.blit(context.drawer.surface_loader.side_overlay, (context.screen.menu_x, 0))
+#         #option_width = context.screen.display_width/10
+#         #option_height = context.screen.display_height/15
+#         #option_left = menu_x + context.screen.menu_width/2 - option_width/2
+#         #option_top = context.screen.display_height/11
 #         #r_option_rect = pygame.Rect(option_left, option_top, option_width, option_height) #retry option
 #         #r_option_text = medium_font.render("Retry", True, WHITE)
 #         #mm_option_rect = pygame.Rect(option_left, option_top*2, option_width, option_height) #main menu option
@@ -679,51 +690,51 @@ def draw_cards(surface):
 #         #s_option_text = medium_font.render("Settings", True, WHITE)
 #         #qg_option_rect = pygame.Rect(option_left, option_top*5, option_width, option_height) #quit game option
 #         #qg_option_text = medium_font.render("Quit Game", True, WHITE)
-#         surface.blit(drawer.text_renderer.r_option_text, drawer.text_renderer.r_option_text.get_rect(center=drawer.rects.r_option_rect.center)) #retry option
-#         surface.blit(drawer.text_renderer.mm_option_text, drawer.text_renderer.mm_option_text.get_rect(center=drawer.rects.mm_option_rect.center)) #main menu option
-#         surface.blit(drawer.text_renderer.c_option_text, drawer.text_renderer.c_option_text.get_rect(center=drawer.rects.c_option_rect.center)) #customize option
-#         surface.blit(drawer.text_renderer.s_option_text, drawer.text_renderer.s_option_text.get_rect(center=drawer.rects.s_option_rect.center)) #settings option
-#         surface.blit(drawer.text_renderer.qg_option_text, drawer.text_renderer.qg_option_text.get_rect(center=drawer.rects.qg_option_rect.center)) #quit game option
+#         surface.blit(context.drawer.text_renderer.r_option_text, context.drawer.text_renderer.r_option_text.get_rect(center=context.drawer.rects.r_option_rect.center)) #retry option
+#         surface.blit(context.drawer.text_renderer.mm_option_text, context.drawer.text_renderer.mm_option_text.get_rect(center=context.drawer.rects.mm_option_rect.center)) #main menu option
+#         surface.blit(context.drawer.text_renderer.c_option_text, context.drawer.text_renderer.c_option_text.get_rect(center=context.drawer.rects.c_option_rect.center)) #customize option
+#         surface.blit(context.drawer.text_renderer.s_option_text, context.drawer.text_renderer.s_option_text.get_rect(center=context.drawer.rects.s_option_rect.center)) #settings option
+#         surface.blit(context.drawer.text_renderer.qg_option_text, context.drawer.text_renderer.qg_option_text.get_rect(center=context.drawer.rects.qg_option_rect.center)) #quit game option
 
 #     else: #closing the menu
 
-#         surface.blit(drawer.surface_loader.side_overlay, (screen.menu_x, 0))
-#         screen.hamburger_x = min(screen.hamburger_x + (constants.MENU_SPEED * dt), 30) #moves the hamburger from x=30 to the other value
-#         screen.menu_x = max(screen.menu_x - (constants.MENU_SPEED * dt), -1.5 * screen.menu_width)
-#         drawer.rects.update_option_rects()
+#         surface.blit(context.drawer.surface_loader.side_overlay, (context.screen.menu_x, 0))
+#         context.screen.hamburger_x = min(context.screen.hamburger_x + (constants.MENU_SPEED * dt), 30) #moves the hamburger from x=30 to the other value
+#         context.screen.menu_x = max(context.screen.menu_x - (constants.MENU_SPEED * dt), -1.5 * context.screen.menu_width)
+#         context.drawer.rects.update_option_rects()
 
-#         surface.blit(drawer.text_renderer.r_option_text, drawer.text_renderer.r_option_text.get_rect(center=drawer.rects.r_option_rect.center)) #retry option
-#         surface.blit(drawer.text_renderer.mm_option_text, drawer.text_renderer.mm_option_text.get_rect(center=drawer.rects.mm_option_rect.center)) #main menu option
-#         surface.blit(drawer.text_renderer.c_option_text, drawer.text_renderer.c_option_text.get_rect(center=drawer.rects.c_option_rect.center)) #customize option
-#         surface.blit(drawer.text_renderer.s_option_text, drawer.text_renderer.s_option_text.get_rect(center=drawer.rects.s_option_rect.center)) #settings option
-#         surface.blit(drawer.text_renderer.qg_option_text, drawer.text_renderer.qg_option_text.get_rect(center=drawer.rects.qg_option_rect.center)) #quit game option
+#         surface.blit(context.drawer.text_renderer.r_option_text, context.drawer.text_renderer.r_option_text.get_rect(center=context.drawer.rects.r_option_rect.center)) #retry option
+#         surface.blit(context.drawer.text_renderer.mm_option_text, context.drawer.text_renderer.mm_option_text.get_rect(center=context.drawer.rects.mm_option_rect.center)) #main menu option
+#         surface.blit(context.drawer.text_renderer.c_option_text, context.drawer.text_renderer.c_option_text.get_rect(center=context.drawer.rects.c_option_rect.center)) #customize option
+#         surface.blit(context.drawer.text_renderer.s_option_text, context.drawer.text_renderer.s_option_text.get_rect(center=context.drawer.rects.s_option_rect.center)) #settings option
+#         surface.blit(context.drawer.text_renderer.qg_option_text, context.drawer.text_renderer.qg_option_text.get_rect(center=context.drawer.rects.qg_option_rect.center)) #quit game option
 
 #     #menu icon
-#     pygame.draw.rect(surface, "white", pygame.Rect(screen.hamburger_x,30,constants.HAMBURGER_WIDTH,8))
-#     pygame.draw.rect(surface, "white", pygame.Rect(screen.hamburger_x,45,constants.HAMBURGER_WIDTH,8))
-#     pygame.draw.rect(surface, "white", pygame.Rect(screen.hamburger_x,60,constants.HAMBURGER_WIDTH,8))
+#     pygame.draw.rect(surface, "white", pygame.Rect(context.screen.hamburger_x,30,constants.HAMBURGER_WIDTH,8))
+#     pygame.draw.rect(surface, "white", pygame.Rect(context.screen.hamburger_x,45,constants.HAMBURGER_WIDTH,8))
+#     pygame.draw.rect(surface, "white", pygame.Rect(context.screen.hamburger_x,60,constants.HAMBURGER_WIDTH,8))
 
     ##return hamburger_x
 
 def draw_buttons(surface):
-    pygame.draw.rect(surface, (200, 200, 200), drawer.rects.sort_rect_rank, border_radius=8)
-    pygame.draw.rect(surface, constants.BLACK, drawer.rects.sort_rect_rank, 2, border_radius=8)
-    pygame.draw.rect(surface, (200, 200, 200), drawer.rects.sort_rect_suit, border_radius=8)
-    pygame.draw.rect(surface, constants.BLACK, drawer.rects.sort_rect_suit, 2, border_radius=8)
-    surface.blit(drawer.text_renderer.sort_rank_text, drawer.text_renderer.sort_rank_text.get_rect(center=drawer.rects.sort_rect_rank.center))
-    surface.blit(drawer.text_renderer.sort_suit_text, drawer.text_renderer.sort_suit_text.get_rect(center=drawer.rects.sort_rect_suit.center))
+    pygame.draw.rect(surface, (200, 200, 200), context.drawer.rects.sort_rect_rank, border_radius=8)
+    pygame.draw.rect(surface, context.constants.BLACK, context.drawer.rects.sort_rect_rank, 2, border_radius=8)
+    pygame.draw.rect(surface, (200, 200, 200), context.drawer.rects.sort_rect_suit, border_radius=8)
+    pygame.draw.rect(surface, context.constants.BLACK, context.drawer.rects.sort_rect_suit, 2, border_radius=8)
+    surface.blit(context.drawer.text_renderer.sort_rank_text, context.drawer.text_renderer.sort_rank_text.get_rect(center=context.drawer.rects.sort_rect_rank.center))
+    surface.blit(context.drawer.text_renderer.sort_suit_text, context.drawer.text_renderer.sort_suit_text.get_rect(center=context.drawer.rects.sort_rect_suit.center))
 
     #player knock button
-    if hand.can_knock:
-        pygame.draw.rect(surface, (200, 200, 200), drawer.rects.player_knock_rect, border_radius=8)
-        pygame.draw.rect(surface, constants.BLACK, drawer.rects.player_knock_rect, 2, border_radius=8)
-        surface.blit(drawer.text_renderer.player_knock_text, drawer.text_renderer.player_knock_text.get_rect(center=drawer.rects.player_knock_rect.center))
+    if context.hand.can_knock:
+        pygame.draw.rect(surface, (200, 200, 200), context.drawer.rects.player_knock_rect, border_radius=8)
+        pygame.draw.rect(surface, context.constants.BLACK, context.drawer.rects.player_knock_rect, 2, border_radius=8)
+        surface.blit(context.drawer.text_renderer.player_knock_text, context.drawer.text_renderer.player_knock_text.get_rect(center=context.drawer.rects.player_knock_rect.center))
 
     #opponent knock button
-    if opp_hand.can_knock:
-        pygame.draw.rect(surface, (200, 200, 200), drawer.rects.opp_knock_rect, border_radius=8)
-        pygame.draw.rect(surface, constants.BLACK, drawer.rects.opp_knock_rect, 2, border_radius=8)
-        surface.blit(drawer.text_renderer.opp_knock_text, drawer.text_renderer.opp_knock_text.get_rect(center=drawer.rects.opp_knock_rect.center))
+    if context.opp_hand.can_knock:
+        pygame.draw.rect(surface, (200, 200, 200), context.drawer.rects.opp_knock_rect, border_radius=8)
+        pygame.draw.rect(surface, context.constants.BLACK, context.drawer.rects.opp_knock_rect, 2, border_radius=8)
+        surface.blit(context.drawer.text_renderer.opp_knock_text, context.drawer.text_renderer.opp_knock_text.get_rect(center=context.drawer.rects.opp_knock_rect.center))
 
 def animate_card_flip(back_img, front_img, start_pos, end_pos, duration, surface, card, turn):
     if turn == 1:
@@ -757,34 +768,34 @@ def animate_card_flip(back_img, front_img, start_pos, end_pos, duration, surface
         else: #opp turn
 
             #draw pile
-            surface.blit(drawer.image_loader.blue_back, (surface.get_width() * 4/9 - constants.CARD_WIDTH / 2, surface.get_height() / 2 - constants.CARD_HEIGHT / 2))
+            surface.blit(context.drawer.image_loader.blue_back, (surface.get_width() * 4/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
 
             #outline when discard pile is empty
-            pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - constants.CARD_WIDTH / 2, surface.get_height() / 2 - constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
+            pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
 
             #discard pile
-            if discard_pile.cards:
-                if len(discard_pile.cards) > 1:
+            if context.discard_pile.cards:
+                if len(context.discard_pile.cards) > 1:
                     #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[len(discard_pile.cards) - 2].name}')
-                    discard_top = drawer.image_loader.card_images[discard_pile.cards[-2].name]
-                    surface.blit(discard_top, (surface.get_width() * 5/9 - constants.CARD_WIDTH / 2, surface.get_height() / 2 - constants.CARD_HEIGHT / 2))
-                if discard_pile.cards[-1].visible:
+                    discard_top = context.drawer.image_loader.card_images[context.discard_pile.cards[-2].name]
+                    surface.blit(discard_top, (surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
+                if context.discard_pile.cards[-1].visible:
                     #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
-                    discard_top = drawer.image_loader.card_images[discard_pile.cards[-1].name]
-                    surface.blit(discard_top, (surface.get_width() * 5/9 - constants.CARD_WIDTH / 2, surface.get_height() / 2 - constants.CARD_HEIGHT / 2))
+                    discard_top = context.drawer.image_loader.card_images[context.discard_pile.cards[-1].name]
+                    surface.blit(discard_top, (surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
 
-            index = opp_hand.cards.index(card)
+            index = context.opp_hand.cards.index(card)
             for i in range(index):#cards before
-                surface.blit(drawer.image_loader.blue_back, opp_hand.cards[i].loc)
+                surface.blit(context.drawer.image_loader.blue_back, context.opp_hand.cards[i].loc)
             if card.visible: #animated card
                 surface.blit(scaled_image, (draw_x, draw_y))
-            for i in range(index + 1, len(opp_hand.cards)): #cards after
-                surface.blit(drawer.image_loader.blue_back, opp_hand.cards[i].loc)
-            for player_card in hand.cards: #player hand
-                surface.blit(drawer.image_loader.card_images[player_card.name], player_card.loc)
+            for i in range(index + 1, len(context.opp_hand.cards)): #cards after
+                surface.blit(context.drawer.image_loader.blue_back, context.opp_hand.cards[i].loc)
+            for player_card in context.hand.cards: #player hand
+                surface.blit(context.drawer.image_loader.card_images[player_card.name], player_card.loc)
         
-        drawer.draw_menu(surface, menu_active, dt)
-        screen.display_surface.blit(surface, (0,0))
+        context.drawer.draw_menu(surface, menu_active, dt)
+        context.screen.display_surface.blit(surface, (0,0))
         pygame.display.flip()
     card.visible = True
     #return hamburger_x  
@@ -808,135 +819,147 @@ def animate_card_slide_move(front_img, start_pos, end_pos, duration, surface, ca
         else: #opp turn
             
             #draw pile
-            surface.blit(drawer.image_loader.blue_back, (surface.get_width() * 4/9 - constants.CARD_WIDTH / 2, surface.get_height() / 2 - constants.CARD_HEIGHT / 2))
+            surface.blit(context.drawer.image_loader.blue_back, (surface.get_width() * 4/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
 
             #outline when discard pile is empty
-            pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - constants.CARD_WIDTH / 2, surface.get_height() / 2 - constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
+            pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
 
             #discard pile
-            if discard_pile.cards:
-                if len(discard_pile.cards) > 1:
+            if context.discard_pile.cards:
+                if len(context.discard_pile.cards) > 1:
                     #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[len(discard_pile.cards) - 2].name}')
-                    discard_top = drawer.image_loader.card_images[discard_pile.cards[-2].name]
-                    surface.blit(discard_top, (surface.get_width() * 5/9 - constants.CARD_WIDTH / 2, surface.get_height() / 2 - constants.CARD_HEIGHT / 2))
-                if discard_pile.cards[-1].visible:
+                    discard_top = context.drawer.image_loader.card_images[context.discard_pile.cards[-2].name]
+                    surface.blit(discard_top, (surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
+                if context.discard_pile.cards[-1].visible:
                     #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
-                    discard_top = drawer.image_loader.card_images[discard_pile.cards[-1].name]
-                    surface.blit(discard_top, (surface.get_width() * 5/9 - constants.CARD_WIDTH / 2, surface.get_height() / 2 - constants.CARD_HEIGHT / 2))
+                    discard_top = context.drawer.image_loader.card_images[context.discard_pile.cards[-1].name]
+                    surface.blit(discard_top, (surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
 
-            index = opp_hand.cards.index(card)
+            index = context.opp_hand.cards.index(card)
             for i in range(index):#cards before
-                surface.blit(drawer.image_loader.blue_back, opp_hand.cards[i].loc)
+                surface.blit(context.drawer.image_loader.blue_back, context.opp_hand.cards[i].loc)
             if card.visible: #animated card
-                surface.blit(drawer.image_loader.blue_back, (x, y))
-            for i in range(index + 1, len(opp_hand.cards)): #cards after
-                surface.blit(drawer.image_loader.blue_back, opp_hand.cards[i].loc)
-            for player_card in hand.cards: #player hand
-                surface.blit(drawer.image_loader.card_images[player_card.name], player_card.loc)
+                surface.blit(context.drawer.image_loader.blue_back, (x, y))
+            for i in range(index + 1, len(context.opp_hand.cards)): #cards after
+                surface.blit(context.drawer.image_loader.blue_back, context.opp_hand.cards[i].loc)
+            for player_card in context.hand.cards: #player hand
+                surface.blit(context.drawer.image_loader.card_images[player_card.name], player_card.loc)
         
-        drawer.draw_menu(surface, menu_active, dt)
-        screen.display_surface.blit(surface, (0,0))
+        context.drawer.draw_menu(surface, menu_active, dt)
+        context.screen.display_surface.blit(surface, (0,0))
         pygame.display.flip()
     card.visible = True
     #return hamburger_x 
 
 def update_title_background(test):
     test -= dt
-    if test <= -drawer.image_loader.title_background_width:
+    if test <= -context.drawer.image_loader.title_background_width:
         test = 0
 
-    screen.display_surface.blit(drawer.image_loader.title_background, (int(test), 0))
-    screen.display_surface.blit(drawer.image_loader.title_background, (int(test + drawer.image_loader.title_background_width), 0))  
-    screen.display_surface.blit(drawer.text_renderer.start_text, drawer.rects.start_rect)
-    screen.display_surface.blit(drawer.text_renderer.multiplayer_text, drawer.rects.multiplayer_rect)
+    context.screen.display_surface.blit(context.drawer.image_loader.title_background, (int(test), 0))
+    context.screen.display_surface.blit(context.drawer.image_loader.title_background, (int(test + context.drawer.image_loader.title_background_width), 0))  
+    context.screen.display_surface.blit(context.drawer.text_renderer.start_text, context.drawer.rects.start_rect)
+    context.screen.display_surface.blit(context.drawer.text_renderer.multiplayer_text, context.drawer.rects.multiplayer_rect)
 
 updateLocations()
-sort_cards_rank(opp_hand)
+sort_cards_rank(context.opp_hand)
 load_hand()
-x_offset, singleplayer = show_start_screen() #menu starts here and waits for enter or shift
-mixer.shuffle_sound.play()
+#x_offset, singleplayer = show_start_context.screen() #menu starts here and waits for enter or shift
+context.audio.shuffle_sound.play()
+#singleplayer = True
 
 
 
-#shows the screen wipe
+
+#shows the context.screen wipe
 # if singleplayer and not animator.title_wipe.finished:
-#     draw_game_screen()
-#     #animator.animate_title_wipe(dt, drawer.surface_loader.game_surface)
+#     draw_game_context.screen()
+#     #animator.animate_title_wipe(dt, context.drawer.surface_loader.game_surface)
 #     test = 0
-#     for wipe_x in range(0, screen.display_width + 1, constants.TITLE_WIPE_SPEED):
+#     for wipe_x in range(0, context.screen.display_width + 1, constants.TITLE_WIPE_SPEED):
 #         #update_title_background(test)
 #         #update_title_background(x_offset)
 #         #x_offset -= 0.5
-#         #screen.display_surface.blit(drawer.surface_loader.game_surface, (0, 0), area=pygame.Rect(0, 0, wipe_x, screen.display_height))
+#         #context.screen.display_surface.blit(context.drawer.surface_loader.game_surface, (0, 0), area=pygame.Rect(0, 0, wipe_x, context.screen.display_height))
+#         pygame.display.flip()
+#         clock.tick(200)
+# else: #else multiplayer:
+
+#     draw_networking_context.screen(dt)
+#     for wipe_x in range(context.screen.display_width, -1, -constants.TITLE_WIPE_SPEED):
+#         update_title_background(x_offset)
+#         x_offset -= 0.5
+#         context.screen.display_surface.blit(context.drawer.surface_loader.networking_surface, (0,0), area=pygame.Rect(-wipe_x, 0, context.screen.display_width, context.screen.display_height))
 #         pygame.display.flip()
 #         clock.tick(200)
 
-while running:
-    dt = clock.tick(200) / 1000 #fps 
-
-    if singleplayer and not animator.title_wipe.finished:
-        draw_game_screen()
-        animator.animate_title_background(dt, drawer.surface_loader.game_surface)
-        animator.animate_title_wipe(dt, drawer.surface_loader.game_surface)
-
-
-#COME BACK TO THIS AFTER FINISHING THE TITLE WIPE
-
-
-
-    # else: #else multiplayer:
-
-    #     draw_networking_screen(dt)
-    #     for wipe_x in range(screen.display_width, -1, -constants.TITLE_WIPE_SPEED):
-    #         update_title_background(x_offset)
-    #         x_offset -= 0.5
-    #         screen.display_surface.blit(drawer.surface_loader.networking_surface, (0,0), area=pygame.Rect(-wipe_x, 0, screen.display_width, screen.display_height))
-    #         pygame.display.flip()
-    #         clock.tick(200)
-
     #     mixer.start_networking_music()
+
+while state_manager.running:
+    dt = context.clock.tick(200) / 1000 #fps
+
+    # while waiting:
+    #     animator.animate_title_background(dt, context.drawer.surface_loader.game_surface)
+    #     context.screen.display_surface.blit(context.drawer.surface_loader.game_surface, (0,0))
+
+        # if not animator.title_wipe.finished:
+        #     draw_game_context.screen()
+        #     animator.animate_title_wipe(dt, context.drawer.surface_loader.game_surface)
+        #     singleplayer = True
+        #     waiting = False
+
 
     for event in pygame.event.get():
 
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                running = False
-            if event.key == pygame.K_RETURN:
+        #ultimate goal
+        state_manager.handle_event(event)
+
+        # if event.type == pygame.QUIT:
+        #     running = False
+        # if event.type == pygame.KEYDOWN:
+        #     if event.key == pygame.K_ESCAPE:
+        #         running = False
+        #     if event.key == pygame.K_RETURN:
                 
-                if round_overlay:
-                    if hand.score >= 100 or opp_hand.score >= 100:
-                        print("game over")
-                    else:
-                        # save scores
-                        saved_player_score = hand.score
-                        saved_opp_score = opp_hand.score
+                
+        #         #COME BACK FOR THIS IN THE FUTURE --------------------------------------------------------------------------
+
+        #         if round_overlay: #probably move this block within the game state in the future
+
+        #             if hand.score >= 100 or opp_hand.score >= 100:
+        #                 print("game over")
+        #             else:
+        #                 # save scores
+        #                 saved_player_score = hand.score
+        #                 saved_opp_score = opp_hand.score
                         
-                        # reset everything
-                        deck = Deck()
-                        hand = Hand(deck)
-                        discard_pile = DiscardPile(deck)
-                        opp_hand = Hand(deck)
+        #                 # reset everything
+        #                 deck = Deck()
+        #                 hand = Hand(deck)
+        #                 discard_pile = DiscardPile(deck)
+        #                 opp_hand = Hand(deck)
                         
-                        # restore scores
-                        hand.score = saved_player_score
-                        opp_hand.score = saved_opp_score
+        #                 # restore scores
+        #                 hand.score = saved_player_score
+        #                 opp_hand.score = saved_opp_score
                         
-                        # reset round state
-                        round_overlay = False
-                        player_knock = False
-                        computer_knock = False
-                        knocking = False
-                        turn = 1
-                        player_turn = 1
-                        drawer.text_renderer.player_score_text = None
-                        drawer.text_renderer.opp_score_text = None
+        #                 # reset round state
+        #                 round_overlay = False
+        #                 player_knock = False
+        #                 computer_knock = False
+        #                 knocking = False
+        #                 turn = 1
+        #                 player_turn = 1
+        #                 context.drawer.text_renderer.player_score_text = None
+        #                 context.drawer.text_renderer.opp_score_text = None
                         
-                        updateLocations()
-                        sort_cards_rank(opp_hand)
-                        load_hand()
-                        horizontal_shift = (((screen.display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
+        #                 updateLocations()
+        #                 sort_cards_rank(opp_hand)
+        #                 load_hand()
+        #                 horizontal_shift = (((context.screen.display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
+                
+        #     if event.key == pygame.K_LSHIFT:
+        #         state_manager.set("networking")
 
 
 
@@ -946,70 +969,70 @@ while running:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     
-                    if drawer.rects.menu_rect.collidepoint(event.pos):
+                    if context.drawer.rects.menu_rect.collidepoint(event.pos):
                         menu_active = True
 
-                    if drawer.rects.main_menu_overlay_rect.collidepoint(event.pos): #close the menu if it's open and you click off
+                    if context.drawer.rects.main_menu_overlay_rect.collidepoint(event.pos): #close the menu if it's open and you click off
                         menu_active = False
                     
                     if menu_active: #menu options
-                        drawer.rects.update_option_rects()
-                        if drawer.rects.mm_option_rect.collidepoint(event.pos):
+                        context.drawer.rects.update_option_rects()
+                        if context.drawer.rects.mm_option_rect.collidepoint(event.pos):
                             restart_from_main_menu = True
-                        if drawer.rects.qg_option_rect.collidepoint(event.pos):
-                            running = False
-                        if drawer.rects.r_option_rect.collidepoint(event.pos):
+                        if context.drawer.rects.qg_option_rect.collidepoint(event.pos):
+                            state_manager.running = False
+                        if context.drawer.rects.r_option_rect.collidepoint(event.pos):
                             restart = True
 
                     #game interactions start here
-                    for card in reversed(hand.cards):
-                        if card == hand.cards[-1]:      #if card is on the right, it's rect is larger
+                    for card in reversed(context.hand.cards):
+                        if card == context.hand.cards[-1]:      #if card is on the right, it's rect is larger
                             card_rect = pygame.Rect(card.loc[0], card.loc[1], 73, 98)
                         else:                           #else we need to modify the rect to match the size
-                            card_rect = pygame.Rect(card.loc[0], card.loc[1], ((screen.display_surface.get_width() / 3) / (len(hand.cards) - 1)) * 0.8, 98)
+                            card_rect = pygame.Rect(card.loc[0], card.loc[1], ((context.screen.display_surface.get_width() / 3) / (len(context.hand.cards) - 1)) * 0.8, 98)
 
                         if card_rect.collidepoint(event.pos): #if mousedown on a card rect
                             clicked = True
                             active_card = card
                             active_card.dragging = True
                             original_loc = active_card.loc
-                            original_index = hand.cards.index(active_card)
+                            original_index = context.hand.cards.index(active_card)
                             card_x = event.pos[0] - active_card.loc[0]
                             card_y = event.pos[1] - active_card.loc[1]
                             break
-                        elif drawer.rects.draw_rect.collidepoint(event.pos):
+                        elif context.drawer.rects.draw_rect.collidepoint(event.pos):
                             if turn == 1:
-                                random.choice(mixer.thwip_sounds).play()
-                                drawn_card = drawCard(deck, hand)
-                                animate_card_flip(drawer.image_loader.blue_back, drawer.image_loader.card_images[drawn_card.name], drawer.rects.draw_rect.center, (hand.cards[-1].loc[0] + 73/2, hand.cards[-1].loc[1] + 98/2), constants.CARD_MOVEMENT_SPEED, drawer.surface_loader.game_surface, drawn_card, turn)
+                                random.choice(context.audio.thwip_sounds).play()
+                                drawn_card = drawCard(context.deck, context.hand)
+                                animate_card_flip(context.drawer.image_loader.blue_back, context.drawer.image_loader.card_images[drawn_card.name], context.drawer.rects.draw_rect.center, (context.hand.cards[-1].loc[0] + 73/2, context.hand.cards[-1].loc[1] + 98/2), context.constants.CARD_MOVEMENT_SPEED, context.drawer.surface_loader.game_surface, drawn_card, turn)
                                 drawn_card = None
-                                horizontal_shift = (((screen.display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
-                                hand.melds = update_melds(hand)
-                                if can_knock(hand.melds, hand.cards):
-                                    hand.can_knock = True
+                                horizontal_shift = (((context.screen.display_surface.get_width() / 3) / len(context.hand.cards)) * 0.8)
+                                context.hand.melds = update_melds(context.hand)
+                                if can_knock(context.hand.melds, context.hand.cards):
+                                    context.hand.can_knock = True
                                 turn *= -1
                                 break
-                        elif drawer.rects.discard_rect.collidepoint(event.pos):
+                        elif context.drawer.rects.discard_rect.collidepoint(event.pos):
                             if turn == 1:
-                                mixer.slide_sound.play()
-                                drawn_card = pickup_discard(hand)
-                                animate_card_slide_move(drawer.image_loader.card_images[drawn_card.name], drawer.rects.discard_rect.center, (hand.cards[-1].loc[0], hand.cards[-1].loc[1]), constants.CARD_MOVEMENT_SPEED, drawer.surface_loader.game_surface, drawn_card, turn)
+                                context.audio.slide_sound.play()
+                                drawn_card = pickup_discard(context.hand)
+                                animate_card_slide_move(context.drawer.image_loader.card_images[drawn_card.name], context.drawer.rects.discard_rect.center, (context.hand.cards[-1].loc[0], context.hand.cards[-1].loc[1]), context.constants.CARD_MOVEMENT_SPEED, context.drawer.surface_loader.game_surface, drawn_card, turn)
                                 drawn_card = None
-                                horizontal_shift = (((screen.display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
-                                hand.melds = update_melds(hand)
-                                if can_knock(hand.melds, hand.cards):
-                                    hand.can_knock = True
+                                horizontal_shift = (((context.screen.display_surface.get_width() / 3) / len(context.hand.cards)) * 0.8)
+                                context.hand.melds = update_melds(context.hand)
+                                if can_knock(context.hand.melds, context.hand.cards):
+                                    context.hand.can_knock = True
                                 #if discard_pile.cards:
                                 #    discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
                                 #    discard_top = card_images[discard_pile.cards[-1].name]
                                 #    pass
                                 turn *= -1
                                 break
-                        elif drawer.rects.sort_rect_rank.collidepoint(event.pos):
-                            sort_cards_rank(hand)
-                        elif drawer.rects.sort_rect_suit.collidepoint(event.pos):
-                            sort_cards_suit(hand)
-                        elif drawer.rects.player_knock_rect.collidepoint(event.pos):
+                        elif context.drawer.rects.sort_rect_rank.collidepoint(event.pos):
+                            sort_cards_rank(context.hand)
+                        elif context.drawer.rects.sort_rect_suit.collidepoint(event.pos):
+                            sort_cards_suit(context.hand)
+                        elif context.drawer.rects.player_knock_rect.collidepoint(event.pos):
                             knocking = True
 
             elif event.type == pygame.MOUSEMOTION and clicked == True:
@@ -1027,7 +1050,7 @@ while running:
                     shi = None #starting hover index
 
                     if original_loc[0] > active_card.loc[0]: #if you moved the active card to the left
-                        for i, card in enumerate(hand.cards):
+                        for i, card in enumerate(context.hand.cards):
                             if card.hovered_x and card is not active_card:
                                 shi = i
                                 break
@@ -1035,24 +1058,24 @@ while running:
                             shi = original_index
                         placeholder = active_card
                         for i in range(original_index, shi, -1):
-                            hand.cards[i] = hand.cards[i-1]
-                        hand.cards[shi] = placeholder
+                            context.hand.cards[i] = context.hand.cards[i-1]
+                        context.hand.cards[shi] = placeholder
 
                     elif original_loc[0] < active_card.loc[0]: #if you moved the active card to the right
-                        for i in range(len(hand.cards)-1, -1, -1):
-                            if hand.cards[i].hovered_x and hand.cards[i] != active_card:
+                        for i in range(len(context.hand.cards)-1, -1, -1):
+                            if context.hand.cards[i].hovered_x and context.hand.cards[i] != active_card:
                                 shi = i
                                 break
                         if shi is None:
                             shi = original_index
                         placeholder = active_card
                         for i in range(original_index, shi, 1):
-                            hand.cards[i] = hand.cards[i+1]
-                        hand.cards[shi] = placeholder
+                            context.hand.cards[i] = context.hand.cards[i+1]
+                        context.hand.cards[shi] = placeholder
 
-                    if drawer.rects.discard_rect.collidepoint(event.pos) and turn == -1:
-                        discard(hand, active_card)
-                        horizontal_shift = (((screen.display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
+                    if context.drawer.rects.discard_rect.collidepoint(event.pos) and turn == -1:
+                        discard(context.hand, active_card)
+                        horizontal_shift = (((context.screen.display_surface.get_width() / 3) / len(context.hand.cards)) * 0.8)
                         #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
 
 
@@ -1068,7 +1091,7 @@ while running:
 
                     updateLocations()
 
-                    for card in hand.cards:
+                    for card in context.hand.cards:
                         card.hovered_x = False
 
                     active_card = None
@@ -1077,35 +1100,35 @@ while running:
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    if drawer.rects.menu_rect.collidepoint(event.pos):
+                    if context.drawer.rects.menu_rect.collidepoint(event.pos):
                         menu_active = True
 
-                    if drawer.rects.main_menu_overlay_rect.collidepoint(event.pos): #close the menu if it's open and you click off
+                    if context.drawer.rects.main_menu_overlay_rect.collidepoint(event.pos): #close the menu if it's open and you click off
                         menu_active = False
                     
                     if menu_active: #menu options
-                        drawer.rects.update_option_rects()
-                        if drawer.rects.mm_option_rect.collidepoint(event.pos):
+                        context.drawer.rects.update_option_rects()
+                        if context.drawer.rects.mm_option_rect.collidepoint(event.pos):
                             restart_from_main_menu = True
-                        if drawer.rects.qg_option_rect.collidepoint(event.pos):
+                        if context.drawer.rects.qg_option_rect.collidepoint(event.pos):
                             running = False
-                        if drawer.rects.r_option_rect.collidepoint(event.pos):
+                        if context.drawer.rects.r_option_rect.collidepoint(event.pos):
                             restart = True
 
     #hover_y logic
     mouse_x, mouse_y = pygame.mouse.get_pos()
     hover_candidate_y = None
 
-    for card in reversed(hand.cards):
+    for card in reversed(context.hand.cards):
         if card.dragging:
             continue
-        width = 73 if card == hand.cards[-1] else (screen.display_surface.get_width() / 3) / max(len(hand.cards) - 1, 1) * 0.8
+        width = 73 if card == context.hand.cards[-1] else (context.screen.display_surface.get_width() / 3) / max(len(context.hand.cards) - 1, 1) * 0.8
         rect = pygame.Rect(card.loc[0], card.base_y, width, 98)
         if rect.collidepoint((mouse_x, mouse_y)):
             hover_candidate_y = card
             break
 
-    for card in hand.cards:
+    for card in context.hand.cards:
         if card is hover_candidate_y and not clicked:
             card.hovered_y = True
             card.target_y = card.base_y - card.vertical_offset
@@ -1115,7 +1138,7 @@ while running:
             card.hovered_y = False
             card.target_y = card.base_y
 
-    for card in hand.cards:
+    for card in context.hand.cards:
         if card.dragging:
             continue
         x, y = card.loc
@@ -1133,7 +1156,7 @@ while running:
 
     #hover_x logic
     if active_card:
-        for i, card in enumerate(hand.cards):
+        for i, card in enumerate(context.hand.cards):
             if card.dragging:
                 continue
             if card.loc[0] > active_card.loc[0] and i < original_index and card != active_card: #moving active card to the left
@@ -1163,106 +1186,106 @@ while running:
     #---------------------------------------Drawing Starts Here---------------------------------------#
 
     if singleplayer:
-        # draw_background(screen.display_surface)
-        # draw_menu(screen.display_surface)
-        # draw_buttons(screen.display_surface)
-        # draw_cards(screen.display_surface)
-        draw_game_screen()
+        # draw_background(context.screen.display_surface)
+        # draw_menu(context.screen.display_surface)
+        # draw_buttons(context.screen.display_surface)
+        # draw_cards(context.screen.display_surface)
+        context.draw_game_context.screen()
     else:
-        #draw_networking_background(screen.display_surface)
-        #draw_menu(screen.display_surface)
-        #screen.display_surface.blit(drawer.text_renderer.multiplayer_menu_text, drawer.rects.multiplayer_menu_rect)
-        draw_networking_screen(dt)
+        #draw_networking_background(context.screen.display_surface)
+        #draw_menu(context.screen.display_surface)
+        #context.screen.display_surface.blit(context.drawer.text_renderer.multiplayer_menu_text, context.drawer.rects.multiplayer_menu_rect)
+        context.draw_networking_context.screen(dt)
     #round overlay
     if round_overlay:
-        overlay = pygame.Surface(screen.display_surface.get_size(), pygame.SRCALPHA)
+        overlay = pygame.Surface(context.screen.display_surface.get_size(), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 120))
-        screen.display_surface.blit(overlay, (0, 0))
+        context.screen.display_surface.blit(overlay, (0, 0))
 
 
         if player_knock or computer_knock:
-            hand.melds = update_melds(hand)
-            opp_hand.melds = update_melds(opp_hand)
+            context.hand.melds = update_melds(context.hand)
+            context.opp_hand.melds = update_melds(context.opp_hand)
     
             if player_knock:    #player knock logic
-                player_score, opp_score = calculate_round_score(hand, opp_hand)
-                hand.score += player_score
-                opp_hand.score += opp_score
+                player_score, opp_score = calculate_round_score(context.hand, context.opp_hand)
+                context.hand.score += player_score
+                context.opp_hand.score += opp_score
                 player_knock = False
 
             else:               #computer knock logic
-                opp_score, player_score = calculate_round_score(opp_hand, hand)
-                hand.score += player_score
-                opp_hand.score += opp_score
+                opp_score, player_score = calculate_round_score(context.opp_hand, context.hand)
+                context.hand.score += player_score
+                context.opp_hand.score += opp_score
                 computer_knock = False
 
-            drawer.text_renderer.update_score_text(hand.score, opp_hand.score)
+            context.drawer.text_renderer.update_score_text(context.hand.score, context.opp_hand.score)
 
 
-        if drawer.text_renderer.player_score_text and drawer.text_renderer.opp_score_text:
-            screen.display_surface.blit(drawer.text_renderer.continue_text, drawer.text_renderer.continue_text.get_rect(center=(screen.display_width // 2, screen.display_height * 2/3)))
-            screen.display_surface.blit(drawer.text_renderer.player_score_text, drawer.text_renderer.player_score_text.get_rect(center=(screen.display_width // 2, screen.display_height * 1/3)))
-            screen.display_surface.blit(drawer.text_renderer.opp_score_text, drawer.text_renderer.opp_score_text.get_rect(center=(screen.display_width // 2, (screen.display_height * 1/3) + 25)))
+        if context.drawer.text_renderer.player_score_text and context.drawer.text_renderer.opp_score_text:
+            context.screen.display_surface.blit(context.drawer.text_renderer.continue_text, context.drawer.text_renderer.continue_text.get_rect(center=(context.screen.display_width // 2, context.screen.display_height * 2/3)))
+            context.screen.display_surface.blit(context.drawer.text_renderer.player_score_text, context.drawer.text_renderer.player_score_text.get_rect(center=(context.screen.display_width // 2, context.screen.display_height * 1/3)))
+            context.screen.display_surface.blit(context.drawer.text_renderer.opp_score_text, context.drawer.text_renderer.opp_score_text.get_rect(center=(context.screen.display_width // 2, (context.screen.display_height * 1/3) + 25)))
     
     #advance the turn
     if (player_turn == -1):
         computer_play()
-        sort_cards_rank(opp_hand)
+        sort_cards_rank(context.opp_hand)
         #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
         #discard_top = card_images[discard_pile.cards[-1].name]
         player_turn *= -1
 
-    #restart from title screen
+    #restart from title context.screen
     if restart_from_main_menu:
         menu_active = False
-        screen.menu_x = -1.5 * screen.menu_width
-        screen.hamburger_x = 30
+        context.screen.menu_x = -1.5 * context.screen.menu_width
+        context.screen.hamburger_x = 30
         turn = 1
-        drawer.text_renderer = TextRenderer()
-        deck = Deck()
-        hand = Hand(deck)
-        discard_pile = DiscardPile(deck)
-        opp_hand = Hand(deck)
+        #context.drawer.text_renderer = TextRenderer()
+        #deck = Deck()
+        #hand = Hand(deck)
+        #discard_pile = DiscardPile(deck)
+        #opp_hand = Hand(deck)
         updateLocations()
-        sort_cards_rank(opp_hand)
+        sort_cards_rank(context.opp_hand)
         load_hand()
         x_offset, singleplayer = show_start_screen()
-        mixer.shuffle_sound.play()
+        context.audio.shuffle_sound.play()
 
-        #shows the screen wipe
+        #shows the context.screen wipe
         if singleplayer:
             draw_game_screen()
-            #draw_game_screen(screen.display_surface)
-            for wipe_x in range(0, screen.display_width + 1, constants.TITLE_WIPE_SPEED):
+            #draw_game_context.screen(context.screen.display_surface)
+            for wipe_x in range(0, context.screen.display_width + 1, context.constants.TITLE_WIPE_SPEED):
                 update_title_background(x_offset)
                 x_offset -= 0.5
-                screen.display_surface.blit(drawer.surface_loader.game_surface, (0, 0), area=pygame.Rect(0, 0, wipe_x, screen.display_height))
+                context.screen.display_surface.blit(context.drawer.surface_loader.game_surface, (0, 0), area=pygame.Rect(0, 0, wipe_x, context.screen.display_height))
                 pygame.display.flip()
-                clock.tick(200)
+                context.clock.tick(200)
         else:
-            draw_networking_screen(dt)
-            for wipe_x in range(screen.display_width, -1, -constants.TITLE_WIPE_SPEED):
+            context.draw_networking_context.screen(dt)
+            for wipe_x in range(context.screen.display_width, -1, -context.constants.TITLE_WIPE_SPEED):
                 update_title_background(x_offset)
                 x_offset -= 0.5
-                screen.display_surface.blit(drawer.surface_loader.networking_surface, (0,0), area=pygame.Rect(-wipe_x, 0, screen.display_width, screen.display_height))
+                context.screen.display_surface.blit(context.drawer.surface_loader.networking_surface, (0,0), area=pygame.Rect(-wipe_x, 0, context.screen.display_width, context.screen.display_height))
                 pygame.display.flip()
-                clock.tick(200)
+                context.clock.tick(200)
 
         restart_from_main_menu = False
 
     #restart from game
     if restart:
-        menu_active = False
+        #menu_active = False
         turn = 1
-        deck = Deck()
-        hand = Hand(deck)
-        discard_pile = DiscardPile(deck)
-        opp_hand = Hand(deck)
+        #deck = Deck()
+        #hand = Hand(deck)
+        #discard_pile = DiscardPile(deck)
+        #opp_hand = Hand(deck)
         updateLocations()
-        draw_cards(drawer.surface_loader.game_surface)
+        draw_cards(context.drawer.surface_loader.game_surface)
         load_hand()
         restart = False
 
-    pygame.display.flip()
+    pygame.display.update()
 
 pygame.quit()
