@@ -70,24 +70,24 @@ state_manager.set("title")
 #game variables
 #running = True
 dropped = False
-clicked = False
-round_overlay = False
-player_knock = False
+#clicked = False
+#round_overlay = False
+#player_knock = False
 computer_knock = False
 card_flip = False
-original_loc = (0, 0)
-horizontal_shift = (((context.screen.display_surface.get_width() / 3) / len(context.hand.cards)) * 0.8) #determines how far to hover cards horizontally
+#original_loc = (0, 0)
+#horizontal_shift = (((context.screen.display_surface.get_width() / 3) / len(context.hand.cards)) * 0.8) #determines how far to hover cards horizontally
 #discard_top = None
-active_card = None
+#active_card = None
 #card_images = {}
 card_data = {}
-dt = 0
-drawn_card = None
+#dt = 0
+#drawn_card = None
 opp_drawn_card = None
-original_index = None
-turn = 1
+#original_index = None
+#turn = 1
 player_turn = 1
-knocking = False
+#knocking = False
 restart_from_main_menu = False
 restart = False
 # large_font = pygame.font.Font(None, 50)
@@ -152,12 +152,12 @@ menu_active = False
 #pygame.display.set_icon(icon)
 
 #card_data is filled here
-with open('./assets/card_values.csv', newline='') as csvfile:
-    reader = csv.DictReader(csvfile)
-    for row in reader:
-        card_data[row['name']] = {'suit': row['suit'], 'rank': int(row['rank'])}
+# with open('./assets/card_values.csv', newline='') as csvfile:
+#     reader = csv.DictReader(csvfile)
+#     for row in reader:
+#         card_data[row['name']] = {'suit': row['suit'], 'rank': int(row['rank'])}
 
-context.drawer.image_loader.create_card_images(card_data)
+#context.drawer.image_loader.create_card_images(card_data)
 
 #all card images loaded here
 # card_images = {}
@@ -204,13 +204,13 @@ def updateLocations():
     set_card_positions(context.hand.cards, 1.5 * mid_y)
     set_card_positions(context.opp_hand.cards, 0.5 * mid_y - 98)
 
-def drawCard(deck, hand):
-    choice = random.choice(deck.cards)
-    hand.cards.append(choice)
-    deck.cards.remove(choice)
-    load_hand()
-    updateLocations()
-    return choice
+# def drawCard(deck, hand):
+#     choice = random.choice(deck.cards)
+#     hand.cards.append(choice)
+#     deck.cards.remove(choice)
+#     load_hand()
+#     updateLocations()
+#     return choice
 
 def pickup_discard(hand):
     choice = context.discard_pile.cards[-1]
@@ -240,72 +240,72 @@ def get_meld_type_from_card(focus_card, melds):
                     return "run"
     return "none"
 
-def update_melds(this_hand):
-    rank_groups = defaultdict(list)
-    suit_groups = defaultdict(list)
+# def update_melds(this_hand):
+#     rank_groups = defaultdict(list)
+#     suit_groups = defaultdict(list)
 
-    for card in this_hand.cards:
-        rank = card_data[card.name]["rank"]
-        suit = card_data[card.name]["suit"]
-        rank_groups[rank].append(card)
-        suit_groups[suit].append((rank, card))
+#     for card in this_hand.cards:
+#         rank = card_data[card.name]["rank"]
+#         suit = card_data[card.name]["suit"]
+#         rank_groups[rank].append(card)
+#         suit_groups[suit].append((rank, card))
 
-    all_melds = []
+#     all_melds = []
 
-    # sets - also generate all valid sub-sets of 3 from groups of 4
-    for cards in rank_groups.values():
-        if len(cards) >= 3:
-            all_melds.append(cards[:])
-            if len(cards) == 4:
-                for i in range(4):
-                    all_melds.append([c for j, c in enumerate(cards) if j != i])
+#     # sets - also generate all valid sub-sets of 3 from groups of 4
+#     for cards in rank_groups.values():
+#         if len(cards) >= 3:
+#             all_melds.append(cards[:])
+#             if len(cards) == 4:
+#                 for i in range(4):
+#                     all_melds.append([c for j, c in enumerate(cards) if j != i])
 
-    # runs - generate all valid sub-runs of length 3+
-    for suit, cards in suit_groups.items():
-        cards.sort()
-        run = [cards[0][1]]
-        for i in range(1, len(cards)):
-            if cards[i][0] == cards[i - 1][0] + 1:
-                run.append(cards[i][1])
-            else:
-                if len(run) >= 3:
-                    for start in range(len(run)):
-                        for end in range(start + 3, len(run) + 1):
-                            all_melds.append(run[start:end])
-                run = [cards[i][1]]
-        if len(run) >= 3:
-            for start in range(len(run)):
-                for end in range(start + 3, len(run) + 1):
-                    all_melds.append(run[start:end])
+#     # runs - generate all valid sub-runs of length 3+
+#     for suit, cards in suit_groups.items():
+#         cards.sort()
+#         run = [cards[0][1]]
+#         for i in range(1, len(cards)):
+#             if cards[i][0] == cards[i - 1][0] + 1:
+#                 run.append(cards[i][1])
+#             else:
+#                 if len(run) >= 3:
+#                     for start in range(len(run)):
+#                         for end in range(start + 3, len(run) + 1):
+#                             all_melds.append(run[start:end])
+#                 run = [cards[i][1]]
+#         if len(run) >= 3:
+#             for start in range(len(run)):
+#                 for end in range(start + 3, len(run) + 1):
+#                     all_melds.append(run[start:end])
 
-    if not all_melds:
-        return []
+#     if not all_melds:
+#         return []
 
-    best_melds = []
-    best_deadwood = 100
+#     best_melds = []
+#     best_deadwood = 100
 
-    for r in range(1, len(all_melds) + 1):
-        for combo in combinations(all_melds, r):
-            used = set()
-            valid = True
-            for meld in combo:
-                for card in meld:
-                    if card in used:
-                        valid = False
-                        break
-                if not valid:
-                    break
-                used.update(meld)
-            if valid:
-                deadwood = 0
-                for card in this_hand.cards:
-                    if card not in used:
-                        deadwood += min(card_data[card.name]["rank"], 10)
-                if deadwood < best_deadwood:
-                    best_deadwood = deadwood
-                    best_melds = list(combo)
+#     for r in range(1, len(all_melds) + 1):
+#         for combo in combinations(all_melds, r):
+#             used = set()
+#             valid = True
+#             for meld in combo:
+#                 for card in meld:
+#                     if card in used:
+#                         valid = False
+#                         break
+#                 if not valid:
+#                     break
+#                 used.update(meld)
+#             if valid:
+#                 deadwood = 0
+#                 for card in this_hand.cards:
+#                     if card not in used:
+#                         deadwood += min(card_data[card.name]["rank"], 10)
+#                 if deadwood < best_deadwood:
+#                     best_deadwood = deadwood
+#                     best_melds = list(combo)
 
-    return best_melds
+#     return best_melds
 
 def get_melds(card, melds):
     found_melds = []
@@ -334,29 +334,29 @@ def calculate_deadwood(melds, cards):
 
     return deadwood
 
-def can_knock(melds, cards):
-    meld_cards = []
-    for meld in melds:
-        for card in meld:
-            meld_cards.append(card)
+# def can_knock(melds, cards):
+#     meld_cards = []
+#     for meld in melds:
+#         for card in meld:
+#             meld_cards.append(card)
 
-    greatest_deadwood = 0
-    total_deadwood = 0
-    for card in cards:
-        if card not in meld_cards:
+#     greatest_deadwood = 0
+#     total_deadwood = 0
+#     for card in cards:
+#         if card not in meld_cards:
 
-            if card_data[card.name]["rank"] > 10:
-                total_deadwood += 10
-            else:
-                total_deadwood += card_data[card.name]["rank"]
+#             if card_data[card.name]["rank"] > 10:
+#                 total_deadwood += 10
+#             else:
+#                 total_deadwood += card_data[card.name]["rank"]
             
-            if card_data[card.name]["rank"] > greatest_deadwood:
-                greatest_deadwood = card_data[card.name]["rank"]
+#             if card_data[card.name]["rank"] > greatest_deadwood:
+#                 greatest_deadwood = card_data[card.name]["rank"]
     
-    if total_deadwood - greatest_deadwood <= 10:
-        return True
-    else:
-        return False
+#     if total_deadwood - greatest_deadwood <= 10:
+#         return True
+#     else:
+#         return False
 
 def get_greatest_deadwood(melds, cards):
     meld_cards = []
@@ -716,25 +716,25 @@ def draw_cards(surface):
 
     ##return hamburger_x
 
-def draw_buttons(surface):
-    pygame.draw.rect(surface, (200, 200, 200), context.drawer.rects.sort_rect_rank, border_radius=8)
-    pygame.draw.rect(surface, context.constants.BLACK, context.drawer.rects.sort_rect_rank, 2, border_radius=8)
-    pygame.draw.rect(surface, (200, 200, 200), context.drawer.rects.sort_rect_suit, border_radius=8)
-    pygame.draw.rect(surface, context.constants.BLACK, context.drawer.rects.sort_rect_suit, 2, border_radius=8)
-    surface.blit(context.drawer.text_renderer.sort_rank_text, context.drawer.text_renderer.sort_rank_text.get_rect(center=context.drawer.rects.sort_rect_rank.center))
-    surface.blit(context.drawer.text_renderer.sort_suit_text, context.drawer.text_renderer.sort_suit_text.get_rect(center=context.drawer.rects.sort_rect_suit.center))
+# def draw_buttons(surface):
+#     pygame.draw.rect(surface, (200, 200, 200), context.drawer.rects.sort_rect_rank, border_radius=8)
+#     pygame.draw.rect(surface, context.constants.BLACK, context.drawer.rects.sort_rect_rank, 2, border_radius=8)
+#     pygame.draw.rect(surface, (200, 200, 200), context.drawer.rects.sort_rect_suit, border_radius=8)
+#     pygame.draw.rect(surface, context.constants.BLACK, context.drawer.rects.sort_rect_suit, 2, border_radius=8)
+#     surface.blit(context.drawer.text_renderer.sort_rank_text, context.drawer.text_renderer.sort_rank_text.get_rect(center=context.drawer.rects.sort_rect_rank.center))
+#     surface.blit(context.drawer.text_renderer.sort_suit_text, context.drawer.text_renderer.sort_suit_text.get_rect(center=context.drawer.rects.sort_rect_suit.center))
 
-    #player knock button
-    if context.hand.can_knock:
-        pygame.draw.rect(surface, (200, 200, 200), context.drawer.rects.player_knock_rect, border_radius=8)
-        pygame.draw.rect(surface, context.constants.BLACK, context.drawer.rects.player_knock_rect, 2, border_radius=8)
-        surface.blit(context.drawer.text_renderer.player_knock_text, context.drawer.text_renderer.player_knock_text.get_rect(center=context.drawer.rects.player_knock_rect.center))
+#     #player knock button
+#     if context.hand.can_knock:
+#         pygame.draw.rect(surface, (200, 200, 200), context.drawer.rects.player_knock_rect, border_radius=8)
+#         pygame.draw.rect(surface, context.constants.BLACK, context.drawer.rects.player_knock_rect, 2, border_radius=8)
+#         surface.blit(context.drawer.text_renderer.player_knock_text, context.drawer.text_renderer.player_knock_text.get_rect(center=context.drawer.rects.player_knock_rect.center))
 
-    #opponent knock button
-    if context.opp_hand.can_knock:
-        pygame.draw.rect(surface, (200, 200, 200), context.drawer.rects.opp_knock_rect, border_radius=8)
-        pygame.draw.rect(surface, context.constants.BLACK, context.drawer.rects.opp_knock_rect, 2, border_radius=8)
-        surface.blit(context.drawer.text_renderer.opp_knock_text, context.drawer.text_renderer.opp_knock_text.get_rect(center=context.drawer.rects.opp_knock_rect.center))
+#     #opponent knock button
+#     if context.opp_hand.can_knock:
+#         pygame.draw.rect(surface, (200, 200, 200), context.drawer.rects.opp_knock_rect, border_radius=8)
+#         pygame.draw.rect(surface, context.constants.BLACK, context.drawer.rects.opp_knock_rect, 2, border_radius=8)
+#         surface.blit(context.drawer.text_renderer.opp_knock_text, context.drawer.text_renderer.opp_knock_text.get_rect(center=context.drawer.rects.opp_knock_rect.center))
 
 def animate_card_flip(back_img, front_img, start_pos, end_pos, duration, surface, card, turn):
     if turn == 1:
@@ -852,7 +852,7 @@ def animate_card_slide_move(front_img, start_pos, end_pos, duration, surface, ca
     #return hamburger_x 
 
 def update_title_background(test):
-    test -= dt
+    test -= context.dt
     if test <= -context.drawer.image_loader.title_background_width:
         test = 0
 
@@ -896,7 +896,7 @@ context.audio.shuffle_sound.play()
     #     mixer.start_networking_music()
 
 while state_manager.running:
-    dt = context.clock.tick(200) / 1000 #fps
+    context.dt = context.clock.tick(200) / 1000 #fps
 
     # while waiting:
     #     animator.animate_title_background(dt, context.drawer.surface_loader.game_surface)
@@ -922,41 +922,39 @@ while state_manager.running:
         #     if event.key == pygame.K_RETURN:
                 
                 
-        #         #COME BACK FOR THIS IN THE FUTURE --------------------------------------------------------------------------
+                # if round_overlay: #probably move this block within the game state in the future
 
-        #         if round_overlay: #probably move this block within the game state in the future
-
-        #             if hand.score >= 100 or opp_hand.score >= 100:
-        #                 print("game over")
-        #             else:
-        #                 # save scores
-        #                 saved_player_score = hand.score
-        #                 saved_opp_score = opp_hand.score
+                #     if hand.score >= 100 or opp_hand.score >= 100:
+                #         print("game over")
+                #     else:
+                #         # save scores
+                #         saved_player_score = hand.score
+                #         saved_opp_score = opp_hand.score
                         
-        #                 # reset everything
-        #                 deck = Deck()
-        #                 hand = Hand(deck)
-        #                 discard_pile = DiscardPile(deck)
-        #                 opp_hand = Hand(deck)
+                #         # reset everything
+                #         deck = Deck()
+                #         hand = Hand(deck)
+                #         discard_pile = DiscardPile(deck)
+                #         opp_hand = Hand(deck)
                         
-        #                 # restore scores
-        #                 hand.score = saved_player_score
-        #                 opp_hand.score = saved_opp_score
+                #         # restore scores
+                #         hand.score = saved_player_score
+                #         opp_hand.score = saved_opp_score
                         
-        #                 # reset round state
-        #                 round_overlay = False
-        #                 player_knock = False
-        #                 computer_knock = False
-        #                 knocking = False
-        #                 turn = 1
-        #                 player_turn = 1
-        #                 context.drawer.text_renderer.player_score_text = None
-        #                 context.drawer.text_renderer.opp_score_text = None
+                #         # reset round state
+                #         round_overlay = False
+                #         player_knock = False
+                #         computer_knock = False
+                #         knocking = False
+                #         turn = 1
+                #         player_turn = 1
+                #         context.drawer.text_renderer.player_score_text = None
+                #         context.drawer.text_renderer.opp_score_text = None
                         
-        #                 updateLocations()
-        #                 sort_cards_rank(opp_hand)
-        #                 load_hand()
-        #                 horizontal_shift = (((context.screen.display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
+                #         updateLocations()
+                #         sort_cards_rank(opp_hand)
+                #         load_hand()
+                #         horizontal_shift = (((context.screen.display_surface.get_width() / 3) / len(hand.cards)) * 0.8)
                 
         #     if event.key == pygame.K_LSHIFT:
         #         state_manager.set("networking")
@@ -984,136 +982,136 @@ while state_manager.running:
         #                 if context.drawer.rects.r_option_rect.collidepoint(event.pos):
         #                     restart = True
 
-                    #game interactions start here
-                    for card in reversed(context.hand.cards):
-                        if card == context.hand.cards[-1]:      #if card is on the right, it's rect is larger
-                            card_rect = pygame.Rect(card.loc[0], card.loc[1], 73, 98)
-                        else:                           #else we need to modify the rect to match the size
-                            card_rect = pygame.Rect(card.loc[0], card.loc[1], ((context.screen.display_surface.get_width() / 3) / (len(context.hand.cards) - 1)) * 0.8, 98)
+        #             #game interactions start here
+        #             for card in reversed(context.hand.cards):
+        #                 if card == context.hand.cards[-1]:      #if card is on the right, it's rect is larger
+        #                     card_rect = pygame.Rect(card.loc[0], card.loc[1], 73, 98)
+        #                 else:                           #else we need to modify the rect to match the size
+        #                     card_rect = pygame.Rect(card.loc[0], card.loc[1], ((context.screen.display_surface.get_width() / 3) / (len(context.hand.cards) - 1)) * 0.8, 98)
 
-                        if card_rect.collidepoint(event.pos): #if mousedown on a card rect
-                            clicked = True
-                            active_card = card
-                            active_card.dragging = True
-                            original_loc = active_card.loc
-                            original_index = context.hand.cards.index(active_card)
-                            card_x = event.pos[0] - active_card.loc[0]
-                            card_y = event.pos[1] - active_card.loc[1]
-                            break
-                        elif context.drawer.rects.draw_rect.collidepoint(event.pos):
-                            if turn == 1:
-                                random.choice(context.audio.thwip_sounds).play()
-                                drawn_card = drawCard(context.deck, context.hand)
-                                animate_card_flip(context.drawer.image_loader.blue_back, context.drawer.image_loader.card_images[drawn_card.name], context.drawer.rects.draw_rect.center, (context.hand.cards[-1].loc[0] + 73/2, context.hand.cards[-1].loc[1] + 98/2), context.constants.CARD_MOVEMENT_SPEED, context.drawer.surface_loader.game_surface, drawn_card, turn)
-                                drawn_card = None
-                                horizontal_shift = (((context.screen.display_surface.get_width() / 3) / len(context.hand.cards)) * 0.8)
-                                context.hand.melds = update_melds(context.hand)
-                                if can_knock(context.hand.melds, context.hand.cards):
-                                    context.hand.can_knock = True
-                                turn *= -1
-                                break
-                        elif context.drawer.rects.discard_rect.collidepoint(event.pos):
-                            if turn == 1:
-                                context.audio.slide_sound.play()
-                                drawn_card = pickup_discard(context.hand)
-                                animate_card_slide_move(context.drawer.image_loader.card_images[drawn_card.name], context.drawer.rects.discard_rect.center, (context.hand.cards[-1].loc[0], context.hand.cards[-1].loc[1]), context.constants.CARD_MOVEMENT_SPEED, context.drawer.surface_loader.game_surface, drawn_card, turn)
-                                drawn_card = None
-                                horizontal_shift = (((context.screen.display_surface.get_width() / 3) / len(context.hand.cards)) * 0.8)
-                                context.hand.melds = update_melds(context.hand)
-                                if can_knock(context.hand.melds, context.hand.cards):
-                                    context.hand.can_knock = True
-                                #if discard_pile.cards:
-                                #    discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
-                                #    discard_top = card_images[discard_pile.cards[-1].name]
-                                #    pass
-                                turn *= -1
-                                break
-                        elif context.drawer.rects.sort_rect_rank.collidepoint(event.pos):
-                            sort_cards_rank(context.hand)
-                        elif context.drawer.rects.sort_rect_suit.collidepoint(event.pos):
-                            sort_cards_suit(context.hand)
-                        elif context.drawer.rects.player_knock_rect.collidepoint(event.pos):
-                            knocking = True
+        #                 if card_rect.collidepoint(event.pos): #if mousedown on a card rect
+        #                     clicked = True
+        #                     active_card = card
+        #                     active_card.dragging = True
+        #                     original_loc = active_card.loc
+        #                     original_index = context.hand.cards.index(active_card)
+        #                     card_x = event.pos[0] - active_card.loc[0]
+        #                     card_y = event.pos[1] - active_card.loc[1]
+        #                     break
+        #                 elif context.drawer.rects.draw_rect.collidepoint(event.pos):
+        #                     if turn == 1:
+        #                         random.choice(context.audio.thwip_sounds).play()
+        #                         drawn_card = drawCard(context.deck, context.hand)
+        #                         animate_card_flip(context.drawer.image_loader.blue_back, context.drawer.image_loader.card_images[drawn_card.name], context.drawer.rects.draw_rect.center, (context.hand.cards[-1].loc[0] + 73/2, context.hand.cards[-1].loc[1] + 98/2), context.constants.CARD_MOVEMENT_SPEED, context.drawer.surface_loader.game_surface, drawn_card, turn)
+        #                         drawn_card = None
+        #                         horizontal_shift = (((context.screen.display_surface.get_width() / 3) / len(context.hand.cards)) * 0.8)
+        #                         context.hand.melds = update_melds(context.hand)
+        #                         if can_knock(context.hand.melds, context.hand.cards):
+        #                             context.hand.can_knock = True
+        #                         turn *= -1
+        #                         break
+        #                 elif context.drawer.rects.discard_rect.collidepoint(event.pos):
+        #                     if turn == 1:
+        #                         context.audio.slide_sound.play()
+        #                         drawn_card = pickup_discard(context.hand)
+        #                         animate_card_slide_move(context.drawer.image_loader.card_images[drawn_card.name], context.drawer.rects.discard_rect.center, (context.hand.cards[-1].loc[0], context.hand.cards[-1].loc[1]), context.constants.CARD_MOVEMENT_SPEED, context.drawer.surface_loader.game_surface, drawn_card, turn)
+        #                         drawn_card = None
+        #                         horizontal_shift = (((context.screen.display_surface.get_width() / 3) / len(context.hand.cards)) * 0.8)
+        #                         context.hand.melds = update_melds(context.hand)
+        #                         if can_knock(context.hand.melds, context.hand.cards):
+        #                             context.hand.can_knock = True
+        #                         #if discard_pile.cards:
+        #                         #    discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
+        #                         #    discard_top = card_images[discard_pile.cards[-1].name]
+        #                         #    pass
+        #                         turn *= -1
+        #                         break
+        #                 elif context.drawer.rects.sort_rect_rank.collidepoint(event.pos):
+        #                     sort_cards_rank(context.hand)
+        #                 elif context.drawer.rects.sort_rect_suit.collidepoint(event.pos):
+        #                     sort_cards_suit(context.hand)
+        #                 elif context.drawer.rects.player_knock_rect.collidepoint(event.pos):
+        #                     knocking = True
 
-            elif event.type == pygame.MOUSEMOTION and clicked == True:
-                if active_card:
-                    active_card.loc = (event.pos[0] - card_x, event.pos[1] - card_y)
+        #     elif event.type == pygame.MOUSEMOTION and clicked == True:
+        #         if active_card:
+        #             active_card.loc = (event.pos[0] - card_x, event.pos[1] - card_y)
 
-            elif event.type == pygame.MOUSEMOTION:
-                pass
+        #     elif event.type == pygame.MOUSEMOTION:
+        #         pass
 
-            elif event.type == pygame.MOUSEBUTTONUP:
+        #     elif event.type == pygame.MOUSEBUTTONUP:
 
-                if active_card:
-                    active_card.dragging = False
+        #         if active_card:
+        #             active_card.dragging = False
 
-                    shi = None #starting hover index
+        #             shi = None #starting hover index
 
-                    if original_loc[0] > active_card.loc[0]: #if you moved the active card to the left
-                        for i, card in enumerate(context.hand.cards):
-                            if card.hovered_x and card is not active_card:
-                                shi = i
-                                break
-                        if shi is None:
-                            shi = original_index
-                        placeholder = active_card
-                        for i in range(original_index, shi, -1):
-                            context.hand.cards[i] = context.hand.cards[i-1]
-                        context.hand.cards[shi] = placeholder
+        #             if original_loc[0] > active_card.loc[0]: #if you moved the active card to the left
+        #                 for i, card in enumerate(context.hand.cards):
+        #                     if card.hovered_x and card is not active_card:
+        #                         shi = i
+        #                         break
+        #                 if shi is None:
+        #                     shi = original_index
+        #                 placeholder = active_card
+        #                 for i in range(original_index, shi, -1):
+        #                     context.hand.cards[i] = context.hand.cards[i-1]
+        #                 context.hand.cards[shi] = placeholder
 
-                    elif original_loc[0] < active_card.loc[0]: #if you moved the active card to the right
-                        for i in range(len(context.hand.cards)-1, -1, -1):
-                            if context.hand.cards[i].hovered_x and context.hand.cards[i] != active_card:
-                                shi = i
-                                break
-                        if shi is None:
-                            shi = original_index
-                        placeholder = active_card
-                        for i in range(original_index, shi, 1):
-                            context.hand.cards[i] = context.hand.cards[i+1]
-                        context.hand.cards[shi] = placeholder
+        #             elif original_loc[0] < active_card.loc[0]: #if you moved the active card to the right
+        #                 for i in range(len(context.hand.cards)-1, -1, -1):
+        #                     if context.hand.cards[i].hovered_x and context.hand.cards[i] != active_card:
+        #                         shi = i
+        #                         break
+        #                 if shi is None:
+        #                     shi = original_index
+        #                 placeholder = active_card
+        #                 for i in range(original_index, shi, 1):
+        #                     context.hand.cards[i] = context.hand.cards[i+1]
+        #                 context.hand.cards[shi] = placeholder
 
-                    if context.drawer.rects.discard_rect.collidepoint(event.pos) and turn == -1:
-                        discard(context.hand, active_card)
-                        horizontal_shift = (((context.screen.display_surface.get_width() / 3) / len(context.hand.cards)) * 0.8)
-                        #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
+        #             if context.drawer.rects.discard_rect.collidepoint(event.pos) and turn == -1:
+        #                 discard(context.hand, active_card)
+        #                 horizontal_shift = (((context.screen.display_surface.get_width() / 3) / len(context.hand.cards)) * 0.8)
+        #                 #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
 
 
-                        #discard_top = card_images[discard_pile.cards[-1].name]
+        #                 #discard_top = card_images[discard_pile.cards[-1].name]
 
-                        if knocking:
-                            round_overlay = True
-                            player_knock = True
-                            knocking = False
-                        else:
-                            turn *= -1
-                            player_turn *= -1
+        #                 if knocking:
+        #                     round_overlay = True
+        #                     player_knock = True
+        #                     knocking = False
+        #                 else:
+        #                     turn *= -1
+        #                     player_turn *= -1
 
-                    updateLocations()
+        #             updateLocations()
 
-                    for card in context.hand.cards:
-                        card.hovered_x = False
+        #             for card in context.hand.cards:
+        #                 card.hovered_x = False
 
-                    active_card = None
-                    clicked = False
-        else: #multiplayer
+        #             active_card = None
+        #             clicked = False
+        # else: #multiplayer
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    if context.drawer.rects.menu_rect.collidepoint(event.pos):
-                        menu_active = True
+        #     if event.type == pygame.MOUSEBUTTONDOWN:
+        #         if event.button == 1:
+        #             if context.drawer.rects.menu_rect.collidepoint(event.pos):
+        #                 menu_active = True
 
-                    if context.drawer.rects.main_menu_overlay_rect.collidepoint(event.pos): #close the menu if it's open and you click off
-                        menu_active = False
+        #             if context.drawer.rects.main_menu_overlay_rect.collidepoint(event.pos): #close the menu if it's open and you click off
+        #                 menu_active = False
                     
-                    if menu_active: #menu options
-                        context.drawer.rects.update_option_rects()
-                        if context.drawer.rects.mm_option_rect.collidepoint(event.pos):
-                            restart_from_main_menu = True
-                        if context.drawer.rects.qg_option_rect.collidepoint(event.pos):
-                            running = False
-                        if context.drawer.rects.r_option_rect.collidepoint(event.pos):
-                            restart = True
+        #             if menu_active: #menu options
+        #                 context.drawer.rects.update_option_rects()
+        #                 if context.drawer.rects.mm_option_rect.collidepoint(event.pos):
+        #                     restart_from_main_menu = True
+        #                 if context.drawer.rects.qg_option_rect.collidepoint(event.pos):
+        #                     running = False
+        #                 if context.drawer.rects.r_option_rect.collidepoint(event.pos):
+        #                     restart = True
 
     #hover_y logic
     mouse_x, mouse_y = pygame.mouse.get_pos()

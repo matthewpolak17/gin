@@ -1,13 +1,13 @@
-from context.engine import constants
 import pygame
 
 class ImageLoader:
-    def __init__(self, screen):
-        self.screen = screen
+    def __init__(self, context):
+        self.context = context
 
         self.blue_back = pygame.transform.scale(pygame.image.load(r'./assets/images/blueback.png'), (73, 98))
         self.card_images = {}
 
+        self.set_card_images(self.context.card_data)
         self.set_background()
         self.set_networking_background()
         self.set_title_background()
@@ -31,10 +31,10 @@ class ImageLoader:
         self.title_background = pygame.transform.scale(self.title_background, (self.screen.display_width, self.screen.display_height))
         self.title_background_width = self.title_background.get_width()
 
-    def create_card_images(self, card_data):
+    def set_card_images(self, card_data):
         for name in card_data:
             img = pygame.image.load(f'./assets/cards/{name}').convert_alpha()
-            self.card_images[name] = pygame.transform.smoothscale(img, (constants.CARD_WIDTH, constants.CARD_HEIGHT))
+            self.card_images[name] = pygame.transform.smoothscale(img, (self.context.constants.CARD_WIDTH, self.context.constants.CARD_HEIGHT))
 
     def set_loading_images(self):
         self.loading_frames = []
