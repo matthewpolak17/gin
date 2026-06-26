@@ -2,8 +2,9 @@ from context.engine import constants
 from context.engine.ui_text import UI_Text
 
 class TextRenderer:
-    def __init__(self):
+    def __init__(self, context):
         self.ui_text = UI_Text()
+        self.context = context
 
         self.start_text = self.ui_text.render_small("Press ENTER to Start")
         self.multiplayer_text = self.ui_text.render_small("Press SHIFT for Multiplayer")

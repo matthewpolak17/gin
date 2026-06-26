@@ -1,8 +1,9 @@
 import pygame
 
 class Audio:
-    def __init__(self):
+    def __init__(self, context):
         pygame.mixer.init()
+        self.context = context
 
         self.CONN_INTRO_LENGTH = 92168
 

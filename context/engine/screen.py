@@ -2,14 +2,13 @@ from context.engine.monitor_setup import Monitor
 import pygame
 
 class Screen:
-    def __init__(self):
+    def __init__(self, context):
+        self.context = context
         pygame.display.set_caption("Gin Rummy")
-
-        monitor = Monitor()
         flags = pygame.NOFRAME | pygame.HWSURFACE | pygame.DOUBLEBUF
-        self.display_surface = pygame.display.set_mode((monitor.native_width, monitor.native_height), flags)
-        self.display_width = monitor.native_width
-        self.display_height = monitor.native_height
+        self.display_surface = pygame.display.set_mode((self.context.monitor.native_width, self.context.monitor.native_height), flags)
+        self.display_width = self.context.monitor.native_width
+        self.display_height = self.context.monitor.native_height
 
         #menu dimensions
         self.menu_width = self.display_surface.get_width() / 8

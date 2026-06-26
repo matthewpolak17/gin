@@ -21,3 +21,9 @@ class StateManager:
     
     def handle_event(self, event):
         self.active_state.handle_event(event)
+
+    def update(self, dt):
+        self.active_state.update(dt)
+
+    def draw(self):
+        self.active_state.draw()

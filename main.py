@@ -4,11 +4,11 @@
 # [DB]  -> Debugging
 
 import pygame
-import random
-import csv
+#import random
+#import csv
 # import context.engine.constants as constants
-from itertools import combinations
-from collections import defaultdict
+#from itertools import combinations
+#from collections import defaultdict
 # from context.game_components.deck import Deck
 # from context.game_components.hand import Hand
 # from context.game_components.discard_pile import DiscardPile
@@ -69,27 +69,27 @@ state_manager.set("title")
 
 #game variables
 #running = True
-dropped = False
-#clicked = False
+#dropped = False
+#clicked = False#
 #round_overlay = False
 #player_knock = False
-computer_knock = False
-card_flip = False
+#computer_knock = False
+#card_flip = False
 #original_loc = (0, 0)
 #horizontal_shift = (((context.screen.display_surface.get_width() / 3) / len(context.hand.cards)) * 0.8) #determines how far to hover cards horizontally
 #discard_top = None
 #active_card = None
-#card_images = {}
-card_data = {}
+#card_images = {}#
+#card_data = {}
 #dt = 0
 #drawn_card = None
-opp_drawn_card = None
+#opp_drawn_card = None
 #original_index = None
 #turn = 1
-player_turn = 1
+#player_turn = 1
 #knocking = False
-restart_from_main_menu = False
-restart = False
+#restart_from_main_menu = False
+#restart = False
 # large_font = pygame.font.Font(None, 50)
 # medium_font = pygame.font.Font(None, 35)
 # small_font = pygame.font.Font(None, 30)
@@ -107,7 +107,7 @@ restart = False
 #menu_width = context.screen.display_surface.get_width() / 8
 #menu_x = -1.5 * context.screen.menu_width
 #menu_speed = 2600
-menu_active = False
+#menu_active = False
 #main_menu_overlay_rect = pygame.Rect(context.screen.menu_width, 0, context.screen.display_surface.get_width() - context.screen.menu_width, context.screen.display_height)
 
 #side_overlay = pygame.Surface((context.screen.menu_width, context.screen.display_height), pygame.SRCALPHA)
@@ -183,26 +183,26 @@ menu_active = False
 #comment out here up for tempmain.py
 
 #functions
-def updateLocations():
-    def set_card_positions(cards, y_offset, spacing_scale=0.8):
-        win_width = context.screen.display_surface.get_width()
-        max_spacing = (win_width / 3) / len(cards)
-        spacing = max_spacing * spacing_scale
-        total_width = spacing * (len(cards) - 1)
-        start_x = (win_width - total_width) / 2 - 36
+# def updateLocations():
+#     def set_card_positions(cards, y_offset, spacing_scale=0.8):
+#         win_width = context.screen.display_surface.get_width()
+#         max_spacing = (win_width / 3) / len(cards)
+#         spacing = max_spacing * spacing_scale
+#         total_width = spacing * (len(cards) - 1)
+#         start_x = (win_width - total_width) / 2 - 36
 
-        for x, card in enumerate(cards):
-            x_pos = start_x + x * spacing
-            y_pos = y_offset
-            card.loc = (x_pos, y_pos)
-            card.base_y = y_pos
-            card.target_y = y_pos
-            card.base_x = x_pos
-            card.target_x = x_pos
+#         for x, card in enumerate(cards):
+#             x_pos = start_x + x * spacing
+#             y_pos = y_offset
+#             card.loc = (x_pos, y_pos)
+#             card.base_y = y_pos
+#             card.target_y = y_pos
+#             card.base_x = x_pos
+#             card.target_x = x_pos
 
-    mid_y = context.screen.display_surface.get_height() / 2
-    set_card_positions(context.hand.cards, 1.5 * mid_y)
-    set_card_positions(context.opp_hand.cards, 0.5 * mid_y - 98)
+#     mid_y = context.screen.display_surface.get_height() / 2
+#     set_card_positions(context.hand.cards, 1.5 * mid_y)
+#     set_card_positions(context.opp_hand.cards, 0.5 * mid_y - 98)
 
 # def drawCard(deck, hand):
 #     choice = random.choice(deck.cards)
@@ -212,33 +212,33 @@ def updateLocations():
 #     updateLocations()
 #     return choice
 
-def pickup_discard(hand):
-    choice = context.discard_pile.cards[-1]
-    hand.cards.append(choice)
-    context.discard_pile.cards.remove(choice)
-    load_hand()
-    updateLocations()
-    return choice
+# def pickup_discard(hand):
+#     choice = context.discard_pile.cards[-1]
+#     hand.cards.append(choice)
+#     context.discard_pile.cards.remove(choice)
+#     load_hand()
+#     updateLocations()
+#     return choice
 
-def discard(hand, active_card):
-    hand.cards.remove(active_card)
-    context.discard_pile.cards.append(active_card)
-    load_hand()
-    updateLocations()
+# def discard(hand, active_card):
+#     hand.cards.remove(active_card)
+#     context.discard_pile.cards.append(active_card)
+#     load_hand()
+#     updateLocations()
 
-def load_hand():
-    for card in context.hand.cards:
-        context.drawer.image_loader.card_images[card.name] = pygame.image.load(f'./assets/cards/{card.name}')
+# def load_hand():
+#     for card in context.hand.cards:
+#         context.drawer.image_loader.card_images[card.name] = pygame.image.load(f'./assets/cards/{card.name}')
 
-def get_meld_type_from_card(focus_card, melds):
-    for meld in melds:
-        for card in meld:
-            if card == focus_card:
-                if card_data[meld[0].name]["rank"] == card_data[meld[1].name]["rank"]:
-                    return "set"
-                else:
-                    return "run"
-    return "none"
+# def get_meld_type_from_card(focus_card, melds):
+#     for meld in melds:
+#         for card in meld:
+#             if card == focus_card:
+#                 if card_data[meld[0].name]["rank"] == card_data[meld[1].name]["rank"]:
+#                     return "set"
+#                 else:
+#                     return "run"
+#     return "none"
 
 # def update_melds(this_hand):
 #     rank_groups = defaultdict(list)
@@ -307,32 +307,32 @@ def get_meld_type_from_card(focus_card, melds):
 
 #     return best_melds
 
-def get_melds(card, melds):
-    found_melds = []
-    for meld in melds:
-        if card in meld:
-            found_melds.append(meld)
-    return found_melds
+# def get_melds(card, melds):
+#     found_melds = []
+#     for meld in melds:
+#         if card in meld:
+#             found_melds.append(meld)
+#     return found_melds
 
-def num_of_melds(focus_card, melds):
-    cnt = 0
-    for meld in melds:
-        for card in meld:
-            if card == focus_card:
-                cnt += 1
-    return cnt
+# def num_of_melds(focus_card, melds):
+#     cnt = 0
+#     for meld in melds:
+#         for card in meld:
+#             if card == focus_card:
+#                 cnt += 1
+#     return cnt
 
-def calculate_deadwood(melds, cards):
-    deadwood = 0
-    meld_cards = []
-    for meld in melds:
-        for card in meld:
-            meld_cards.append(card)
-    for card in cards:
-        if card not in meld_cards:
-            deadwood += min(card_data[card.name]["rank"], 10)
+# def calculate_deadwood(melds, cards):
+#     deadwood = 0
+#     meld_cards = []
+#     for meld in melds:
+#         for card in meld:
+#             meld_cards.append(card)
+#     for card in cards:
+#         if card not in meld_cards:
+#             deadwood += min(card_data[card.name]["rank"], 10)
 
-    return deadwood
+#     return deadwood
 
 # def can_knock(melds, cards):
 #     meld_cards = []
@@ -358,173 +358,173 @@ def calculate_deadwood(melds, cards):
 #     else:
 #         return False
 
-def get_greatest_deadwood(melds, cards):
-    meld_cards = []
-    for meld in melds:
-        for card in meld:
-            meld_cards.append(card)
+# def get_greatest_deadwood(melds, cards):
+#     meld_cards = []
+#     for meld in melds:
+#         for card in meld:
+#             meld_cards.append(card)
 
-    greatest_deadwood = 0
-    gdc = None #greatest deadwood card
-    total_deadwood = 0
-    for card in cards:
-        if card not in meld_cards:
+#     greatest_deadwood = 0
+#     gdc = None #greatest deadwood card
+#     total_deadwood = 0
+#     for card in cards:
+#         if card not in meld_cards:
 
-            if card_data[card.name]["rank"] > 10:
-                total_deadwood += 10
-            else:
-                total_deadwood += card_data[card.name]["rank"]
+#             if card_data[card.name]["rank"] > 10:
+#                 total_deadwood += 10
+#             else:
+#                 total_deadwood += card_data[card.name]["rank"]
             
-            if card_data[card.name]["rank"] > greatest_deadwood:
-                greatest_deadwood = card_data[card.name]["rank"]
-                gdc = card
-    return gdc
+#             if card_data[card.name]["rank"] > greatest_deadwood:
+#                 greatest_deadwood = card_data[card.name]["rank"]
+#                 gdc = card
+#     return gdc
     
-def get_meld_type(meld):
-    if card_data[meld[0].name]["rank"] == card_data[meld[1].name]["rank"]:
-        return "set"
-    elif (abs(card_data[meld[0].name]["rank"] - card_data[meld[1].name]["rank"]) == 1 and card_data[meld[0].name]["suit"] == card_data[meld[1].name]["suit"]):
-        return "run"
-    else:
-        return "none"
+# def get_meld_type(meld):
+#     if card_data[meld[0].name]["rank"] == card_data[meld[1].name]["rank"]:
+#         return "set"
+#     elif (abs(card_data[meld[0].name]["rank"] - card_data[meld[1].name]["rank"]) == 1 and card_data[meld[0].name]["suit"] == card_data[meld[1].name]["suit"]):
+#         return "run"
+#     else:
+#         return "none"
     
-def can_contribute(card, meld):
-    type = get_meld_type(meld)
-    if type == "run":
-        if card_data[card.name]["suit"] == card_data[meld[0].name]["suit"]:
-            if card_data[card.name]["rank"] == card_data[meld[0].name]["rank"] - 1:
-                return True
-            elif card_data[card.name]["rank"] == card_data[meld[-1].name]["rank"] + 1:
-                return True
-    elif type == "set":
-        if card_data[card.name]["rank"] == card_data[meld[0].name]["rank"]:
-            return True
-    return False
+# def can_contribute(card, meld):
+#     type = get_meld_type(meld)
+#     if type == "run":
+#         if card_data[card.name]["suit"] == card_data[meld[0].name]["suit"]:
+#             if card_data[card.name]["rank"] == card_data[meld[0].name]["rank"] - 1:
+#                 return True
+#             elif card_data[card.name]["rank"] == card_data[meld[-1].name]["rank"] + 1:
+#                 return True
+#     elif type == "set":
+#         if card_data[card.name]["rank"] == card_data[meld[0].name]["rank"]:
+#             return True
+#     return False
 
-def sort_cards_suit(hand):
-    sort_cards_rank(hand)
-    suitgroups = defaultdict(list)
-    sorted_hand = []
-    for card in hand.cards:
-        suitgroups[card_data[card.name]["suit"]].append(card)
+# def sort_cards_suit(hand):
+#     sort_cards_rank(hand)
+#     suitgroups = defaultdict(list)
+#     sorted_hand = []
+#     for card in hand.cards:
+#         suitgroups[card_data[card.name]["suit"]].append(card)
     
-    for cards in suitgroups.values():
-        for card in cards:
-            sorted_hand.append(card)
-    hand.cards = sorted_hand
-    updateLocations()
+#     for cards in suitgroups.values():
+#         for card in cards:
+#             sorted_hand.append(card)
+#     hand.cards = sorted_hand
+#     updateLocations()
 
-def sort_cards_rank(hand):
-    sorted_hand = []
-    greatest_card = None
-    while hand.cards:
-        greatest_num = 0
-        for card in hand.cards:
-            if card_data[card.name]["rank"] >= greatest_num:
-                greatest_num = card_data[card.name]["rank"]
-                greatest_card = card
-        hand.cards.remove(greatest_card)
-        sorted_hand.append(greatest_card)
-    hand.cards = sorted_hand
-    updateLocations()
+# def sort_cards_rank(hand):
+#     sorted_hand = []
+#     greatest_card = None
+#     while hand.cards:
+#         greatest_num = 0
+#         for card in hand.cards:
+#             if card_data[card.name]["rank"] >= greatest_num:
+#                 greatest_num = card_data[card.name]["rank"]
+#                 greatest_card = card
+#         hand.cards.remove(greatest_card)
+#         sorted_hand.append(greatest_card)
+#     hand.cards = sorted_hand
+#     updateLocations()
 
-def calculate_round_score(knocker_hand, defender_hand):
-    knocker_melds = update_melds(knocker_hand)
-    defender_melds = update_melds(defender_hand)
+# def calculate_round_score(knocker_hand, defender_hand):
+#     knocker_melds = update_melds(knocker_hand)
+#     defender_melds = update_melds(defender_hand)
     
-    knocker_deadwood = calculate_deadwood(knocker_melds, knocker_hand.cards)
+#     knocker_deadwood = calculate_deadwood(knocker_melds, knocker_hand.cards)
     
-    # only consider cards that are actually deadwood for the defender
-    defender_meld_cards = [card for meld in defender_melds for card in meld]
-    defender_deadwood_cards = [card for card in defender_hand.cards if card not in defender_meld_cards]
+#     # only consider cards that are actually deadwood for the defender
+#     defender_meld_cards = [card for meld in defender_melds for card in meld]
+#     defender_deadwood_cards = [card for card in defender_hand.cards if card not in defender_meld_cards]
     
-    # lay off defender's deadwood onto knocker's melds
-    # skip layoff entirely if knocker has gin
-    laid_off = []
-    if knocker_deadwood > 0:
-        for meld in knocker_melds:
-            for card in defender_deadwood_cards:
-                if can_contribute(card, meld) and card not in laid_off:
-                    laid_off.append(card)
+#     # lay off defender's deadwood onto knocker's melds
+#     # skip layoff entirely if knocker has gin
+#     laid_off = []
+#     if knocker_deadwood > 0:
+#         for meld in knocker_melds:
+#             for card in defender_deadwood_cards:
+#                 if can_contribute(card, meld) and card not in laid_off:
+#                     laid_off.append(card)
 
-    # calculate defender's remaining deadwood after layoffs
-    defender_deadwood_score = sum(
-        min(card_data[card.name]["rank"], 10)
-        for card in defender_deadwood_cards
-        if card not in laid_off
-    )
+#     # calculate defender's remaining deadwood after layoffs
+#     defender_deadwood_score = sum(
+#         min(card_data[card.name]["rank"], 10)
+#         for card in defender_deadwood_cards
+#         if card not in laid_off
+#     )
     
-    if defender_deadwood_score <= knocker_deadwood:  # undercut
-        return 0, (knocker_deadwood - defender_deadwood_score) + 25
-    else:
-        return defender_deadwood_score - knocker_deadwood, 0
+#     if defender_deadwood_score <= knocker_deadwood:  # undercut
+#         return 0, (knocker_deadwood - defender_deadwood_score) + 25
+#     else:
+#         return defender_deadwood_score - knocker_deadwood, 0
 
-def computer_play():
+# def computer_play():
 
-    context.opp_hand.melds = update_melds(context.opp_hand)
-    current_deadwood = calculate_deadwood(context.opp_hand.melds, context.opp_hand.cards)
+#     context.opp_hand.melds = update_melds(context.opp_hand)
+#     current_deadwood = calculate_deadwood(context.opp_hand.melds, context.opp_hand.cards)
 
-    discard_card = context.discard_pile.cards[-1]
-    context.opp_hand.cards.append(discard_card)
-    simulated_melds = update_melds(context.opp_hand)
-    simulated_deadwood = calculate_deadwood(simulated_melds, context.opp_hand.cards)
-    context.opp_hand.cards.remove(discard_card)
+#     discard_card = context.discard_pile.cards[-1]
+#     context.opp_hand.cards.append(discard_card)
+#     simulated_melds = update_melds(context.opp_hand)
+#     simulated_deadwood = calculate_deadwood(simulated_melds, context.opp_hand.cards)
+#     context.opp_hand.cards.remove(discard_card)
 
-    pickup_dis = False
-    if simulated_deadwood < current_deadwood:
-        opp_drawn_card = pickup_discard(context.opp_hand)
-        pickup_dis = True
-    else:
-        opp_drawn_card = drawCard(context.deck, context.opp_hand)
+#     pickup_dis = False
+#     if simulated_deadwood < current_deadwood:
+#         opp_drawn_card = pickup_discard(context.opp_hand)
+#         pickup_dis = True
+#     else:
+#         opp_drawn_card = drawCard(context.deck, context.opp_hand)
     
-    #animate card movement
-    if pickup_dis:
-        animate_card_flip(context.drawer.image_loader.card_images[opp_drawn_card.name], context.drawer.image_loader.blue_back, context.drawer.rects.discard_rect.center, (opp_drawn_card.loc[0] + 73/2, opp_drawn_card.loc[1] + 98/2), context.constants.CARD_MOVEMENT_SPEED, context.drawer.surface_loader.game_surface, opp_drawn_card, -1)
-    else:
-        animate_card_slide_move(context.drawer.image_loader.blue_back, context.drawer.rects.draw_rect.center, (opp_drawn_card.loc[0], opp_drawn_card.loc[1]), context.constants.CARD_MOVEMENT_SPEED, context.drawer.surface_loader.game_surface, opp_drawn_card, -1)
+#     #animate card movement
+#     if pickup_dis:
+#         animate_card_flip(context.drawer.image_loader.card_images[opp_drawn_card.name], context.drawer.image_loader.blue_back, context.drawer.rects.discard_rect.center, (opp_drawn_card.loc[0] + 73/2, opp_drawn_card.loc[1] + 98/2), context.constants.CARD_MOVEMENT_SPEED, context.drawer.surface_loader.game_surface, opp_drawn_card, -1)
+#     else:
+#         animate_card_slide_move(context.drawer.image_loader.blue_back, context.drawer.rects.draw_rect.center, (opp_drawn_card.loc[0], opp_drawn_card.loc[1]), context.constants.CARD_MOVEMENT_SPEED, context.drawer.surface_loader.game_surface, opp_drawn_card, -1)
 
-    #update melds after pickup
-    context.opp_hand.melds = update_melds(context.opp_hand)
+#     #update melds after pickup
+#     context.opp_hand.melds = update_melds(context.opp_hand)
     
-    best_discard = None
-    best_deadwood = float('inf')
+#     best_discard = None
+#     best_deadwood = float('inf')
 
-    for card in context.opp_hand.cards:
-        in_meld = any(card in meld for meld in context.opp_hand.melds)
-        if in_meld:
-            continue
+#     for card in context.opp_hand.cards:
+#         in_meld = any(card in meld for meld in context.opp_hand.melds)
+#         if in_meld:
+#             continue
         
-        context.opp_hand.cards.remove(card)
-        simulated_melds = update_melds(context.opp_hand)
-        simulated_deadwood = calculate_deadwood(simulated_melds, context.opp_hand.cards)
-        context.opp_hand.cards.append(card)
+#         context.opp_hand.cards.remove(card)
+#         simulated_melds = update_melds(context.opp_hand)
+#         simulated_deadwood = calculate_deadwood(simulated_melds, context.opp_hand.cards)
+#         context.opp_hand.cards.append(card)
 
-        if simulated_deadwood < best_deadwood:
-            best_deadwood = simulated_deadwood
-            best_discard = card
+#         if simulated_deadwood < best_deadwood:
+#             best_deadwood = simulated_deadwood
+#             best_discard = card
 
-    if best_discard is None:
-        best_discard = context.opp_hand.cards[-1]
+#     if best_discard is None:
+#         best_discard = context.opp_hand.cards[-1]
 
-    animate_card_flip(context.drawer.image_loader.blue_back, context.drawer.image_loader.card_images[best_discard.name], (best_discard.loc[0] + 73/2, best_discard.loc[1] + 98/2), context.drawer.rects.discard_rect.center, context.constants.CARD_MOVEMENT_SPEED, context.drawer.surface_loader.game_surface, best_discard, -1)
-    discard(context.opp_hand, best_discard)
+#     animate_card_flip(context.drawer.image_loader.blue_back, context.drawer.image_loader.card_images[best_discard.name], (best_discard.loc[0] + 73/2, best_discard.loc[1] + 98/2), context.drawer.rects.discard_rect.center, context.constants.CARD_MOVEMENT_SPEED, context.drawer.surface_loader.game_surface, best_discard, -1)
+#     discard(context.opp_hand, best_discard)
 
-    context.opp_hand.melds = update_melds(context.opp_hand)
-    deadwood = calculate_deadwood(context.opp_hand.melds, context.opp_hand.cards)
+#     context.opp_hand.melds = update_melds(context.opp_hand)
+#     deadwood = calculate_deadwood(context.opp_hand.melds, context.opp_hand.cards)
 
-    if deadwood == 0:
-        context.opp_hand.can_knock = True
-        context.opp_hand.can_gin = True
-    elif deadwood <= 10:
-        context.opp_hand.can_knock = True
-        context.opp_hand.can_gin = False
+#     if deadwood == 0:
+#         context.opp_hand.can_knock = True
+#         context.opp_hand.can_gin = True
+#     elif deadwood <= 10:
+#         context.opp_hand.can_knock = True
+#         context.opp_hand.can_gin = False
     
-    if context.opp_hand.can_gin or context.opp_hand.can_knock:
-        global round_overlay, computer_knock
-        round_overlay = True
-        computer_knock = True
-        context.opp_hand.can_knock = False
-        context.opp_hand.can_gin = False
+#     if context.opp_hand.can_gin or context.opp_hand.can_knock:
+#         global round_overlay, computer_knock
+#         round_overlay = True
+#         computer_knock = True
+#         context.opp_hand.can_knock = False
+#         context.opp_hand.can_gin = False
     
     #return hamburger_x
 
@@ -610,62 +610,62 @@ def show_start_screen():
 
 #drawing functions
 #def draw_game_context.screen(menu_x, hamburger_x, surface):
-def draw_game_screen(): #maybe change to create game context.screen later
-    draw_background(context.drawer.surface_loader.game_surface)
-    context.drawer.draw_menu(context.drawer.surface_loader.game_surface, menu_active, dt)
-    draw_buttons(context.drawer.surface_loader.game_surface)
-    draw_cards(context.drawer.surface_loader.game_surface)
-    context.screen.display_surface.blit(context.drawer.surface_loader.game_surface, (0,0))
+# def draw_game_screen(): #maybe change to create game context.screen later
+#     #draw_background(context.drawer.surface_loader.game_surface)
+#     #context.drawer.draw_menu(context.drawer.surface_loader.game_surface, menu_active, dt)
+#     #draw_buttons(context.drawer.surface_loader.game_surface)
+#     draw_cards(context.drawer.surface_loader.game_surface)
+#     context.screen.display_surface.blit(context.drawer.surface_loader.game_surface, (0,0))
 
-def draw_background(surface):
-    surface.blit(context.drawer.image_loader.background, (0,0))
+# def draw_background(surface):
+#     surface.blit(context.drawer.image_loader.background, (0,0))
 
-def draw_networking_screen(dt):
-    context.drawer.surface_loader.networking_surface.blit(context.drawer.image_loader.networking_background, (0,0))
-    context.drawer.surface_loader.networking_surface.blit(context.drawer.text_renderer.multiplayer_menu_text, context.drawer.rects.multiplayer_menu_rect)
-    context.animator.animate_loading(dt, context.drawer.surface_loader.networking_surface)
-    context.drawer.draw_menu(context.drawer.surface_loader.networking_surface, menu_active, dt)
-    context.screen.display_surface.blit(context.drawer.surface_loader.networking_surface, (0,0))
+# def draw_networking_screen(dt):
+#     context.drawer.surface_loader.networking_surface.blit(context.drawer.image_loader.networking_background, (0,0))
+#     context.drawer.surface_loader.networking_surface.blit(context.drawer.text_renderer.multiplayer_menu_text, context.drawer.rects.multiplayer_menu_rect)
+#     context.animator.animate_loading(dt, context.drawer.surface_loader.networking_surface)
+#     context.drawer.draw_menu(context.drawer.surface_loader.networking_surface, menu_active, dt)
+#     context.screen.display_surface.blit(context.drawer.surface_loader.networking_surface, (0,0))
 
-def draw_cards(surface):
+#def draw_cards(surface):
 
     #draw pile
-    surface.blit(context.drawer.image_loader.blue_back, (surface.get_width() * 4/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
+    # surface.blit(context.drawer.image_loader.blue_back, (surface.get_width() * 4/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
 
-    #outline when discard pile is empty
-    pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
+    # #outline when discard pile is empty
+    # pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
     
-    #drawing the opponents hand
-    for card in context.opp_hand.cards:
-        if card.visible:
-            #surface.blit(blue_back, card.loc)
-            surface.blit(context.drawer.image_loader.card_images[card.name], card.loc)
+    # #drawing the opponents hand
+    # for card in context.opp_hand.cards:
+    #     if card.visible:
+    #         #surface.blit(blue_back, card.loc)
+    #         surface.blit(context.drawer.image_loader.card_images[card.name], card.loc)
 
     #discard pile
-    if context.discard_pile.cards:
-        if len(context.discard_pile.cards) > 1:
-            #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[len(discard_pile.cards) - 2].name}')
-            discard_top = context.drawer.image_loader.card_images[context.discard_pile.cards[-2].name]
-            surface.blit(discard_top, (surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
-        if context.discard_pile.cards[-1].visible:
-            #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
-            discard_top = context.drawer.image_loader.card_images[context.discard_pile.cards[-1].name]
-            surface.blit(discard_top, (surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
+    # if context.discard_pile.cards:
+    #     if len(context.discard_pile.cards) > 1:
+    #         #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[len(discard_pile.cards) - 2].name}')
+    #         discard_top = context.drawer.image_loader.card_images[context.discard_pile.cards[-2].name]
+    #         surface.blit(discard_top, (surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
+    #     if context.discard_pile.cards[-1].visible:
+    #         #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
+    #         discard_top = context.drawer.image_loader.card_images[context.discard_pile.cards[-1].name]
+    #         surface.blit(discard_top, (surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
 
     #drawing the hand while you're holding a card
-    if active_card:
-        active_card_x = active_card.loc[0]
-        for card in context.hand.cards:
-            if card.loc[0] < active_card_x: #draw all the card before the active card first
-                surface.blit(context.drawer.image_loader.card_images[card.name], (card.loc))
-        surface.blit(context.drawer.image_loader.card_images[active_card.name], (active_card.loc)) #draw the active card
-        for card in context.hand.cards:
-            if card.loc[0] > active_card_x: #draw all the cards after the active card last
-                surface.blit(context.drawer.image_loader.card_images[card.name], (card.loc))
-    else:
-        for card in context.hand.cards:
-            if card.visible:
-                surface.blit(context.drawer.image_loader.card_images[card.name], (card.loc))
+    # if active_card:
+    #     active_card_x = active_card.loc[0]
+    #     for card in context.hand.cards:
+    #         if card.loc[0] < active_card_x: #draw all the card before the active card first
+    #             surface.blit(context.drawer.image_loader.card_images[card.name], (card.loc))
+    #     surface.blit(context.drawer.image_loader.card_images[active_card.name], (active_card.loc)) #draw the active card
+    #     for card in context.hand.cards:
+    #         if card.loc[0] > active_card_x: #draw all the cards after the active card last
+    #             surface.blit(context.drawer.image_loader.card_images[card.name], (card.loc))
+    # else:
+    #     for card in context.hand.cards:
+    #         if card.visible:
+    #             surface.blit(context.drawer.image_loader.card_images[card.name], (card.loc))
          
 #def draw_menu(menu_x, hamburger_x, surface):
 # def draw_menu(surface):
@@ -736,119 +736,119 @@ def draw_cards(surface):
 #         pygame.draw.rect(surface, context.constants.BLACK, context.drawer.rects.opp_knock_rect, 2, border_radius=8)
 #         surface.blit(context.drawer.text_renderer.opp_knock_text, context.drawer.text_renderer.opp_knock_text.get_rect(center=context.drawer.rects.opp_knock_rect.center))
 
-def animate_card_flip(back_img, front_img, start_pos, end_pos, duration, surface, card, turn):
-    if turn == 1:
-        card.visible = False
-    frame_count = int(duration / (1000 / 60))
-    for frame in range(frame_count):
-        progress = frame / frame_count
-        progress_eased = 1 - (1 - progress) ** 3
+# def animate_card_flip(back_img, front_img, start_pos, end_pos, duration, surface, card, turn):
+#     if turn == 1:
+#         card.visible = False
+#     frame_count = int(duration / (1000 / 60))
+#     for frame in range(frame_count):
+#         progress = frame / frame_count
+#         progress_eased = 1 - (1 - progress) ** 3
 
-        x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased #moves closer to the end_pos using the difference
-        y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
+#         x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased #moves closer to the end_pos using the difference
+#         y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
 
-        if progress < 0.5:
-            scale = 1 - (2 * progress) #shrinks until it reaches 0
-            image = back_img
-        else:
-            scale = 2 * (progress - 0.5) #grows until it reaches 1
-            image = front_img
+#         if progress < 0.5:
+#             scale = 1 - (2 * progress) #shrinks until it reaches 0
+#             image = back_img
+#         else:
+#             scale = 2 * (progress - 0.5) #grows until it reaches 1
+#             image = front_img
         
-        scaled_width = max(1, int(image.get_width() * scale)) #scales the width until it reaches 100%
-        scaled_image = pygame.transform.scale(image, (scaled_width, image.get_height()))
+#         scaled_width = max(1, int(image.get_width() * scale)) #scales the width until it reaches 100%
+#         scaled_image = pygame.transform.scale(image, (scaled_width, image.get_height()))
 
-        draw_x = int(x - scaled_width // 2)
-        draw_y = int(y - image.get_height() // 2)
+#         draw_x = int(x - scaled_width // 2)
+#         draw_y = int(y - image.get_height() // 2)
 
-        draw_background(surface)
-        draw_buttons(surface)
-        if turn == 1:
-            draw_cards(surface)
-            surface.blit(scaled_image, (draw_x, draw_y))
-        else: #opp turn
+#         draw_background(surface)
+#         draw_buttons(surface)
+#         if turn == 1:
+#             draw_cards(surface)
+#             surface.blit(scaled_image, (draw_x, draw_y))
+#         else: #opp turn
 
-            #draw pile
-            surface.blit(context.drawer.image_loader.blue_back, (surface.get_width() * 4/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
+#             #draw pile
+#             surface.blit(context.drawer.image_loader.blue_back, (surface.get_width() * 4/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
 
-            #outline when discard pile is empty
-            pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
+#             #outline when discard pile is empty
+#             pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
 
-            #discard pile
-            if context.discard_pile.cards:
-                if len(context.discard_pile.cards) > 1:
-                    #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[len(discard_pile.cards) - 2].name}')
-                    discard_top = context.drawer.image_loader.card_images[context.discard_pile.cards[-2].name]
-                    surface.blit(discard_top, (surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
-                if context.discard_pile.cards[-1].visible:
-                    #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
-                    discard_top = context.drawer.image_loader.card_images[context.discard_pile.cards[-1].name]
-                    surface.blit(discard_top, (surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
+#             #discard pile
+#             if context.discard_pile.cards:
+#                 if len(context.discard_pile.cards) > 1:
+#                     #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[len(discard_pile.cards) - 2].name}')
+#                     discard_top = context.drawer.image_loader.card_images[context.discard_pile.cards[-2].name]
+#                     surface.blit(discard_top, (surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
+#                 if context.discard_pile.cards[-1].visible:
+#                     #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
+#                     discard_top = context.drawer.image_loader.card_images[context.discard_pile.cards[-1].name]
+#                     surface.blit(discard_top, (surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
 
-            index = context.opp_hand.cards.index(card)
-            for i in range(index):#cards before
-                surface.blit(context.drawer.image_loader.blue_back, context.opp_hand.cards[i].loc)
-            if card.visible: #animated card
-                surface.blit(scaled_image, (draw_x, draw_y))
-            for i in range(index + 1, len(context.opp_hand.cards)): #cards after
-                surface.blit(context.drawer.image_loader.blue_back, context.opp_hand.cards[i].loc)
-            for player_card in context.hand.cards: #player hand
-                surface.blit(context.drawer.image_loader.card_images[player_card.name], player_card.loc)
+#             index = context.opp_hand.cards.index(card)
+#             for i in range(index):#cards before
+#                 surface.blit(context.drawer.image_loader.blue_back, context.opp_hand.cards[i].loc)
+#             if card.visible: #animated card
+#                 surface.blit(scaled_image, (draw_x, draw_y))
+#             for i in range(index + 1, len(context.opp_hand.cards)): #cards after
+#                 surface.blit(context.drawer.image_loader.blue_back, context.opp_hand.cards[i].loc)
+#             for player_card in context.hand.cards: #player hand
+#                 surface.blit(context.drawer.image_loader.card_images[player_card.name], player_card.loc)
         
-        context.drawer.draw_menu(surface, menu_active, dt)
-        context.screen.display_surface.blit(surface, (0,0))
-        pygame.display.flip()
-    card.visible = True
-    #return hamburger_x  
+#         context.drawer.draw_menu(surface, menu_active, dt)
+#         context.screen.display_surface.blit(surface, (0,0))
+#         pygame.display.flip()
+#     card.visible = True
+#     #return hamburger_x  
 
-def animate_card_slide_move(front_img, start_pos, end_pos, duration, surface, card, turn):
-    if turn == 1:
-        card.visible = False
-    frame_count = int(duration / (1000 / 60))
-    for frame in range(frame_count):
-        progress = frame / frame_count
-        progress_eased = 1 - (1 - progress) ** 3
+# def animate_card_slide_move(front_img, start_pos, end_pos, duration, surface, card, turn):
+#     if turn == 1:
+#         card.visible = False
+#     frame_count = int(duration / (1000 / 60))
+#     for frame in range(frame_count):
+#         progress = frame / frame_count
+#         progress_eased = 1 - (1 - progress) ** 3
 
-        x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased #moves closer to the end_pos using the difference
-        y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
+#         x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased #moves closer to the end_pos using the difference
+#         y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
 
-        draw_background(surface)
-        draw_buttons(surface)
-        if turn == 1:
-            draw_cards(surface)
-            surface.blit(front_img, (x, y))
-        else: #opp turn
+#         draw_background(surface)
+#         draw_buttons(surface)
+#         if turn == 1:
+#             draw_cards(surface)
+#             surface.blit(front_img, (x, y))
+#         else: #opp turn
             
-            #draw pile
-            surface.blit(context.drawer.image_loader.blue_back, (surface.get_width() * 4/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
+#             #draw pile
+#             surface.blit(context.drawer.image_loader.blue_back, (surface.get_width() * 4/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
 
-            #outline when discard pile is empty
-            pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
+#             #outline when discard pile is empty
+#             pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
 
-            #discard pile
-            if context.discard_pile.cards:
-                if len(context.discard_pile.cards) > 1:
-                    #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[len(discard_pile.cards) - 2].name}')
-                    discard_top = context.drawer.image_loader.card_images[context.discard_pile.cards[-2].name]
-                    surface.blit(discard_top, (surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
-                if context.discard_pile.cards[-1].visible:
-                    #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
-                    discard_top = context.drawer.image_loader.card_images[context.discard_pile.cards[-1].name]
-                    surface.blit(discard_top, (surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
+#             #discard pile
+#             if context.discard_pile.cards:
+#                 if len(context.discard_pile.cards) > 1:
+#                     #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[len(discard_pile.cards) - 2].name}')
+#                     discard_top = context.drawer.image_loader.card_images[context.discard_pile.cards[-2].name]
+#                     surface.blit(discard_top, (surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
+#                 if context.discard_pile.cards[-1].visible:
+#                     #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
+#                     discard_top = context.drawer.image_loader.card_images[context.discard_pile.cards[-1].name]
+#                     surface.blit(discard_top, (surface.get_width() * 5/9 - context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - context.constants.CARD_HEIGHT / 2))
 
-            index = context.opp_hand.cards.index(card)
-            for i in range(index):#cards before
-                surface.blit(context.drawer.image_loader.blue_back, context.opp_hand.cards[i].loc)
-            if card.visible: #animated card
-                surface.blit(context.drawer.image_loader.blue_back, (x, y))
-            for i in range(index + 1, len(context.opp_hand.cards)): #cards after
-                surface.blit(context.drawer.image_loader.blue_back, context.opp_hand.cards[i].loc)
-            for player_card in context.hand.cards: #player hand
-                surface.blit(context.drawer.image_loader.card_images[player_card.name], player_card.loc)
+#             index = context.opp_hand.cards.index(card)
+#             for i in range(index):#cards before
+#                 surface.blit(context.drawer.image_loader.blue_back, context.opp_hand.cards[i].loc)
+#             if card.visible: #animated card
+#                 surface.blit(context.drawer.image_loader.blue_back, (x, y))
+#             for i in range(index + 1, len(context.opp_hand.cards)): #cards after
+#                 surface.blit(context.drawer.image_loader.blue_back, context.opp_hand.cards[i].loc)
+#             for player_card in context.hand.cards: #player hand
+#                 surface.blit(context.drawer.image_loader.card_images[player_card.name], player_card.loc)
         
-        context.drawer.draw_menu(surface, menu_active, dt)
-        context.screen.display_surface.blit(surface, (0,0))
-        pygame.display.flip()
-    card.visible = True
+#         context.drawer.draw_menu(surface, menu_active, dt)
+#         context.screen.display_surface.blit(surface, (0,0))
+#         pygame.display.flip()
+    #card.visible = True
     #return hamburger_x 
 
 def update_title_background(test):
@@ -861,11 +861,11 @@ def update_title_background(test):
     context.screen.display_surface.blit(context.drawer.text_renderer.start_text, context.drawer.rects.start_rect)
     context.screen.display_surface.blit(context.drawer.text_renderer.multiplayer_text, context.drawer.rects.multiplayer_rect)
 
-updateLocations()
-sort_cards_rank(context.opp_hand)
-load_hand()
+#updateLocations()
+#sort_cards_rank(context.opp_hand)
+#load_hand()
 #x_offset, singleplayer = show_start_context.screen() #menu starts here and waits for enter or shift
-context.audio.shuffle_sound.play()
+#context.audio.shuffle_sound.play()
 #singleplayer = True
 
 
@@ -1113,176 +1113,180 @@ while state_manager.running:
         #                 if context.drawer.rects.r_option_rect.collidepoint(event.pos):
         #                     restart = True
 
-    #hover_y logic
-    mouse_x, mouse_y = pygame.mouse.get_pos()
-    hover_candidate_y = None
+    state_manager.update(context.dt)
 
-    for card in reversed(context.hand.cards):
-        if card.dragging:
-            continue
-        width = 73 if card == context.hand.cards[-1] else (context.screen.display_surface.get_width() / 3) / max(len(context.hand.cards) - 1, 1) * 0.8
-        rect = pygame.Rect(card.loc[0], card.base_y, width, 98)
-        if rect.collidepoint((mouse_x, mouse_y)):
-            hover_candidate_y = card
-            break
+    # #hover_y logic
+    # mouse_x, mouse_y = pygame.mouse.get_pos()
+    # hover_candidate_y = None
 
-    for card in context.hand.cards:
-        if card is hover_candidate_y and not clicked:
-            card.hovered_y = True
-            card.target_y = card.base_y - card.vertical_offset
-        elif card is hover_candidate_y and clicked and active_card:
-            pass
-        else:
-            card.hovered_y = False
-            card.target_y = card.base_y
+    # for card in reversed(context.hand.cards):
+    #     if card.dragging:
+    #         continue
+    #     width = 73 if card == context.hand.cards[-1] else (context.screen.display_surface.get_width() / 3) / max(len(context.hand.cards) - 1, 1) * 0.8 #top card is 73, the rest is the calculated partial width
+    #     rect = pygame.Rect(card.loc[0], card.base_y, width, 98)
+    #     if rect.collidepoint((mouse_x, mouse_y)):
+    #         hover_candidate_y = card
+    #         break
 
-    for card in context.hand.cards:
-        if card.dragging:
-            continue
-        x, y = card.loc
-        target = card.target_y 
-        distance = target - y
-        card.velocity_y += distance * 0.2
-        card.velocity_y *= 0.35
-        y += card.velocity_y
+    # for card in context.hand.cards:
+    #     if card is hover_candidate_y and not clicked:
+    #         card.hovered_y = True
+    #         card.target_y = card.base_y - card.vertical_offset
+    #     elif card is hover_candidate_y and clicked and active_card:
+    #         pass
+    #     else:
+    #         card.hovered_y = False
+    #         card.target_y = card.base_y
 
-        if abs(distance) < 0.5 and abs(card.velocity_y) < 0.5:
-            y = target
-            card.velocity_y = 0
+    # for card in context.hand.cards:
+    #     if card.dragging:
+    #         continue
+    #     x, y = card.loc
+    #     target = card.target_y 
+    #     distance = target - y
+    #     card.velocity_y += distance * 0.2
+    #     card.velocity_y *= 0.35
+    #     y += card.velocity_y
 
-        card.loc = (x, y) #update the card location
+    #     if abs(distance) < 0.5 and abs(card.velocity_y) < 0.5:
+    #         y = target
+    #         card.velocity_y = 0
 
-    #hover_x logic
-    if active_card:
-        for i, card in enumerate(context.hand.cards):
-            if card.dragging:
-                continue
-            if card.loc[0] > active_card.loc[0] and i < original_index and card != active_card: #moving active card to the left
-                card.hovered_x = True
-                card.target_x = card.base_x + horizontal_shift
+    #     card.loc = (x, y) #update the card location
 
-            elif card.loc[0] < active_card.loc[0] and i > original_index and card != active_card: #moving active card to the right
-                card.hovered_x = True
-                card.target_x = card.base_x - horizontal_shift
+    # #hover_x logic
+    # if active_card:
+    #     for i, card in enumerate(context.hand.cards):
+    #         if card.dragging:
+    #             continue
+    #         if card.loc[0] > active_card.loc[0] and i < original_index and card != active_card: #moving active card to the left
+    #             card.hovered_x = True
+    #             card.target_x = card.base_x + horizontal_shift
 
-            else:
-                card.hovered_x = False
-                card.target_x = card.base_x
+    #         elif card.loc[0] < active_card.loc[0] and i > original_index and card != active_card: #moving active card to the right
+    #             card.hovered_x = True
+    #             card.target_x = card.base_x - horizontal_shift
 
-            x, y = card.loc
-            distance = card.target_x - x
-            card.velocity_x += distance * 0.2
-            card.velocity_x *= 0.35 #card movement speed
-            x += card.velocity_x
+    #         else:
+    #             card.hovered_x = False
+    #             card.target_x = card.base_x
 
-            if abs(distance) < 0.5 and abs(card.velocity_x) < 0.5:
-                x = card.target_x
-                card.velocity_x = 0
-            card.loc = (x, y)
+    #         x, y = card.loc
+    #         distance = card.target_x - x
+    #         card.velocity_x += distance * 0.2
+    #         card.velocity_x *= 0.35 #card movement speed
+    #         x += card.velocity_x
+
+    #         if abs(distance) < 0.5 and abs(card.velocity_x) < 0.5:
+    #             x = card.target_x
+    #             card.velocity_x = 0
+    #         card.loc = (x, y)
 
 
     #---------------------------------------Drawing Starts Here---------------------------------------#
 
-    if singleplayer:
+    state_manager.draw()
+
+    #if singleplayer:
         # draw_background(context.screen.display_surface)
         # draw_menu(context.screen.display_surface)
         # draw_buttons(context.screen.display_surface)
         # draw_cards(context.screen.display_surface)
-        context.draw_game_context.screen()
-    else:
+        #context.draw_game_context.screen()
+    #else:
         #draw_networking_background(context.screen.display_surface)
         #draw_menu(context.screen.display_surface)
         #context.screen.display_surface.blit(context.drawer.text_renderer.multiplayer_menu_text, context.drawer.rects.multiplayer_menu_rect)
-        context.draw_networking_context.screen(dt)
+        #context.draw_networking_context.screen(dt)
     #round overlay
-    if round_overlay:
-        overlay = pygame.Surface(context.screen.display_surface.get_size(), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 120))
-        context.screen.display_surface.blit(overlay, (0, 0))
+    # if round_overlay:
+    #     # overlay_surface = pygame.Surface(context.screen.display_surface.get_size(), pygame.SRCALPHA)
+    #     # overlay.fill((0, 0, 0, 120))
+    #     context.screen.display_surface.blit(overlay, (0, 0))
 
 
-        if player_knock or computer_knock:
-            context.hand.melds = update_melds(context.hand)
-            context.opp_hand.melds = update_melds(context.opp_hand)
+    #     if player_knock or computer_knock:
+    #         context.hand.melds = update_melds(context.hand)
+    #         context.opp_hand.melds = update_melds(context.opp_hand)
     
-            if player_knock:    #player knock logic
-                player_score, opp_score = calculate_round_score(context.hand, context.opp_hand)
-                context.hand.score += player_score
-                context.opp_hand.score += opp_score
-                player_knock = False
+    #         if player_knock:    #player knock logic
+    #             player_score, opp_score = calculate_round_score(context.hand, context.opp_hand)
+    #             context.hand.score += player_score
+    #             context.opp_hand.score += opp_score
+    #             player_knock = False
 
-            else:               #computer knock logic
-                opp_score, player_score = calculate_round_score(context.opp_hand, context.hand)
-                context.hand.score += player_score
-                context.opp_hand.score += opp_score
-                computer_knock = False
+    #         else:               #computer knock logic
+    #             opp_score, player_score = calculate_round_score(context.opp_hand, context.hand)
+    #             context.hand.score += player_score
+    #             context.opp_hand.score += opp_score
+    #             computer_knock = False
 
-            context.drawer.text_renderer.update_score_text(context.hand.score, context.opp_hand.score)
+    #         context.drawer.text_renderer.update_score_text(context.hand.score, context.opp_hand.score)
 
 
-        if context.drawer.text_renderer.player_score_text and context.drawer.text_renderer.opp_score_text:
-            context.screen.display_surface.blit(context.drawer.text_renderer.continue_text, context.drawer.text_renderer.continue_text.get_rect(center=(context.screen.display_width // 2, context.screen.display_height * 2/3)))
-            context.screen.display_surface.blit(context.drawer.text_renderer.player_score_text, context.drawer.text_renderer.player_score_text.get_rect(center=(context.screen.display_width // 2, context.screen.display_height * 1/3)))
-            context.screen.display_surface.blit(context.drawer.text_renderer.opp_score_text, context.drawer.text_renderer.opp_score_text.get_rect(center=(context.screen.display_width // 2, (context.screen.display_height * 1/3) + 25)))
+    #     if context.drawer.text_renderer.player_score_text and context.drawer.text_renderer.opp_score_text:
+    #         context.screen.display_surface.blit(context.drawer.text_renderer.continue_text, context.drawer.text_renderer.continue_text.get_rect(center=(context.screen.display_width // 2, context.screen.display_height * 2/3)))
+    #         context.screen.display_surface.blit(context.drawer.text_renderer.player_score_text, context.drawer.text_renderer.player_score_text.get_rect(center=(context.screen.display_width // 2, context.screen.display_height * 1/3)))
+    #         context.screen.display_surface.blit(context.drawer.text_renderer.opp_score_text, context.drawer.text_renderer.opp_score_text.get_rect(center=(context.screen.display_width // 2, (context.screen.display_height * 1/3) + 25)))
     
     #advance the turn
-    if (player_turn == -1):
-        computer_play()
-        sort_cards_rank(context.opp_hand)
+    #if (player_turn == -1):
+        #computer_play()
+        #sort_cards_rank(context.opp_hand)
         #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
         #discard_top = card_images[discard_pile.cards[-1].name]
-        player_turn *= -1
+        #player_turn *= -1
 
     #restart from title context.screen
-    if restart_from_main_menu:
-        menu_active = False
-        context.screen.menu_x = -1.5 * context.screen.menu_width
-        context.screen.hamburger_x = 30
-        turn = 1
+    # if restart_from_main_menu:
+    #     menu_active = False
+    #     context.screen.menu_x = -1.5 * context.screen.menu_width
+    #     context.screen.hamburger_x = 30
+    #     turn = 1
         #context.drawer.text_renderer = TextRenderer()
         #deck = Deck()
         #hand = Hand(deck)
         #discard_pile = DiscardPile(deck)
-        #opp_hand = Hand(deck)
-        updateLocations()
-        sort_cards_rank(context.opp_hand)
-        load_hand()
-        x_offset, singleplayer = show_start_screen()
-        context.audio.shuffle_sound.play()
+        # #opp_hand = Hand(deck)
+        # updateLocations()
+        # sort_cards_rank(context.opp_hand)
+        # load_hand()
+        # x_offset, singleplayer = show_start_screen()
+        # context.audio.shuffle_sound.play()
 
         #shows the context.screen wipe
-        if singleplayer:
-            draw_game_screen()
-            #draw_game_context.screen(context.screen.display_surface)
-            for wipe_x in range(0, context.screen.display_width + 1, context.constants.TITLE_WIPE_SPEED):
-                update_title_background(x_offset)
-                x_offset -= 0.5
-                context.screen.display_surface.blit(context.drawer.surface_loader.game_surface, (0, 0), area=pygame.Rect(0, 0, wipe_x, context.screen.display_height))
-                pygame.display.flip()
-                context.clock.tick(200)
-        else:
-            context.draw_networking_context.screen(dt)
-            for wipe_x in range(context.screen.display_width, -1, -context.constants.TITLE_WIPE_SPEED):
-                update_title_background(x_offset)
-                x_offset -= 0.5
-                context.screen.display_surface.blit(context.drawer.surface_loader.networking_surface, (0,0), area=pygame.Rect(-wipe_x, 0, context.screen.display_width, context.screen.display_height))
-                pygame.display.flip()
-                context.clock.tick(200)
+        # if singleplayer:
+        #     draw_game_screen()
+        #     #draw_game_context.screen(context.screen.display_surface)
+        #     for wipe_x in range(0, context.screen.display_width + 1, context.constants.TITLE_WIPE_SPEED):
+        #         update_title_background(x_offset)
+        #         x_offset -= 0.5
+        #         context.screen.display_surface.blit(context.drawer.surface_loader.game_surface, (0, 0), area=pygame.Rect(0, 0, wipe_x, context.screen.display_height))
+        #         pygame.display.flip()
+        #         context.clock.tick(200)
+        # else:
+        #     context.draw_networking_context.screen(dt)
+        #     for wipe_x in range(context.screen.display_width, -1, -context.constants.TITLE_WIPE_SPEED):
+        #         update_title_background(x_offset)
+        #         x_offset -= 0.5
+        #         context.screen.display_surface.blit(context.drawer.surface_loader.networking_surface, (0,0), area=pygame.Rect(-wipe_x, 0, context.screen.display_width, context.screen.display_height))
+        #         pygame.display.flip()
+        #         context.clock.tick(200)
 
-        restart_from_main_menu = False
+        #restart_from_main_menu = False
 
-    #restart from game
-    if restart:
-        #menu_active = False
-        turn = 1
-        #deck = Deck()
-        #hand = Hand(deck)
-        #discard_pile = DiscardPile(deck)
-        #opp_hand = Hand(deck)
-        updateLocations()
-        draw_cards(context.drawer.surface_loader.game_surface)
-        load_hand()
-        restart = False
+    # #restart from game
+    # if restart:
+    #     #menu_active = False
+    #     turn = 1
+    #     #deck = Deck()
+    #     #hand = Hand(deck)
+    #     #discard_pile = DiscardPile(deck)
+    #     #opp_hand = Hand(deck)
+    #     updateLocations()
+    #     draw_cards(context.drawer.surface_loader.game_surface)
+    #     load_hand()
+    #     restart = False
 
     pygame.display.update()
 

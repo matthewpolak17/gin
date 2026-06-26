@@ -20,15 +20,15 @@ class ImageLoader:
 
     def set_background(self):
         self.background = pygame.image.load(r'./assets/images/background.png').convert_alpha()
-        self.background = pygame.transform.scale(self.background, (self.screen.display_width, self.screen.display_height))
+        self.background = pygame.transform.scale(self.background, (self.context.screen.display_width, self.context.screen.display_height))
 
     def set_networking_background(self):
         self.networking_background = pygame.image.load(r'./assets/images/black.png').convert_alpha()
-        self.networking_background = pygame.transform.scale(self.networking_background, (self.screen.display_width, self.screen.display_height))
+        self.networking_background = pygame.transform.scale(self.networking_background, (self.context.screen.display_width, self.context.screen.display_height))
 
     def set_title_background(self):
         self.title_background = pygame.image.load(f'./assets/images/title_background.png').convert_alpha()
-        self.title_background = pygame.transform.scale(self.title_background, (self.screen.display_width, self.screen.display_height))
+        self.title_background = pygame.transform.scale(self.title_background, (self.context.screen.display_width, self.context.screen.display_height))
         self.title_background_width = self.title_background.get_width()
 
     def set_card_images(self, card_data):
@@ -40,5 +40,5 @@ class ImageLoader:
         self.loading_frames = []
         for i in range(12):
             image = pygame.image.load(f"./assets/images/loading_frame_{i}.png").convert_alpha()
-            image = pygame.transform.smoothscale(image, (self.screen.display_width // 50, self.screen.display_width // 50)) #width x width
+            image = pygame.transform.smoothscale(image, (self.context.screen.display_width // 50, self.context.screen.display_width // 50)) #width x width
             self.loading_frames.append(image)

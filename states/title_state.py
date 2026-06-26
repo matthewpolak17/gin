@@ -6,7 +6,7 @@ class TitleState(State):
         super().__init__(manager)
         self.context = context
 
-    def update(self):
+    def update(self, dt):
         pass
 
     def draw(self):

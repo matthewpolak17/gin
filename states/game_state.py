@@ -13,17 +13,119 @@ class GameState(State):
         self.original_loc = (0,0)
         self.original_index = None
         self.turn = 1
+        self.player_turn = 1
         self.drawn_card = None
         self.knocking = False
         self.horizontal_shift = (((self.context.screen.display_surface.get_width() / 3) / len(self.context.hand.cards)) * 0.8)
         self.player_knock = False
+        self.computer_knock = False
         self.round_overlay = False
 
-    def update(self):
-        pass
+    def update(self, dt):
+        #hover_y logic
+        mouse_pos = pygame.mouse.get_pos()
+        hover_candidate_y = None
+        for card in reversed(self.context.hand.cards):
+            if card.dragging:
+                continue
+            width = 73 if card == self.context.hand.cards[-1] else (self.context.screen.display_surface.get_width() / 3) / max(len(self.context.hand.cards) - 1, 1) * 0.8 #top card is 73, the rest is the calculated partial width
+            rect = pygame.Rect(card.loc[0], card.base_y, width, 98)
+            if rect.collidepoint((mouse_pos[0], mouse_pos[1])):
+                hover_candidate_y = card
+                break
+        for card in self.context.hand.cards:
+            if card is hover_candidate_y and not self.clicked:
+                card.hovered_y = True
+                card.target_y = card.base_y = card.vertical_offset
+            elif card is hover_candidate_y and self.clicked and self.active_card:
+                pass
+            else:
+                card.hovered_y = False
+                card.target_y = card.base_y
+        for card in self.context.hand.cards:
+            if card.dragging:
+                continue
+            x, y = card.loc
+            target = card.target_y 
+            distance = target - y
+            card.velocity_y += distance * 0.2
+            card.velocity_y *= 0.35
+            y += card.velocity_y
+
+            if abs(distance) < 0.5 and abs(card.velocity_y) < 0.5:
+                y = target
+                card.velocity_y = 0
+
+            card.loc = (x, y) #update the card location
+
+        #hover_x logic
+        if self.active_card:
+            for i, card in enumerate(self.context.hand.cards):
+                if card.dragging:
+                    continue
+                if card.loc[0] > self.active_card.loc[0] and i < self.original_index and card != self.active_card: #moving active card to the left
+                    card.hovered_x = True
+                    card.target_x = card.base_x + self.horizontal_shift
+
+                elif card.loc[0] < self.active_card.loc[0] and i > self.original_index and card != self.active_card: #moving active card to the right
+                    card.hovered_x = True
+                    card.target_x = card.base_x - self.horizontal_shift
+
+                else:
+                    card.hovered_x = False
+                    card.target_x = card.base_x
+
+                x, y = card.loc
+                distance = card.target_x - x
+                card.velocity_x += distance * 0.2
+                card.velocity_x *= 0.35 #card movement speed
+                x += card.velocity_x
+
+                if abs(distance) < 0.5 and abs(card.velocity_x) < 0.5:
+                    x = card.target_x
+                    card.velocity_x = 0
+                card.loc = (x, y)
+
+        #round overlay logic
+        if self.player_knock or self.computer_knock:
+            self.context.hand.melds = self.update_melds(self.context.hand)
+            self.context.opp_hand.melds = self.update_melds(self.context.opp_hand)
+            if self.player_knock:
+                player_score, opp_score = self.calculate_round_score(self.context.hand, self.context.opp_hand)
+                self.context.hand.score += player_score
+                self.context.opp_hand.score += opp_score
+                self.player_knock = False
+            else:
+                opp_score, player_score = self.calculate_round_score(self.context.opp_hand, self.context.hand)
+                self.context.hand.score += player_score
+                self.context.opp_hand.score += opp_score
+                self.computer_knock = False
+            self.context.text_renderer.update_score_text(self.context.hand.score, self.context.opp_hand.score)
+
+        #advance the turn
+        if (self.player_turn == -1):
+            self.computer_play()
+            self.sort_cards_rank(self.context.opp_hand)
+            self.player_turn *= -1
+        if self.manager.restart_from_main_menu:
+            self.manager.restart_from_main_menu = False
+            self.manager.menu_active = False
+            self.context.screen.menu_x = -1.5 * self.context.screen.menu_width
+            self.context.screen.hamburger_x = 30
+            self.turn = 1
+            self.sort_cards_rank(self.context.opp_hand)
+            self.manager.set("title")
+        if self.manager.restart:
+            self.context.reset_round()
+            self.manager.restart = False
 
     def draw(self):
-        pass
+        self.context.drawer.draw_game_background()
+        self.context.drawer.draw_menu(self.context.surface_loader.game_surface, self.manager.menu_active, self.context.dt)
+        self.context.drawer.draw_buttons()
+        self.context.drawer.draw_cards(self.active_card)
+        self.context.drawer.draw_round_overlay(self.round_overlay)
+        self.context.screen.display_surface.blit(self.context.surface_loader.game_surface, (0,0))
 
     def exit(self):
         pass
@@ -56,17 +158,17 @@ class GameState(State):
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
-                if self.manager.engine.drawer.menu_rect.collidepoint(event.pos):
+                if self.context.rects.menu_rect.collidepoint(event.pos):
                     self.manager.menu_active = True
-                if self.manager.engine.drawer.main_menu_overlay_rect.collidepoint(event.pos):
+                if self.context.rects.main_menu_overlay_rect.collidepoint(event.pos):
                     self.manager.menu_active = False
                 if self.manager.menu_active:
-                    self.context.drawer.rects.update_option_rects()
-                    if self.context.drawer.rects.mm_option_rect.collidepoint(event.pos):
+                    self.context.rects.update_option_rects()
+                    if self.context.rects.mm_option_rect.collidepoint(event.pos):
                         self.manager.restart_from_main_menu = True
-                    if self.context.drawer.rects.qg_option_rect.collidepoint(event.pos):
+                    if self.context.rects.qg_option_rect.collidepoint(event.pos):
                         self.manager.running = False
-                    if self.context.drawer.rects.r_option_rect.collidepoint(event.pos):
+                    if self.context.rects.r_option_rect.collidepoint(event.pos):
                         self.manager.restart = True
                 for card in reversed(self.context.hand.cards):
                     if card == self.context.hand.cards[-1]:
@@ -79,30 +181,30 @@ class GameState(State):
                         self.active_card.dragging = True
                         self.original_loc = self.active_card.loc
                         self.original_index = self.context.hand.cards.index(self.active_card)
-                        card_x = event.pos[0] - self.active_card.loc[0]
-                        card_y = event.pos[1] - self.active_card.loc[1]
+                        #card_x = event.pos[0] - self.active_card.loc[0]
+                        #card_y = event.pos[1] - self.active_card.loc[1]
                         break
-                    elif self.context.drawer.draw_rect.collidepoint(event.pos):
+                    elif self.context.rects.draw_rect.collidepoint(event.pos):
                         if self.turn == 1:
                             random.choice(self.context.audio.thwip_sounds).play()
                             self.drawn_card = self.pickup_card(self.context.deck, self.context.hand)
                             self.drawn_card.visible = False
-                            self.context.animator.animate_player_card_flip(self.drawn_card, self.context.drawer.draw_rect.center, (self.context.hand.cards[-1].loc[0] + 73/2, self.context.hand.cards[-1].loc[1] + 98/2))
+                            self.context.animator.animate_player_card_flip(self.drawn_card, self.context.rects.draw_rect.center, (self.context.hand.cards[-1].loc[0] + 73/2, self.context.hand.cards[-1].loc[1] + 98/2), self.active_card)
                             self.drawn_card = None
                             self.context.hand.melds = self.update_melds(self.context.hand)
                             if self.can_knock(self.context.hand.melds, self.context.hand.cards):
                                 self.context.hand.can_knock = True
                             self.turn *= -1
                             break
-                    elif self.context.drawer.rects.sort_rect_rank.collidepoint(event.pos):
+                    elif self.context.rects.sort_rect_rank.collidepoint(event.pos):
                         self.sort_cards_rank(self.context.hand)
-                    elif self.context.drawer.rects.sort_rect_suit.collidepoint(event.pos):
+                    elif self.context.rects.sort_rect_suit.collidepoint(event.pos):
                         self.sort_cards_suit(self.context.hand)
-                    elif self.context.drawer.rects.player_knock_rect.collidepoint(event.pos):
+                    elif self.context.rects.player_knock_rect.collidepoint(event.pos):
                         self.knocking = True
         elif event.type == pygame.MOUSEMOTION and self.clicked == True:
             if self.active_card:
-                self.active_card.loc = (event.pos[0] - card_x, event.pos[1] - card_y)
+                self.active_card.loc = (event.pos[0] - (event.pos[0] - self.active_card.loc[0]), event.pos[1] - (event.pos[1] - self.active_card.loc[1]))
         elif event.type == pygame.MOUSEBUTTONUP:
             if self.active_card:
                 self.active_card.dragging = False
@@ -130,7 +232,7 @@ class GameState(State):
                         self.context.hand.cards[i] = self.context.hand.cards[i+1]
                     self.context.hand.cards[starting_hover_index] = placeholder
 
-                if self.context.drawer.rects.discard_rect.collidepoint(event.pos) and self.turn == -1:
+                if self.context.rects.discard_rect.collidepoint(event.pos) and self.turn == -1:
                     self.discard(self.context.hand, self.active_card)
                     if self.knocking:
                         self.round_overlay = True
@@ -181,6 +283,12 @@ class GameState(State):
     def discard(self, hand, active_card):
         hand.cards.remove(active_card)
         self.context.discard_pile.cards.append(active_card)
+
+    def pickup_discard(self, hand):
+        choice = self.context.discard_pile.cards[-1]
+        hand.cards.append(choice)
+        self.context.discard_pile.cards.remove(choice)
+        return choice
 
     def can_knock(self, melds, cards):
         meld_cards = []
@@ -284,4 +392,133 @@ class GameState(State):
         set_card_positions(self.context.hand.cards, 1.5 * mid_y)
         set_card_positions(self.context.opp_hand.cards, 0.5 * mid_y - 98)
 
+    def calculate_round_score(self, knocker_hand, defender_hand):
+        #knocker_melds = update_melds(knocker_hand)
+        #defender_melds = update_melds(defender_hand)
+        
+        #knocker_deadwood = calculate_deadwood(knocker_melds, knocker_hand.cards)
+        knocker_deadwood = self.calculate_deadwood(knocker_hand.melds, knocker_hand.cards)
+        
+        # only consider cards that are actually deadwood for the defender
+        defender_meld_cards = [card for meld in defender_hand.melds for card in meld]
+        defender_deadwood_cards = [card for card in defender_hand.cards if card not in defender_meld_cards]
+        
+        # lay off defender's deadwood onto knocker's melds
+        # skip layoff entirely if knocker has gin
+        laid_off = []
+        if knocker_deadwood > 0:
+            for meld in knocker_hand.melds:
+                for card in defender_deadwood_cards:
+                    if self.can_contribute(card, meld) and card not in laid_off:
+                        laid_off.append(card)
 
+        # calculate defender's remaining deadwood after layoffs
+        defender_deadwood_score = sum(
+            min(self.contextcard_data[card.name]["rank"], 10)
+            for card in defender_deadwood_cards
+            if card not in laid_off
+        )
+        
+        if defender_deadwood_score <= knocker_deadwood:  # undercut
+            return 0, (knocker_deadwood - defender_deadwood_score) + 25
+        else:
+            return defender_deadwood_score - knocker_deadwood, 0
+
+    def calculate_deadwood(self, melds, cards):
+        deadwood = 0
+        meld_cards = []
+        for meld in melds:
+            for card in meld:
+                meld_cards.append(card)
+        for card in cards:
+            if card not in meld_cards:
+                deadwood += min(self.context.card_data[card.name]["rank"], 10)
+        return deadwood
+    
+    def can_contribute(self, card, meld):
+        type = self.get_meld_type(meld)
+        if type == "run":
+            if self.context.card_data[card.name]["suit"] == self.context.card_data[meld[0].name]["suit"]:
+                if self.context.card_data[card.name]["rank"] == self.context.card_data[meld[0].name]["rank"] - 1:
+                    return True
+                elif self.context.card_data[card.name]["rank"] == self.context.card_data[meld[-1].name]["rank"] + 1:
+                    return True
+        elif type == "set":
+            if self.context.card_data[card.name]["rank"] == self.context.card_data[meld[0].name]["rank"]:
+                return True
+        return False
+
+    def get_meld_type(self, meld):
+        if self.context.card_data[meld[0].name]["rank"] == self.context.card_data[meld[1].name]["rank"]:
+            return "set"
+        elif (abs(self.context.card_data[meld[0].name]["rank"] - self.context.card_data[meld[1].name]["rank"]) == 1 and self.context.card_data[meld[0].name]["suit"] == self.context.card_data[meld[1].name]["suit"]):
+            return "run"
+        else:
+            return "none"
+
+    def computer_play(self):
+        self.context.opp_hand.melds = self.update_melds(self.context.opp_hand)
+        current_deadwood = self.calculate_deadwood(self.context.opp_hand.melds, self.context.opp_hand.cards)
+
+        discard_card = self.context.discard_pile.cards[-1]
+        self.context.opp_hand.cards.append(discard_card)
+        simulated_melds = self.update_melds(self.context.opp_hand)
+        simulated_deadwood = self.calculate_deadwood(simulated_melds, self.context.opp_hand.cards)
+        self.context.opp_hand.cards.remove(discard_card)
+
+        pickup_dis = False
+        if simulated_deadwood < current_deadwood:
+            opp_drawn_card = self.pickup_discard(self.context.opp_hand)
+            pickup_dis = True
+        else:
+            opp_drawn_card = self.pickup_card(self.context.deck, self.context.opp_hand)
+        
+        #animate card movement
+        if pickup_dis:
+            self.context.animator.animate_opp_card_flip(opp_drawn_card, self.context.rects.discard_rect.center, (opp_drawn_card.loc[0] + 73/2, opp_drawn_card.loc[1] + 98/2))
+        else:
+            #animate_card_slide_move(context.drawer.image_loader.blue_back, self.context.drawer.rects.draw_rect.center, (opp_drawn_card.loc[0], opp_drawn_card.loc[1]), context.constants.CARD_MOVEMENT_SPEED, context.drawer.surface_loader.game_surface, opp_drawn_card, -1)
+            self.context.animator.animate_card_slide_move(self.context.image_loader.blue_back, self.context.draw_rect.center, (opp_drawn_card.loc[0], opp_drawn_card.loc[1]))
+        #update melds after pickup
+        self.context.opp_hand.melds = self.update_melds(self.context.opp_hand)
+        
+        best_discard = None
+        best_deadwood = float('inf')
+
+        for card in self.context.opp_hand.cards:
+            in_meld = any(card in meld for meld in self.context.opp_hand.melds)
+            if in_meld:
+                continue
+            
+            self.context.opp_hand.cards.remove(card)
+            simulated_melds = self.update_melds(self.context.opp_hand)
+            simulated_deadwood = self.calculate_deadwood(simulated_melds, self.context.opp_hand.cards)
+            self.context.opp_hand.cards.append(card)
+
+            if simulated_deadwood < best_deadwood:
+                best_deadwood = simulated_deadwood
+                best_discard = card
+
+        if best_discard is None:
+            best_discard = self.context.opp_hand.cards[-1]
+
+        #self.context.animator.animate_opp_card_flip(context.drawer.image_loader.blue_back, context.drawer.image_loader.card_images[best_discard.name], (best_discard.loc[0] + 73/2, best_discard.loc[1] + 98/2), context.drawer.rects.discard_rect.center, context.constants.CARD_MOVEMENT_SPEED, context.drawer.surface_loader.game_surface, best_discard, -1)
+        self.context.animator.animate_opp_card_flip(best_discard, (best_discard.loc[0] + 73/2, best_discard.loc[1] + 98/2), self.context.rects.discard_rect.center)
+        self.discard(self.context.opp_hand, best_discard)
+
+        self.context.opp_hand.melds = self.update_melds(self.context.opp_hand)
+        deadwood = self.calculate_deadwood(self.context.opp_hand.melds, self.context.opp_hand.cards)
+
+        if deadwood == 0:
+            self.context.opp_hand.can_knock = True
+            self.context.opp_hand.can_gin = True
+        elif deadwood <= 10:
+            self.context.opp_hand.can_knock = True
+            self.context.opp_hand.can_gin = False
+        
+        if self.context.opp_hand.can_gin or self.context.opp_hand.can_knock:
+            global round_overlay, computer_knock
+            round_overlay = True
+            computer_knock = True
+            self.context.opp_hand.can_knock = False
+            self.context.opp_hand.can_gin = False
