@@ -18,12 +18,16 @@ class StateManager:
         if self.active_state:
             self.active_state.exit()
         self.active_state = self.states[name]
-    
+        self.active_state.enter()
+
     def handle_event(self, event):
         self.active_state.handle_event(event)
 
-    def update(self, dt):
-        self.active_state.update(dt)
+    def update(self):
+        self.active_state.update()
+
+        if self.active_state.requested_state_change:
+            self.set(self.active_state.requested_state_change)
 
     def draw(self):
         self.active_state.draw()

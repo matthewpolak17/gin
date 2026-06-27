@@ -4,8 +4,25 @@ class Drawer:
     def __init__(self, context):
         self.context = context
     
-    def draw_to_game_surface(self, image, x, y):
-        self.context.surface_loader.game_surface.blit(image, (x,y))
+    def draw_player_card_flip(self, drawn_card, start_pos, end_pos):
+        progress = self.context.animator.player_card_flip.frame / self.context.animator.player_card_flip.total_frames
+        progress_eased = progress_eased = 1 - (1 - progress) ** 3
+        x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased
+        y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
+        if progress < 0.5:
+            scale = 1 - (2 * progress)
+            image = self.context.image_loader.blue_back
+        else:
+            scale = (2 * progress) - 1
+            image = self.context.image_loader.card_images[drawn_card.name]
+        
+        scaled_width = max(1, int(image.get_width() * scale))
+        scaled_image = pygame.transform.scale(image, (scaled_width, image.get_height()))
+
+        draw_x = int(x - scaled_width // 2)
+        draw_y = int(y - image.get_height() // 2)
+        print(scaled_width)
+        self.context.surface_loader.game_surface.blit(scaled_image, (draw_x, draw_y))
     
     def draw_loading_frame(self, frame, surface):
         surface.blit(frame, (self.context.screen.display_width - 2*frame.get_width() ,self.context.screen.display_height - 2*frame.get_height()))
@@ -40,12 +57,19 @@ class Drawer:
     def draw_title_wipe_frame(self, frame, surface):
         surface.blit(self.context.surface_loader.game_surface, (0, 0), area=pygame.Rect(0, 0, frame, self.context.screen.display_height))
 
-    def draw_title_background_frame(self, frame, surface):
-        surface.blit(self.context.image_loader.title_background, (-frame, 0))
-        surface.blit(self.context.image_loader.title_background, (-frame + self.context.image_loader.title_background_width, 0))  
-        surface.blit(self.context.text_renderer.start_text, self.context.rects.start_rect)
-        surface.blit(self.context.text_renderer.multiplayer_text, self.context.rects.multiplayer_rect)
+    def draw_title_background(self):
+        frame = self.context.animator.title_background.frame
+        self.context.surface_loader.title_surface.blit(self.context.image_loader.title_background, (-frame, 0))
+        self.context.surface_loader.title_surface.blit(self.context.image_loader.title_background, (-frame + self.context.image_loader.title_background_width, 0))  
+        self.context.surface_loader.title_surface.blit(self.context.text_renderer.start_text, self.context.rects.start_rect)
+        self.context.surface_loader.title_surface.blit(self.context.text_renderer.multiplayer_text, self.context.rects.multiplayer_rect)
     
+    def draw_title_text(self):
+        surface = self.context.text_renderer.title_text
+        x = (self.context.screen.display_width - surface.get_width()) // 2
+        y = (self.context.screen.display_height - surface.get_height()) * 5/12
+        self.context.surface_loader.title_surface.blit(surface, (x, y))
+
     #game surface specific functions
     def draw_button(self, rect, text_surface, visible=True):
         if not visible:
@@ -81,7 +105,8 @@ class Drawer:
     def draw_game_background(self):
         self.context.surface_loader.game_surface.blit(self.context.image_loader.background, (0,0))
 
-    def draw_cards(self, active_card):
+    def draw_cards(self, active_card, card_hovered):
+        frame = self.context.animator.card_hover_y.frame
         surface = self.context.surface_loader.game_surface
         surface.blit(self.context.image_loader.blue_back, (surface.get_width() * 4/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
         pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
@@ -109,8 +134,10 @@ class Drawer:
                     surface.blit(self.context.image_loader.card_images[card.name], (card.loc))
         else:
             for card in self.context.hand.cards:
-                if card.visible:
-                    surface.blit(self.context.image_loader.card_images[card.name], (card.loc))      
+                if card == card_hovered:
+                    surface.blit(self.context.image_loader.card_images[card.name], (card.loc[0], card.loc[1] - frame))     
+                elif card.visible:
+                    surface.blit(self.context.image_loader.card_images[card.name], card.loc)
 
     def draw_round_overlay(self, round_overlay):
         if round_overlay:
@@ -119,3 +146,4 @@ class Drawer:
             self.context.screen.game_surface.blit(self.context.text_renderer.continue_text, self.context.text_renderer.continue_text.get_rect(center=(self.context.screen.display_width // 2, self.context.screen.display_height * 2/3)))
             self.context.screen.game_surface.blit(self.context.text_renderer.player_score_text, self.context.text_renderer.player_score_text.get_rect(center=(self.context.screen.display_width // 2, self.context.screen.display_height * 1/3)))
             self.context.screen.game_surface.blit(self.context.text_renderer.opp_score_text, self.context.text_renderer.opp_score_text.get_rect(center=(self.context.screen.display_width // 2, (self.context.screen.display_height * 1/3) + 25)))
+

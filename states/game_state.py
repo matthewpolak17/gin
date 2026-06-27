@@ -10,53 +10,31 @@ class GameState(State):
         self.context = context
         self.clicked = False
         self.active_card = None
+        self.card_hovered = None
         self.original_loc = (0,0)
         self.original_index = None
         self.turn = 1
+        self.card_x = 0
+        self.card_y = 0
         self.player_turn = 1
         self.drawn_card = None
+        self.flip_complete = False
         self.knocking = False
         self.horizontal_shift = (((self.context.screen.display_surface.get_width() / 3) / len(self.context.hand.cards)) * 0.8)
         self.player_knock = False
         self.computer_knock = False
         self.round_overlay = False
 
-    def update(self, dt):
-        #hover_y logic
-        mouse_pos = pygame.mouse.get_pos()
-        hover_candidate_y = None
-        for card in reversed(self.context.hand.cards):
-            if card.dragging:
-                continue
-            width = 73 if card == self.context.hand.cards[-1] else (self.context.screen.display_surface.get_width() / 3) / max(len(self.context.hand.cards) - 1, 1) * 0.8 #top card is 73, the rest is the calculated partial width
-            rect = pygame.Rect(card.loc[0], card.base_y, width, 98)
-            if rect.collidepoint((mouse_pos[0], mouse_pos[1])):
-                hover_candidate_y = card
-                break
-        for card in self.context.hand.cards:
-            if card is hover_candidate_y and not self.clicked:
-                card.hovered_y = True
-                card.target_y = card.base_y = card.vertical_offset
-            elif card is hover_candidate_y and self.clicked and self.active_card:
-                pass
-            else:
-                card.hovered_y = False
-                card.target_y = card.base_y
-        for card in self.context.hand.cards:
-            if card.dragging:
-                continue
-            x, y = card.loc
-            target = card.target_y 
-            distance = target - y
-            card.velocity_y += distance * 0.2
-            card.velocity_y *= 0.35
-            y += card.velocity_y
-
-            if abs(distance) < 0.5 and abs(card.velocity_y) < 0.5:
-                y = target
-                card.velocity_y = 0
-
-            card.loc = (x, y) #update the card location
+    def update(self):
+        print("flip active:", self.context.animator.player_card_flip.active)
+        print("flip finished:", self.context.animator.player_card_flip.finished)
+        print("drawn_card:", self.drawn_card)
+        print("flip_complete:", self.flip_complete)
+        self.context.updateLocations() 
+        self.update_card_hover()
+        self.context.animator.animate_player_card_flip()
+        if self.context.animator.player_card_flip.finished and self.drawn_card:
+            self.flip_complete = True
 
         #hover_x logic
         if self.active_card:
@@ -123,7 +101,12 @@ class GameState(State):
         self.context.drawer.draw_game_background()
         self.context.drawer.draw_menu(self.context.surface_loader.game_surface, self.manager.menu_active, self.context.dt)
         self.context.drawer.draw_buttons()
-        self.context.drawer.draw_cards(self.active_card)
+        self.context.drawer.draw_cards(self.active_card, self.card_hovered)
+        if self.drawn_card:
+            self.context.drawer.draw_player_card_flip(self.drawn_card, self.context.rects.draw_rect.center, (self.context.hand.cards[-1].loc[0] + 73/2, self.context.hand.cards[-1].loc[1] + 98/2))
+            self.drawn_card.visible = True
+            self.drawn_card = None
+            self.flip_complete = False
         self.context.drawer.draw_round_overlay(self.round_overlay)
         self.context.screen.display_surface.blit(self.context.surface_loader.game_surface, (0,0))
 
@@ -181,16 +164,16 @@ class GameState(State):
                         self.active_card.dragging = True
                         self.original_loc = self.active_card.loc
                         self.original_index = self.context.hand.cards.index(self.active_card)
-                        #card_x = event.pos[0] - self.active_card.loc[0]
-                        #card_y = event.pos[1] - self.active_card.loc[1]
+                        self.card_x = event.pos[0] - self.active_card.loc[0]
+                        self.card_y = event.pos[1] - self.active_card.loc[1]
                         break
                     elif self.context.rects.draw_rect.collidepoint(event.pos):
                         if self.turn == 1:
                             random.choice(self.context.audio.thwip_sounds).play()
                             self.drawn_card = self.pickup_card(self.context.deck, self.context.hand)
                             self.drawn_card.visible = False
-                            self.context.animator.animate_player_card_flip(self.drawn_card, self.context.rects.draw_rect.center, (self.context.hand.cards[-1].loc[0] + 73/2, self.context.hand.cards[-1].loc[1] + 98/2), self.active_card)
-                            self.drawn_card = None
+                            self.context.animator.player_card_flip.start()
+                            self.flip_complete = False
                             self.context.hand.melds = self.update_melds(self.context.hand)
                             if self.can_knock(self.context.hand.melds, self.context.hand.cards):
                                 self.context.hand.can_knock = True
@@ -204,7 +187,7 @@ class GameState(State):
                         self.knocking = True
         elif event.type == pygame.MOUSEMOTION and self.clicked == True:
             if self.active_card:
-                self.active_card.loc = (event.pos[0] - (event.pos[0] - self.active_card.loc[0]), event.pos[1] - (event.pos[1] - self.active_card.loc[1]))
+                self.active_card.loc = (event.pos[0] - self.card_x, event.pos[1] - self.card_y)
         elif event.type == pygame.MOUSEBUTTONUP:
             if self.active_card:
                 self.active_card.dragging = False
@@ -245,14 +228,11 @@ class GameState(State):
                     card.hovered_x = False
                 self.active_card = None
                 self.clicked = False
-        self.updateLocations()         
-
+        
     def pickup_card(self, deck, hand): #replaced drawCard()
         choice = random.choice(deck.cards)
         hand.cards.append(choice)
         deck.cards.remove(choice)
-        #load_hand()
-        #self.updateLocations()
         return choice
     
     def sort_cards_rank(self, hand):
@@ -370,27 +350,6 @@ class GameState(State):
                         best_deadwood = deadwood
                         best_melds = list(combo)
         return best_melds
-
-    def updateLocations(self):
-        def set_card_positions(cards, y_offset, spacing_scale = self.context.constants.CARD_SPACING):
-            win_width = self.context.screen.display_surface.get_width()
-            max_spacing = (win_width / 3) / len(cards)
-            spacing = max_spacing * spacing_scale
-            total_width = spacing * (len(cards) - 1)
-            start_x = (win_width - total_width) / 2 - 36
-
-            for x, card in enumerate(cards):
-                x_pos = start_x + x * spacing
-                y_pos = y_offset
-                card.loc = (x_pos, y_pos)
-                card.base_y = y_pos
-                card.target_y = y_pos
-                card.base_x = x_pos
-                card.target_x = x_pos
-
-        mid_y = self.context.screen.display_surface.get_height() / 2
-        set_card_positions(self.context.hand.cards, 1.5 * mid_y)
-        set_card_positions(self.context.opp_hand.cards, 0.5 * mid_y - 98)
 
     def calculate_round_score(self, knocker_hand, defender_hand):
         #knocker_melds = update_melds(knocker_hand)
@@ -522,3 +481,33 @@ class GameState(State):
             computer_knock = True
             self.context.opp_hand.can_knock = False
             self.context.opp_hand.can_gin = False
+
+    def update_card_hover(self):
+        mouse_pos = pygame.mouse.get_pos()
+        
+        newly_hovered = None
+        for card in reversed(self.context.hand.cards):
+            width = 73 if card == self.context.hand.cards[-1] else (self.context.screen.display_surface.get_width() / 3) / max(len(self.context.hand.cards) - 1, 1) * 0.8
+            rect = pygame.Rect(int(card.loc[0]), int(card.base_y), int(width), 98)
+            if rect.collidepoint(mouse_pos):
+                newly_hovered = card
+                break
+
+        if newly_hovered != self.card_hovered:
+            self.card_hovered = newly_hovered
+
+        for card in self.context.hand.cards:
+            card.target_y = card.base_y - 50 if card == self.card_hovered else card.base_y
+
+        for card in self.context.hand.cards:
+            if card.dragging:
+                continue
+            x, y = card.loc
+            distance = card.target_y - y
+            card.velocity_y += distance * 0.15
+            card.velocity_y *= 0.6
+            y += card.velocity_y
+            if abs(distance) < 0.1 and abs(card.velocity_y) < 0.1:
+                y = card.target_y
+                card.velocity_y = 0
+            card.loc = (x, y)

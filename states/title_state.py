@@ -6,11 +6,16 @@ class TitleState(State):
         super().__init__(manager)
         self.context = context
 
-    def update(self, dt):
-        pass
-
+    def update(self):
+        self.context.animator.animate_title_background()
+        self.context.animator.animate_title_text()
+        if self.context.animator.title_text.finished:
+            self.prepare_wipe()
+            self.manager.set("wipe")
     def draw(self):
-        pass
+        self.context.drawer.draw_title_background()
+        self.context.drawer.draw_title_text()
+        self.context.screen.display_surface.blit(self.context.surface_loader.title_surface, (0,0))
 
     def exit(self):
         pass
@@ -26,6 +31,17 @@ class TitleState(State):
             if event.key == pygame.K_ESCAPE:
                 self.manager.running = False
             if event.key == pygame.K_RETURN:
-                self.manager.set("game")
+                self.context.animator.title_text.start()
             if event.key == pygame.K_LSHIFT:
                 self.manager.set("networking")
+    
+    def prepare_wipe(self):
+        #prepares game screen
+        self.context.updateLocations()
+        self.context.drawer.draw_game_background()
+        self.context.drawer.draw_menu(self.context.surface_loader.game_surface, self.manager.menu_active, self.context.dt)
+        self.context.drawer.draw_buttons()
+        self.context.drawer.draw_cards(None, None)
+
+        self.manager.states["wipe"].title_snapshot = self.context.surface_loader.title_surface.copy()
+        self.manager.states["wipe"].to_surface = self.context.surface_loader.game_surface.copy()

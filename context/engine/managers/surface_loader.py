@@ -5,6 +5,7 @@ class SurfaceLoader:
         self.context = context
         self.game_surface = pygame.Surface((self.context.screen.display_width, self.context.screen.display_height))
         self.networking_surface = pygame.Surface((self.context.screen.display_width, self.context.screen.display_height))
+        self.title_surface = pygame.Surface((self.context.screen.display_width, self.context.screen.display_height))
         self.set_overlay_surface()
         self.set_side_overlay()
     

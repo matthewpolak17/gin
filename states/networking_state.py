@@ -6,7 +6,7 @@ class NetworkingState(State):
         super().__init__(manager)
         self.context = context
 
-    def update(self, dt):
+    def update(self):
         pass
 
     def draw(self):

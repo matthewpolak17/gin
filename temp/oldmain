@@ -559,7 +559,7 @@ def show_start_screen():
 
         if animating and frame < anim_frames:
             context.drawer.text_renderer.update_title(frame, anim_frames)
-            #text_alpha = (255 * (1 - exponential))
+            text_alpha = (255 * (1 - exponential))
             frame += 2
         elif animating and frame >= anim_frames: #continues to scroll the background after the title fades
             for i in range(15): #waits 15 frames
@@ -572,21 +572,21 @@ def show_start_screen():
                 if x_offset <= -context.drawer.image_loader.title_background_width:
                     x_offset = 0
 
-                # # # context.screen.display_surface.blit(context.drawer.image_loader.title_background, (int(x_offset), 0))
-                # # # context.screen.display_surface.blit(context.drawer.image_loader.title_background, (int(x_offset + context.drawer.image_loader.title_background_width), 0))
-                # # # context.screen.display_surface.blit(context.drawer.text_renderer.start_text, context.drawer.rects.start_rect)
-                # # # context.screen.display_surface.blit(context.drawer.text_renderer.multiplayer_text, context.drawer.rects.multiplayer_rect)
+                context.screen.display_surface.blit(context.drawer.image_loader.title_background, (int(x_offset), 0))
+                context.screen.display_surface.blit(context.drawer.image_loader.title_background, (int(x_offset + context.drawer.image_loader.title_background_width), 0))
+                context.screen.display_surface.blit(context.drawer.text_renderer.start_text, context.drawer.rects.start_rect)
+                context.screen.display_surface.blit(context.drawer.text_renderer.multiplayer_text, context.drawer.rects.multiplayer_rect)
 
                 pygame.display.flip()
                 background_clock.tick(200)
 
             waiting = False
 
-        #title_font = pygame.font.Font('./assets/fonts/Mermaid1001.ttf', round(title_size))
-        #title_text = text_renderer.title_font.render("Gin Rummy", True, (255,222,133))
-        #text_renderer.set_alpha(text_renderer.title_text, text_alpha)
+        title_font = pygame.font.Font('./assets/fonts/Mermaid1001.ttf', round(title_size))
+        title_text = text_renderer.title_font.render("Gin Rummy", True, (255,222,133))
+        text_renderer.set_alpha(text_renderer.title_text, text_alpha)
         title_rect = context.drawer.text_renderer.title_text.get_rect(center=(context.screen.display_width / 2, context.screen.display_height * 5/12))
-        # # # context.screen.display_surface.blit(context.drawer.text_renderer.title_text, title_rect)
+        context.screen.display_surface.blit(context.drawer.text_renderer.title_text, title_rect)
         context.screen.display_surface.blit(context.drawer.text_renderer.start_text, context.drawer.rects.start_rect)
         context.screen.display_surface.blit(context.drawer.text_renderer.multiplayer_text, context.drawer.rects.multiplayer_rect)
 
@@ -851,15 +851,15 @@ def show_start_screen():
     #card.visible = True
     #return hamburger_x 
 
-def update_title_background(test):
-    test -= context.dt
-    if test <= -context.drawer.image_loader.title_background_width:
-        test = 0
+# def update_title_background(test):
+#     test -= context.dt
+#     if test <= -context.drawer.image_loader.title_background_width:
+#         test = 0
 
-    context.screen.display_surface.blit(context.drawer.image_loader.title_background, (int(test), 0))
-    context.screen.display_surface.blit(context.drawer.image_loader.title_background, (int(test + context.drawer.image_loader.title_background_width), 0))  
-    context.screen.display_surface.blit(context.drawer.text_renderer.start_text, context.drawer.rects.start_rect)
-    context.screen.display_surface.blit(context.drawer.text_renderer.multiplayer_text, context.drawer.rects.multiplayer_rect)
+#     context.screen.display_surface.blit(context.drawer.image_loader.title_background, (int(test), 0))
+#     context.screen.display_surface.blit(context.drawer.image_loader.title_background, (int(test + context.drawer.image_loader.title_background_width), 0))  
+#     context.screen.display_surface.blit(context.drawer.text_renderer.start_text, context.drawer.rects.start_rect)
+#     context.screen.display_surface.blit(context.drawer.text_renderer.multiplayer_text, context.drawer.rects.multiplayer_rect)
 
 #updateLocations()
 #sort_cards_rank(context.opp_hand)
@@ -1115,44 +1115,44 @@ while state_manager.running:
 
     state_manager.update(context.dt)
 
-    # #hover_y logic
-    # mouse_x, mouse_y = pygame.mouse.get_pos()
-    # hover_candidate_y = None
+    #hover_y logic
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+    hover_candidate_y = None
 
-    # for card in reversed(context.hand.cards):
-    #     if card.dragging:
-    #         continue
-    #     width = 73 if card == context.hand.cards[-1] else (context.screen.display_surface.get_width() / 3) / max(len(context.hand.cards) - 1, 1) * 0.8 #top card is 73, the rest is the calculated partial width
-    #     rect = pygame.Rect(card.loc[0], card.base_y, width, 98)
-    #     if rect.collidepoint((mouse_x, mouse_y)):
-    #         hover_candidate_y = card
-    #         break
+    for card in reversed(context.hand.cards):
+        if card.dragging:
+            continue
+        width = 73 if card == context.hand.cards[-1] else (context.screen.display_surface.get_width() / 3) / max(len(context.hand.cards) - 1, 1) * 0.8 #top card is 73, the rest is the calculated partial width
+        rect = pygame.Rect(card.loc[0], card.base_y, width, 98)
+        if rect.collidepoint((mouse_x, mouse_y)):
+            hover_candidate_y = card
+            break
 
-    # for card in context.hand.cards:
-    #     if card is hover_candidate_y and not clicked:
-    #         card.hovered_y = True
-    #         card.target_y = card.base_y - card.vertical_offset
-    #     elif card is hover_candidate_y and clicked and active_card:
-    #         pass
-    #     else:
-    #         card.hovered_y = False
-    #         card.target_y = card.base_y
+    for card in context.hand.cards:
+        if card is hover_candidate_y and not clicked:
+            card.hovered_y = True
+            card.target_y = card.base_y - card.vertical_offset
+        elif card is hover_candidate_y and clicked and active_card:
+            pass
+        else:
+            card.hovered_y = False
+            card.target_y = card.base_y
 
-    # for card in context.hand.cards:
-    #     if card.dragging:
-    #         continue
-    #     x, y = card.loc
-    #     target = card.target_y 
-    #     distance = target - y
-    #     card.velocity_y += distance * 0.2
-    #     card.velocity_y *= 0.35
-    #     y += card.velocity_y
+    for card in context.hand.cards:
+        if card.dragging:
+            continue
+        x, y = card.loc
+        target = card.target_y 
+        distance = target - y
+        card.velocity_y += distance * 0.2
+        card.velocity_y *= 0.35
+        y += card.velocity_y
 
-    #     if abs(distance) < 0.5 and abs(card.velocity_y) < 0.5:
-    #         y = target
-    #         card.velocity_y = 0
+        if abs(distance) < 0.5 and abs(card.velocity_y) < 0.5:
+            y = target
+            card.velocity_y = 0
 
-    #     card.loc = (x, y) #update the card location
+        card.loc = (x, y) #update the card location
 
     # #hover_x logic
     # if active_card:

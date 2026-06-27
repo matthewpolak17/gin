@@ -1,6 +1,7 @@
 class State:
     def __init__(self, manager): 
         self.manager = manager
+        self.requested_state_change = None
         
     def handle_event(self, event): pass
     def update(self, dt): pass

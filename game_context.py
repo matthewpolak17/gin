@@ -6,6 +6,7 @@ from context.engine.managers.animator import Animator
 from context.engine.managers.text_renderer import TextRenderer
 from context.engine.managers.image_loader import ImageLoader
 from context.engine.managers.surface_loader import SurfaceLoader
+from context.engine.ui_text import UI_Text
 from context.engine.rects import Rects
 from context.engine.monitor_setup import Monitor
 from context.engine.audio import Audio
@@ -35,6 +36,7 @@ class GameContext:
         self.audio = Audio(self)
         self.monitor = Monitor(self)
         self.screen = Screen(self)
+        self.ui_text = UI_Text(self)
         self.drawer = Drawer(self)
         self.animator = Animator(self)
         self.text_renderer = TextRenderer(self)
@@ -50,6 +52,30 @@ class GameContext:
         self.discard_pile = DiscardPile(self.deck)
         self.text_renderer.player_score_text = None
         self.text_renderer.opp_score_text = None
+
+    def updateLocations(self):
+        def set_card_positions(cards, y_offset, spacing_scale = self.constants.CARD_SPACING):
+            win_width = self.screen.display_surface.get_width()
+            max_spacing = (win_width / 3) / len(cards)
+            spacing = max_spacing * spacing_scale
+            total_width = spacing * (len(cards) - 1)
+            start_x = (win_width - total_width) / 2 - 36
+
+            for x, card in enumerate(cards):
+                if card.dragging:
+                    continue
+                x_pos = start_x + x * spacing
+                y_pos = y_offset
+                card.loc = (x_pos, y_pos)
+                card.base_y = y_pos
+                card.target_y = y_pos
+                card.base_x = x_pos
+                card.target_x = x_pos
+
+        mid_y = self.screen.display_surface.get_height() / 2
+        set_card_positions(self.hand.cards, 1.5 * mid_y)
+        set_card_positions(self.opp_hand.cards, 0.5 * mid_y - 98)
+
 
 
 

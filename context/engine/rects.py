@@ -5,6 +5,7 @@ class Rects:
     def __init__(self, context):
         self.context = context
 
+        self.title_rect = self.context.text_renderer.title_text.get_rect(center=(context.screen.display_width / 2, context.screen.display_height * 5/12))
         self.menu_rect = pygame.Rect(20,20,70,58)
         self.start_rect = self.context.text_renderer.start_text.get_rect(center=(self.context.screen.display_width // 2, self.context.screen.display_height // 2))
         self.multiplayer_rect = self.context.text_renderer.multiplayer_text.get_rect(center=(self.context.screen.display_width // 2, self.context.screen.display_height // 1.85))
