@@ -4,26 +4,6 @@ class Drawer:
     def __init__(self, context):
         self.context = context
     
-    def draw_player_card_flip(self, drawn_card, start_pos, end_pos):
-        progress = self.context.animator.player_card_flip.frame / self.context.animator.player_card_flip.total_frames
-        progress_eased = progress_eased = 1 - (1 - progress) ** 3
-        x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased
-        y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
-        if progress < 0.5:
-            scale = 1 - (2 * progress)
-            image = self.context.image_loader.blue_back
-        else:
-            scale = (2 * progress) - 1
-            image = self.context.image_loader.card_images[drawn_card.name]
-        
-        scaled_width = max(1, int(image.get_width() * scale))
-        scaled_image = pygame.transform.scale(image, (scaled_width, image.get_height()))
-
-        draw_x = int(x - scaled_width // 2)
-        draw_y = int(y - image.get_height() // 2)
-        print(scaled_width)
-        self.context.surface_loader.game_surface.blit(scaled_image, (draw_x, draw_y))
-    
     def draw_loading_frame(self, frame, surface):
         surface.blit(frame, (self.context.screen.display_width - 2*frame.get_width() ,self.context.screen.display_height - 2*frame.get_height()))
 
@@ -105,24 +85,23 @@ class Drawer:
     def draw_game_background(self):
         self.context.surface_loader.game_surface.blit(self.context.image_loader.background, (0,0))
 
-    def draw_cards(self, active_card, card_hovered):
-        frame = self.context.animator.card_hover_y.frame
+    def draw_cards(self, active_card):
         surface = self.context.surface_loader.game_surface
         surface.blit(self.context.image_loader.blue_back, (surface.get_width() * 4/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
         pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
         for card in self.context.opp_hand.cards:
             if card.visible:
-                #surface.blit(blue_back, card.loc)
-                surface.blit(self.context.image_loader.card_images[card.name], card.loc)
+                surface.blit(self.context.image_loader.blue_back, card.loc)
+                #surface.blit(self.context.image_loader.card_images[card.name], card.loc)
+
         if self.context.discard_pile.cards:
             if len(self.context.discard_pile.cards) > 1:
-                #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[len(discard_pile.cards) - 2].name}')
                 discard_top = self.context.image_loader.card_images[self.context.discard_pile.cards[-2].name]
                 surface.blit(discard_top, (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
             if self.context.discard_pile.cards[-1].visible:
-                #discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
                 discard_top = self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name]
                 surface.blit(discard_top, (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
+
         if active_card:
             active_card_x = active_card.loc[0]
             for card in self.context.hand.cards:
@@ -132,12 +111,84 @@ class Drawer:
             for card in self.context.hand.cards:
                 if card.loc[0] > active_card_x: #draw all the cards after the active card last
                     surface.blit(self.context.image_loader.card_images[card.name], (card.loc))
-        else:
+
+    def draw_hand_cards(self, active_card, card_hovered):
+        frame = self.context.animator.card_hover_y.frame
+        surface = self.context.surface_loader.game_surface
+        if not active_card:
             for card in self.context.hand.cards:
                 if card == card_hovered:
                     surface.blit(self.context.image_loader.card_images[card.name], (card.loc[0], card.loc[1] - frame))     
                 elif card.visible:
-                    surface.blit(self.context.image_loader.card_images[card.name], card.loc)
+                    surface.blit(self.context.image_loader.card_images[card.name], card.loc)  
+
+    def draw_player_card_flip(self, drawn_card, start_pos, end_pos):
+        progress = self.context.animator.player_card_flip.frame / self.context.animator.player_card_flip.total_frames
+        progress_eased = progress_eased = 1 - (1 - progress) ** 3
+        x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased
+        y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
+        if progress < 0.5:
+            scale = 1 - (2 * progress)
+            image = self.context.image_loader.blue_back
+        else:
+            scale = (2 * progress) - 1
+            image = self.context.image_loader.card_images[drawn_card.name]
+        
+        scaled_width = max(1, int(image.get_width() * scale))
+        scaled_image = pygame.transform.scale(image, (scaled_width, image.get_height()))
+
+        draw_x = int(x - scaled_width // 2)
+        draw_y = int(y - image.get_height() // 2)
+        self.context.surface_loader.game_surface.blit(scaled_image, (draw_x, draw_y))
+    def draw_player_card_slide(self, drawn_card, start_pos, end_pos):
+        progress = self.context.animator.player_card_slide.frame / self.context.animator.player_card_slide.total_frames
+        progress_eased = progress_eased = 1 - (1 - progress) ** 3
+        x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased #moves closer to the end_pos using the difference
+        y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
+        self.context.surface_loader.game_surface.blit(self.context.image_loader.card_images[drawn_card.name], (x,y))
+
+    def draw_opp_card_slide(self, start_pos, end_pos):
+        progress = self.context.animator.opp_card_slide.frame / self.context.animator.opp_card_slide.total_frames
+        progress_eased = progress_eased = 1 - (1 - progress) ** 3
+        x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased #moves closer to the end_pos using the difference
+        y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
+        self.context.surface_loader.game_surface.blit(self.context.image_loader.blue_back, (x,y))
+    def draw_opp_card_flip(self, start_pos, end_pos):
+        progress = self.context.animator.opp_card_flip.frame / self.context.animator.opp_card_flip.total_frames
+        progress_eased = progress_eased = 1 - (1 - progress) ** 3
+        x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased
+        y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
+        if progress < 0.5:
+            scale = 1 - (2 * progress - 0.5)
+            image = self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name]
+        else:
+            scale = 2 * (progress - 0.5)
+            image = self.context.image_loader.blue_back
+        
+        scaled_width = max(1, int(image.get_width() * scale))
+        scaled_image = pygame.transform.scale(image, (scaled_width, image.get_height()))
+
+        draw_x = int(x - scaled_width // 2)
+        draw_y = int(y - image.get_height() // 2)
+        self.context.surface_loader.game_surface.blit(scaled_image, (draw_x, draw_y))
+    def draw_opp_discard_flip(self, start_pos, end_pos):
+        progress = self.context.animator.opp_discard_flip.frame / self.context.animator.opp_discard_flip.total_frames
+        progress_eased = progress_eased = 1 - (1 - progress) ** 3
+        x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased
+        y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
+        if progress < 0.5:
+            scale = 1 - (2 * progress - 0.5)
+            image = self.context.image_loader.blue_back
+        else:
+            scale = 2 * (progress - 0.5)
+            image = self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name]
+        
+        scaled_width = max(1, int(image.get_width() * scale))
+        scaled_image = pygame.transform.scale(image, (scaled_width, image.get_height()))
+
+        draw_x = int(x - scaled_width // 2)
+        draw_y = int(y - image.get_height() // 2)
+        self.context.surface_loader.game_surface.blit(scaled_image, (draw_x, draw_y))
 
     def draw_round_overlay(self, round_overlay):
         if round_overlay:
@@ -146,4 +197,3 @@ class Drawer:
             self.context.screen.game_surface.blit(self.context.text_renderer.continue_text, self.context.text_renderer.continue_text.get_rect(center=(self.context.screen.display_width // 2, self.context.screen.display_height * 2/3)))
             self.context.screen.game_surface.blit(self.context.text_renderer.player_score_text, self.context.text_renderer.player_score_text.get_rect(center=(self.context.screen.display_width // 2, self.context.screen.display_height * 1/3)))
             self.context.screen.game_surface.blit(self.context.text_renderer.opp_score_text, self.context.text_renderer.opp_score_text.get_rect(center=(self.context.screen.display_width // 2, (self.context.screen.display_height * 1/3) + 25)))
-

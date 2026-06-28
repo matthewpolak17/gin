@@ -10,8 +10,11 @@ class Animator:
         self.title_wipe = Animation(0.05, self.context.screen.display_width)
         self.title_background = Animation(0.01, self.context.screen.display_width, True, True)
         self.title_text = Animation(0.005, 40, False)
-        self.player_card_flip = Animation(0.05, 40, False)
-        self.card_slide = Animation(0.05, 40)
+        self.player_card_flip = Animation(0.008, 60, False)
+        self.player_card_slide = Animation(0.005, 60, False)
+        self.opp_card_flip = Animation(0.005, 60, False)
+        self.opp_card_slide = Animation(0.005, 60, False)
+        self.opp_discard_flip = Animation(0.005, 60, False)
         self.card_hover_y = Animation(0.02, 20, False)
 
     def animate_loading(self, dt, surface):
@@ -40,36 +43,20 @@ class Animator:
 
     def animate_player_card_flip(self):
         if self.player_card_flip.active:
-            self.player_card_flip.update(self.context.dt)
-    
-    def animate_opp_card_flip(self, opp_drawn_card, start_pos, end_pos):
-        self.card_flip.update(self.context.dt)
-        progress = self.card_flip.frame / self.card_flip.total_frames
-        progress_eased = progress_eased = 1 - (1 - progress) ** 3
-        x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased
-        y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
-        if self.card_flip:
-            scale = 1 - (2 * progress - 0.5)
-            image = self.context.image_loader.card_images[opp_drawn_card.name]
-        else:
-            scale = 2 * (progress - 0.5)
-            image = self.context.image_loader.blue_back
-        
-        scaled_width = max(1, int(image.get_width() * scale))
-        scaled_image = pygame.transform.scale(image, (scaled_width, image.get_height()))
+            self.player_card_flip.update(self.context.dt)  
+    def animate_player_card_slide(self):
+        if self.player_card_slide.active:
+            self.player_card_slide.update(self.context.dt)
 
-        draw_x = int(x - scaled_width // 2)
-        draw_y = int(y - image.get_height() // 2)
-        self.context.drawer.draw_cards()
-        self.context.drawer.draw_to_game_surface(scaled_image, draw_x, draw_y)
-
-    def animate_card_slide_move(self, front_img, start_pos, end_pos):
-        self.card_slide.update(self.context.dt)
-        progress = self.card_slide.frame / self.card_slide.total_frames
-        progress_eased = progress_eased = 1 - (1 - progress) ** 3
-        x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased #moves closer to the end_pos using the difference
-        y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
-        self.context.drawer.draw_to_game_surface(front_img, (x,y))
+    def animate_opp_card_flip(self):
+        if self.opp_card_flip.active:
+            self.opp_card_flip.update(self.context.dt)
+    def animate_opp_card_slide(self):
+        if self.opp_card_slide.active:
+            self.opp_card_slide.update(self.context.dt)
+    def animate_opp_discard_flip(self):
+        if self.opp_discard_flip.active:
+            self.opp_discard_flip.update(self.context.dt)
 
     def animate_card_hover(self):
         self.card_hover_y.update(self.context.dt)

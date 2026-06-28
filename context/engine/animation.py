@@ -24,6 +24,7 @@ class Animation:
                 else:
                     self.frame = self.total_frames - 1
                     self.finished = True
+                    self.active = False
                     break
                 
     def start(self):

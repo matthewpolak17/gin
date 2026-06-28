@@ -18,7 +18,8 @@ class GameState(State):
         self.card_y = 0
         self.player_turn = 1
         self.drawn_card = None
-        self.flip_complete = False
+        self.discard_top = None
+        self.opp_best_discard = None
         self.knocking = False
         self.horizontal_shift = (((self.context.screen.display_surface.get_width() / 3) / len(self.context.hand.cards)) * 0.8)
         self.player_knock = False
@@ -26,15 +27,26 @@ class GameState(State):
         self.round_overlay = False
 
     def update(self):
-        print("flip active:", self.context.animator.player_card_flip.active)
-        print("flip finished:", self.context.animator.player_card_flip.finished)
-        print("drawn_card:", self.drawn_card)
-        print("flip_complete:", self.flip_complete)
         self.context.updateLocations() 
         self.update_card_hover()
+
+        self.context.animator.animate_player_card_slide()
+        if self.context.animator.player_card_slide.finished:
+            self.drawn_card = None
+            self.context.hand.cards[-1].visible = True
+
         self.context.animator.animate_player_card_flip()
-        if self.context.animator.player_card_flip.finished and self.drawn_card:
-            self.flip_complete = True
+        if self.context.animator.player_card_flip.finished:
+            self.drawn_card = None
+            self.context.hand.cards[-1].visible = True
+
+        self.context.animator.animate_opp_card_slide()
+        if self.context.animator.opp_card_slide.finished:
+            self.opp_drawn_card = None
+        self.context.animator.animate_opp_card_flip()
+        if self.context.animator.opp_card_flip.finished:
+            self.opp_drawn_card = None
+        self.context.animator.animate_opp_discard_flip()
 
         #hover_x logic
         if self.active_card:
@@ -101,12 +113,23 @@ class GameState(State):
         self.context.drawer.draw_game_background()
         self.context.drawer.draw_menu(self.context.surface_loader.game_surface, self.manager.menu_active, self.context.dt)
         self.context.drawer.draw_buttons()
-        self.context.drawer.draw_cards(self.active_card, self.card_hovered)
-        if self.drawn_card:
+        self.context.drawer.draw_hand_cards(self.active_card, self.card_hovered)
+        self.context.drawer.draw_cards(self.active_card)
+
+        #animations
+        if self.context.animator.player_card_flip.active:
             self.context.drawer.draw_player_card_flip(self.drawn_card, self.context.rects.draw_rect.center, (self.context.hand.cards[-1].loc[0] + 73/2, self.context.hand.cards[-1].loc[1] + 98/2))
-            self.drawn_card.visible = True
-            self.drawn_card = None
-            self.flip_complete = False
+            self.drawn_card.visible = False
+        if self.context.animator.player_card_slide.active:
+            self.context.drawer.draw_player_card_slide(self.drawn_card, self.context.rects.discard_rect.center, (self.context.hand.cards[-1].loc[0], self.context.hand.cards[-1].loc[1]))
+            self.drawn_card.visible = False
+        if self.context.animator.opp_card_flip.active:
+            self.context.drawer.draw_opp_card_flip(self.context.rects.discard_rect.center, (self.opp_drawn_card.loc[0] + 73/2, self.opp_drawn_card.loc[1] + 98/2))
+        if self.context.animator.opp_card_slide.active:
+            self.context.drawer.draw_opp_card_slide(self.context.rects.draw_rect.center, (self.opp_drawn_card.loc[0] + 73/2, self.opp_drawn_card.loc[1] + 98/2))
+        if self.context.animator.opp_discard_flip.active:
+            self.context.drawer.draw_opp_discard_flip((self.opp_best_discard.loc[0] + 73/2, self.opp_best_discard.loc[1] + 98/2), self.context.rects.discard_rect.center)
+
         self.context.drawer.draw_round_overlay(self.round_overlay)
         self.context.screen.display_surface.blit(self.context.surface_loader.game_surface, (0,0))
 
@@ -137,7 +160,6 @@ class GameState(State):
                         self.knocking = False
                         self.turn = 1
                         self.player_turn = 1
-                        
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
@@ -173,10 +195,25 @@ class GameState(State):
                             self.drawn_card = self.pickup_card(self.context.deck, self.context.hand)
                             self.drawn_card.visible = False
                             self.context.animator.player_card_flip.start()
-                            self.flip_complete = False
                             self.context.hand.melds = self.update_melds(self.context.hand)
                             if self.can_knock(self.context.hand.melds, self.context.hand.cards):
                                 self.context.hand.can_knock = True
+                            self.turn *= -1
+                            break
+                    elif self.context.rects.discard_rect.collidepoint(event.pos):
+                        if self.turn == 1:
+                            self.context.audio.slide_sound.play()
+                            self.drawn_card = self.pickup_discard(self.context.hand)
+                            self.context.animator.player_card_slide.start()
+                            #self.drawn_card = None
+                            #self.horizontal_shift = (((self.context.screen.display_surface.get_width() / 3) / len(self.context.hand.cards)) * 0.8)
+                            self.context.hand.melds = self.update_melds(self.context.hand)
+                            if self.can_knock(self.context.hand.melds, self.context.hand.cards):
+                                self.context.hand.can_knock = True
+                            if self.context.discard_pile.cards:
+                            #    discard_top = pygame.image.load(f'./assets/cards/{discard_pile.cards[-1].name}')
+                                self.discard_top = self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name]
+                                pass
                             self.turn *= -1
                             break
                     elif self.context.rects.sort_rect_rank.collidepoint(event.pos):
@@ -427,21 +464,20 @@ class GameState(State):
 
         pickup_dis = False
         if simulated_deadwood < current_deadwood:
-            opp_drawn_card = self.pickup_discard(self.context.opp_hand)
+            self.opp_drawn_card = self.pickup_discard(self.context.opp_hand)
             pickup_dis = True
         else:
-            opp_drawn_card = self.pickup_card(self.context.deck, self.context.opp_hand)
+            self.opp_drawn_card = self.pickup_card(self.context.deck, self.context.opp_hand)
         
         #animate card movement
         if pickup_dis:
-            self.context.animator.animate_opp_card_flip(opp_drawn_card, self.context.rects.discard_rect.center, (opp_drawn_card.loc[0] + 73/2, opp_drawn_card.loc[1] + 98/2))
+            self.context.animator.opp_card_flip.start()
         else:
-            #animate_card_slide_move(context.drawer.image_loader.blue_back, self.context.drawer.rects.draw_rect.center, (opp_drawn_card.loc[0], opp_drawn_card.loc[1]), context.constants.CARD_MOVEMENT_SPEED, context.drawer.surface_loader.game_surface, opp_drawn_card, -1)
-            self.context.animator.animate_card_slide_move(self.context.image_loader.blue_back, self.context.draw_rect.center, (opp_drawn_card.loc[0], opp_drawn_card.loc[1]))
+            self.context.animator.opp_card_slide.start()
         #update melds after pickup
         self.context.opp_hand.melds = self.update_melds(self.context.opp_hand)
         
-        best_discard = None
+        self.opp_best_discard = None
         best_deadwood = float('inf')
 
         for card in self.context.opp_hand.cards:
@@ -456,14 +492,12 @@ class GameState(State):
 
             if simulated_deadwood < best_deadwood:
                 best_deadwood = simulated_deadwood
-                best_discard = card
+                self.opp_best_discard = card
 
-        if best_discard is None:
-            best_discard = self.context.opp_hand.cards[-1]
-
-        #self.context.animator.animate_opp_card_flip(context.drawer.image_loader.blue_back, context.drawer.image_loader.card_images[best_discard.name], (best_discard.loc[0] + 73/2, best_discard.loc[1] + 98/2), context.drawer.rects.discard_rect.center, context.constants.CARD_MOVEMENT_SPEED, context.drawer.surface_loader.game_surface, best_discard, -1)
-        self.context.animator.animate_opp_card_flip(best_discard, (best_discard.loc[0] + 73/2, best_discard.loc[1] + 98/2), self.context.rects.discard_rect.center)
-        self.discard(self.context.opp_hand, best_discard)
+        if self.opp_best_discard is None:
+            self.opp_best_discard = self.context.opp_hand.cards[-1]
+        self.context.animator.opp_discard_flip.start()
+        self.discard(self.context.opp_hand, self.opp_best_discard)
 
         self.context.opp_hand.melds = self.update_melds(self.context.opp_hand)
         deadwood = self.calculate_deadwood(self.context.opp_hand.melds, self.context.opp_hand.cards)
