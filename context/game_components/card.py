@@ -9,7 +9,7 @@ class Card:
         self.base_y = loc[1]
         self.target_y = self.base_y
         self.hovered_y = False
-        self.vertical_offset = 20
+        self.vertical_offset = 10
         self.velocity_y = 0
         
         self.base_x = loc[0]

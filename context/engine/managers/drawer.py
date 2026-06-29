@@ -171,6 +171,7 @@ class Drawer:
         draw_x = int(x - scaled_width // 2)
         draw_y = int(y - image.get_height() // 2)
         self.context.surface_loader.game_surface.blit(scaled_image, (draw_x, draw_y))
+    
     def draw_opp_discard_flip(self, start_pos, end_pos):
         progress = self.context.animator.opp_discard_flip.frame / self.context.animator.opp_discard_flip.total_frames
         progress_eased = progress_eased = 1 - (1 - progress) ** 3
