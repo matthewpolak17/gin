@@ -55,7 +55,7 @@ class Animator:
         if self.opp_card_slide.active:
             self.opp_card_slide.update(self.context.dt)
     def animate_opp_discard_flip(self):
-        if self.opp_discard_flip.active:
+        if self.opp_discard_flip.active and not self.opp_card_flip.active and not self.opp_card_slide.active:
             self.opp_discard_flip.update(self.context.dt)
 
     def animate_card_hover(self):

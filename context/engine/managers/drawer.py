@@ -140,6 +140,7 @@ class Drawer:
         draw_x = int(x - scaled_width // 2)
         draw_y = int(y - image.get_height() // 2)
         self.context.surface_loader.game_surface.blit(scaled_image, (draw_x, draw_y))
+        
     def draw_player_card_slide(self, drawn_card, start_pos, end_pos):
         progress = self.context.animator.player_card_slide.frame / self.context.animator.player_card_slide.total_frames
         progress_eased = progress_eased = 1 - (1 - progress) ** 3
@@ -148,12 +149,15 @@ class Drawer:
         self.context.surface_loader.game_surface.blit(self.context.image_loader.card_images[drawn_card.name], (x,y))
 
     def draw_opp_card_slide(self, start_pos, end_pos):
+        print("slide")
         progress = self.context.animator.opp_card_slide.frame / self.context.animator.opp_card_slide.total_frames
         progress_eased = progress_eased = 1 - (1 - progress) ** 3
         x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased #moves closer to the end_pos using the difference
         y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
         self.context.surface_loader.game_surface.blit(self.context.image_loader.blue_back, (x,y))
+
     def draw_opp_card_flip(self, start_pos, end_pos):
+        print("flip")
         progress = self.context.animator.opp_card_flip.frame / self.context.animator.opp_card_flip.total_frames
         progress_eased = progress_eased = 1 - (1 - progress) ** 3
         x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased
@@ -178,10 +182,10 @@ class Drawer:
         x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased
         y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
         if progress < 0.5:
-            scale = 1 - (2 * progress - 0.5)
+            scale = 1 - (2 * progress)
             image = self.context.image_loader.blue_back
         else:
-            scale = 2 * (progress - 0.5)
+            scale = (2 * progress) - 1
             image = self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name]
         
         scaled_width = max(1, int(image.get_width() * scale))

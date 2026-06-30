@@ -28,7 +28,6 @@ class GameState(State):
         self.round_overlay = False
 
     def update(self):
-        
         self.update_card_hover()
 
         self.context.animator.animate_player_card_slide()
@@ -42,12 +41,12 @@ class GameState(State):
             self.context.hand.cards[-1].visible = True
 
         self.context.animator.animate_opp_card_slide()
-        if self.context.animator.opp_card_slide.finished:
-            self.opp_drawn_card = None
+        #if self.context.animator.opp_card_slide.finished:
+            #self.opp_drawn_card = None 
 
         self.context.animator.animate_opp_card_flip()
-        if self.context.animator.opp_card_flip.finished:
-            self.opp_drawn_card = None
+        #if self.context.animator.opp_card_flip.finished:
+            #self.opp_drawn_card = None
 
         self.context.animator.animate_opp_discard_flip()
         if self.context.animator.opp_discard_flip.finished:
@@ -131,10 +130,13 @@ class GameState(State):
             self.drawn_card.visible = False
         if self.context.animator.opp_card_flip.active and self.opp_drawn_card:
             self.context.drawer.draw_opp_card_flip(self.context.rects.discard_rect.center, (self.opp_drawn_card.loc[0] + 73/2, self.opp_drawn_card.loc[1] + 98/2))
-        if self.context.animator.opp_card_slide.active and self.opp_drawn_card:
+            self.opp_drawn_card.visible = False
+        if self.context.animator.opp_card_slide.active:
             self.context.drawer.draw_opp_card_slide(self.context.rects.draw_rect, (self.opp_drawn_card.loc[0], self.opp_drawn_card.loc[1]))
+            self.opp_drawn_card.visible = False
         if self.context.animator.opp_discard_flip.active:
             self.context.drawer.draw_opp_discard_flip((self.opp_best_discard.loc[0] + 73/2, self.opp_best_discard.loc[1] + 98/2), self.context.rects.discard_rect.center)
+            self.opp_best_discard.visible = False
 
         self.context.drawer.draw_round_overlay(self.round_overlay)
         self.context.screen.display_surface.blit(self.context.surface_loader.game_surface, (0,0))
@@ -508,7 +510,6 @@ class GameState(State):
 
         if self.opp_best_discard is None:
             self.opp_best_discard = self.context.opp_hand.cards[-1]
-            print("no difference call")
         self.context.animator.opp_discard_flip.start()
         self.discard(self.context.opp_hand, self.opp_best_discard)
 
