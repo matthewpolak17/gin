@@ -31,26 +31,24 @@ class GameState(State):
         self.update_card_hover()
 
         self.context.animator.animate_player_card_slide()
-        if self.context.animator.player_card_slide.finished:
-            self.drawn_card = None
-            self.context.hand.cards[-1].visible = True
+        if self.context.animator.player_card_slide.finished and self.drawn_card:
+            self.drawn_card.visible = True
 
         self.context.animator.animate_player_card_flip()
-        if self.context.animator.player_card_flip.finished:
-            self.drawn_card = None
-            self.context.hand.cards[-1].visible = True
+        if self.context.animator.player_card_flip.finished and self.drawn_card:
+            self.drawn_card.visible = True
 
         self.context.animator.animate_opp_card_slide()
-        #if self.context.animator.opp_card_slide.finished:
-            #self.opp_drawn_card = None 
+        if self.context.animator.opp_card_slide.finished and self.opp_drawn_card in self.context.opp_hand.cards:
+            self.opp_drawn_card.visible = True
 
         self.context.animator.animate_opp_card_flip()
-        #if self.context.animator.opp_card_flip.finished:
-            #self.opp_drawn_card = None
+        if self.context.animator.opp_card_flip.finished and self.opp_drawn_card in self.context.opp_hand.cards:
+            self.opp_drawn_card.visible = True
 
         self.context.animator.animate_opp_discard_flip()
         if self.context.animator.opp_discard_flip.finished:
-            self.opp_best_discard = None
+            self.opp_best_discard.visible = True
 
         #hover_x logic
         if self.active_card:
@@ -118,25 +116,24 @@ class GameState(State):
         self.context.drawer.draw_game_background()
         self.context.drawer.draw_menu(self.context.surface_loader.game_surface, self.manager.menu_active, self.context.dt)
         self.context.drawer.draw_buttons()
-        self.context.drawer.draw_hand_cards(self.active_card, self.card_hovered)
         self.context.drawer.draw_cards(self.active_card)
 
+        flip_active = self.context.animator.player_card_flip.active
+        slide_active = self.context.animator.player_card_slide.active
+        suppressed = self.drawn_card if (flip_active or slide_active) else None
+        self.context.drawer.draw_hand_cards(self.active_card, self.card_hovered, suppressed)
+
         #animations
-        if self.context.animator.player_card_flip.active:
+        if flip_active:
             self.context.drawer.draw_player_card_flip(self.drawn_card, self.context.rects.draw_rect.center, (self.context.hand.cards[-1].loc[0] + 73/2, self.context.hand.cards[-1].loc[1] + 98/2))
-            self.drawn_card.visible = False
-        if self.context.animator.player_card_slide.active:
+        if slide_active:
             self.context.drawer.draw_player_card_slide(self.drawn_card, self.context.rects.discard_rect.center, (self.context.hand.cards[-1].loc[0], self.context.hand.cards[-1].loc[1]))
-            self.drawn_card.visible = False
         if self.context.animator.opp_card_flip.active and self.opp_drawn_card:
             self.context.drawer.draw_opp_card_flip(self.context.rects.discard_rect.center, (self.opp_drawn_card.loc[0] + 73/2, self.opp_drawn_card.loc[1] + 98/2))
-            self.opp_drawn_card.visible = False
         if self.context.animator.opp_card_slide.active:
             self.context.drawer.draw_opp_card_slide(self.context.rects.draw_rect, (self.opp_drawn_card.loc[0], self.opp_drawn_card.loc[1]))
-            self.opp_drawn_card.visible = False
         if self.context.animator.opp_discard_flip.active:
             self.context.drawer.draw_opp_discard_flip((self.opp_best_discard.loc[0] + 73/2, self.opp_best_discard.loc[1] + 98/2), self.context.rects.discard_rect.center)
-            self.opp_best_discard.visible = False
 
         self.context.drawer.draw_round_overlay(self.round_overlay)
         self.context.screen.display_surface.blit(self.context.surface_loader.game_surface, (0,0))
@@ -212,6 +209,7 @@ class GameState(State):
                         if self.turn == 1:
                             self.context.audio.slide_sound.play()
                             self.drawn_card = self.pickup_discard(self.context.hand)
+                            self.drawn_card.visible = False
                             self.context.animator.player_card_slide.start()
                             #self.drawn_card = None
                             #self.horizontal_shift = (((self.context.screen.display_surface.get_width() / 3) / len(self.context.hand.cards)) * 0.8)
@@ -482,6 +480,7 @@ class GameState(State):
             pickup_dis = True
         else:
             self.opp_drawn_card = self.pickup_card(self.context.deck, self.context.opp_hand)
+        self.opp_drawn_card.visible = False
         
         #animate card movement
         if pickup_dis:
@@ -510,6 +509,7 @@ class GameState(State):
 
         if self.opp_best_discard is None:
             self.opp_best_discard = self.context.opp_hand.cards[-1]
+        self.opp_best_discard.visible = False
         self.context.animator.opp_discard_flip.start()
         self.discard(self.context.opp_hand, self.opp_best_discard)
 

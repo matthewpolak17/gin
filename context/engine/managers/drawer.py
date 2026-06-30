@@ -96,8 +96,10 @@ class Drawer:
 
         if self.context.discard_pile.cards:
             if len(self.context.discard_pile.cards) > 1:
-                discard_top = self.context.image_loader.card_images[self.context.discard_pile.cards[-2].name]
-                surface.blit(discard_top, (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
+                second_card = self.context.discard_pile.cards[-2]
+                if second_card.visible:
+                    discard_top = self.context.image_loader.card_images[second_card.name]
+                    surface.blit(discard_top, (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
             if self.context.discard_pile.cards[-1].visible:
                 discard_top = self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name]
                 surface.blit(discard_top, (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
@@ -112,14 +114,14 @@ class Drawer:
                 if card.loc[0] > active_card_x: #draw all the cards after the active card last
                     surface.blit(self.context.image_loader.card_images[card.name], (card.loc))
 
-    def draw_hand_cards(self, active_card, card_hovered):
+    def draw_hand_cards(self, active_card, card_hovered, suppressed_card=None):
         frame = self.context.animator.card_hover_y.frame
         surface = self.context.surface_loader.game_surface
         if not active_card:
             for card in self.context.hand.cards:
-                if card == card_hovered:
-                    surface.blit(self.context.image_loader.card_images[card.name], (card.loc[0], card.loc[1] - frame))     
-                elif card.visible:
+                if card is suppressed_card:
+                    continue
+                if card.visible:
                     surface.blit(self.context.image_loader.card_images[card.name], card.loc)  
 
     def draw_player_card_flip(self, drawn_card, start_pos, end_pos):
@@ -149,7 +151,6 @@ class Drawer:
         self.context.surface_loader.game_surface.blit(self.context.image_loader.card_images[drawn_card.name], (x,y))
 
     def draw_opp_card_slide(self, start_pos, end_pos):
-        print("slide")
         progress = self.context.animator.opp_card_slide.frame / self.context.animator.opp_card_slide.total_frames
         progress_eased = progress_eased = 1 - (1 - progress) ** 3
         x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased #moves closer to the end_pos using the difference
@@ -157,7 +158,6 @@ class Drawer:
         self.context.surface_loader.game_surface.blit(self.context.image_loader.blue_back, (x,y))
 
     def draw_opp_card_flip(self, start_pos, end_pos):
-        print("flip")
         progress = self.context.animator.opp_card_flip.frame / self.context.animator.opp_card_flip.total_frames
         progress_eased = progress_eased = 1 - (1 - progress) ** 3
         x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased
