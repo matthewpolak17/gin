@@ -10,12 +10,11 @@ class Animator:
         self.title_wipe = Animation(0.05, self.context.screen.display_width)
         self.title_background = Animation(0.01, self.context.screen.display_width, True, True)
         self.title_text = Animation(0.005, 40, False)
-        self.player_card_flip = Animation(0.008, 60, False)
-        self.player_card_slide = Animation(0.005, 60, False)
-        self.opp_card_flip = Animation(0.005, 60, False)
-        self.opp_card_slide = Animation(0.005, 60, False)
-        self.opp_discard_flip = Animation(0.005, 60, False)
-        self.card_hover_y = Animation(0.02, 20, False)
+        self.player_card_flip = Animation((1/self.context.constants.CARD_MOVEMENT_SPEED), 60, False)
+        self.player_card_slide = Animation((1/self.context.constants.CARD_MOVEMENT_SPEED), 60, False)
+        self.opp_card_flip = Animation((1/self.context.constants.CARD_MOVEMENT_SPEED), 60, False)
+        self.opp_card_slide = Animation((1/self.context.constants.CARD_MOVEMENT_SPEED), 60, False)
+        self.opp_discard_flip = Animation((1/self.context.constants.CARD_MOVEMENT_SPEED), 60, False)
 
     def animate_loading(self, dt, surface):
         self.loading.update(dt)
@@ -57,9 +56,6 @@ class Animator:
     def animate_opp_discard_flip(self):
         if self.opp_discard_flip.active and not self.opp_card_flip.active and not self.opp_card_slide.active:
             self.opp_discard_flip.update(self.context.dt)
-
-    def animate_card_hover(self):
-        self.card_hover_y.update(self.context.dt)
 
 
 

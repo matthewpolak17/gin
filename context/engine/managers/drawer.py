@@ -107,22 +107,21 @@ class Drawer:
         if active_card:
             active_card_x = active_card.loc[0]
             for card in self.context.hand.cards:
-                if card.loc[0] < active_card_x: #draw all the card before the active card first
+                if card.loc[0] < active_card_x and card.visible: #draw all the card before the active card first
                     surface.blit(self.context.image_loader.card_images[card.name], (card.loc))
             surface.blit(self.context.image_loader.card_images[active_card.name], (active_card.loc)) #draw the active card
             for card in self.context.hand.cards:
-                if card.loc[0] > active_card_x: #draw all the cards after the active card last
+                if card.loc[0] > active_card_x and card.visible: #draw all the cards after the active card last
                     surface.blit(self.context.image_loader.card_images[card.name], (card.loc))
 
-    def draw_hand_cards(self, active_card, card_hovered, suppressed_card=None):
-        frame = self.context.animator.card_hover_y.frame
+    def draw_hand_cards(self, active_card, suppressed_card=None):
         surface = self.context.surface_loader.game_surface
         if not active_card:
             for card in self.context.hand.cards:
                 if card is suppressed_card:
                     continue
                 if card.visible:
-                    surface.blit(self.context.image_loader.card_images[card.name], card.loc)  
+                    surface.blit(self.context.image_loader.card_images[card.name], card.loc)
 
     def draw_player_card_flip(self, drawn_card, start_pos, end_pos):
         progress = self.context.animator.player_card_flip.frame / self.context.animator.player_card_flip.total_frames

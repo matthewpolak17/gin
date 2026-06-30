@@ -121,7 +121,7 @@ class GameState(State):
         flip_active = self.context.animator.player_card_flip.active
         slide_active = self.context.animator.player_card_slide.active
         suppressed = self.drawn_card if (flip_active or slide_active) else None
-        self.context.drawer.draw_hand_cards(self.active_card, self.card_hovered, suppressed)
+        self.context.drawer.draw_hand_cards(self.active_card, suppressed)
 
         #animations
         if flip_active:
