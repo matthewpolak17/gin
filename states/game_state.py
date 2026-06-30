@@ -538,7 +538,7 @@ class GameState(State):
         for card in reversed(self.context.hand.cards):
             width = 73 if card == self.context.hand.cards[-1] else (self.context.screen.display_surface.get_width() / 3) / max(len(self.context.hand.cards) - 1, 1) * 0.8
             rect = pygame.Rect(int(card.loc[0]), int(card.base_y), int(width), 98)
-            if rect.collidepoint(mouse_pos):
+            if rect.collidepoint(mouse_pos) and not self.active_card:
                 newly_hovered = card
                 break
 
