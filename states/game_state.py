@@ -238,8 +238,9 @@ class GameState(State):
 
                 if self.original_loc[0] > self.active_card.loc[0]:
                     for i, card in enumerate(self.context.hand.cards):
-                        starting_hover_index = i
-                        break
+                        if card.hovered_x and card is not self.active_card:
+                            starting_hover_index = i
+                            break
                     if starting_hover_index is None:
                         starting_hover_index = self.original_index
                     placeholder = self.active_card
