@@ -42,7 +42,7 @@ class TitleState(State):
         self.context.drawer.draw_menu(self.context.surface_loader.game_surface, self.manager.menu_active, self.context.dt)
         self.context.drawer.draw_buttons()
         self.context.drawer.draw_hand_cards(None, None)
-        self.context.drawer.draw_cards(None)
+        self.context.drawer.draw_cards(None, None)
 
         self.manager.states["wipe"].title_snapshot = self.context.surface_loader.title_surface.copy()
         self.manager.states["wipe"].to_surface = self.context.surface_loader.game_surface.copy()

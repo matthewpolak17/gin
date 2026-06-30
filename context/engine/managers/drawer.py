@@ -85,7 +85,7 @@ class Drawer:
     def draw_game_background(self):
         self.context.surface_loader.game_surface.blit(self.context.image_loader.background, (0,0))
 
-    def draw_cards(self, active_card):
+    def draw_cards(self, active_card, suppressed):
         surface = self.context.surface_loader.game_surface
         surface.blit(self.context.image_loader.blue_back, (surface.get_width() * 4/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
         pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
@@ -106,12 +106,15 @@ class Drawer:
 
         if active_card:
             active_card_x = active_card.loc[0]
+
             for card in self.context.hand.cards:
-                if card.loc[0] < active_card_x and card.visible: #draw all the card before the active card first
+                if card.loc[0] < active_card_x and card is not suppressed and card.visible: #draw all the card before the active card first
                     surface.blit(self.context.image_loader.card_images[card.name], (card.loc))
+
             surface.blit(self.context.image_loader.card_images[active_card.name], (active_card.loc)) #draw the active card
+
             for card in self.context.hand.cards:
-                if card.loc[0] > active_card_x and card.visible: #draw all the cards after the active card last
+                if card.loc[0] > active_card_x and card is not suppressed and card.visible: #draw all the cards after the active card last
                     surface.blit(self.context.image_loader.card_images[card.name], (card.loc))
 
     def draw_hand_cards(self, active_card, suppressed_card=None):

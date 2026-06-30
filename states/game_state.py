@@ -116,11 +116,11 @@ class GameState(State):
         self.context.drawer.draw_game_background()
         self.context.drawer.draw_menu(self.context.surface_loader.game_surface, self.manager.menu_active, self.context.dt)
         self.context.drawer.draw_buttons()
-        self.context.drawer.draw_cards(self.active_card)
 
         flip_active = self.context.animator.player_card_flip.active
         slide_active = self.context.animator.player_card_slide.active
         suppressed = self.drawn_card if (flip_active or slide_active) else None
+        self.context.drawer.draw_cards(self.active_card, suppressed)
         self.context.drawer.draw_hand_cards(self.active_card, suppressed)
 
         #animations
