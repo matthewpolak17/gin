@@ -100,15 +100,16 @@ class GameState(State):
             self.sort_cards_rank(self.context.opp_hand)
             self.player_turn *= -1
         if self.manager.restart_from_main_menu:
-            self.manager.restart_from_main_menu = False
             self.manager.menu_active = False
-            self.context.screen.menu_x = -1.5 * self.context.screen.menu_width
-            self.context.screen.hamburger_x = 30
-            self.turn = 1
-            self.sort_cards_rank(self.context.opp_hand)
+            self.manager.restart_from_main_menu = False
+            #self.context.screen.menu_x = -1.5 * self.context.screen.menu_width
+            #self.context.screen.hamburger_x = 30
+            #self.turn = 1
+            #self.sort_cards_rank(self.context.opp_hand)
             self.manager.set("title")
         if self.manager.restart:
             self.context.reset_round()
+            self.manager.menu_active = False
             self.manager.restart = False
         #self.context.updateLocations() 
 

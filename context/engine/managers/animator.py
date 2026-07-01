@@ -38,7 +38,7 @@ class Animator:
             alpha = int(255 * (1-progress) ** 2) # compute alpha first
             new_surface = self.context.ui_text.render_title("Gin Rummy", self.context.constants.TAN)
             new_surface.set_alpha(alpha)
-            self.context.text_renderer.title_text = new_surface  # assign back!
+            self.context.text_renderer.title_text = new_surface
 
     def animate_player_card_flip(self):
         if self.player_card_flip.active:

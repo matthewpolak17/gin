@@ -32,3 +32,9 @@ class Animation:
         self.frame = 0
         self.active = True
         self.finished = False
+    
+    def reset(self):
+        self.frame_timer = 0
+        self.frame = 0
+        self.active = False
+        self.finished = False
