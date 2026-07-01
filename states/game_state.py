@@ -97,21 +97,17 @@ class GameState(State):
         #advance the turn
         if (self.player_turn == -1):
             self.computer_play()
-            self.sort_cards_rank(self.context.opp_hand)
+            #self.sort_cards_rank(self.context.opp_hand)
             self.player_turn *= -1
         if self.manager.restart_from_main_menu:
             self.manager.menu_active = False
             self.manager.restart_from_main_menu = False
-            #self.context.screen.menu_x = -1.5 * self.context.screen.menu_width
-            #self.context.screen.hamburger_x = 30
-            #self.turn = 1
-            #self.sort_cards_rank(self.context.opp_hand)
+            self.turn = 1
             self.manager.set("title")
         if self.manager.restart:
             self.context.reset_round()
             self.manager.menu_active = False
             self.manager.restart = False
-        #self.context.updateLocations() 
 
     def draw(self):
         self.context.drawer.draw_game_background()
@@ -124,16 +120,19 @@ class GameState(State):
         self.context.drawer.draw_cards(self.active_card, suppressed)
         self.context.drawer.draw_hand_cards(self.active_card, suppressed)
 
+        opp_flip_active = self.context.animator.opp_card_flip.active
+        opp_slide_active = self.context.animator.opp_card_slide.active
+
         #animations
         if flip_active:
             self.context.drawer.draw_player_card_flip(self.drawn_card, self.context.rects.draw_rect.center, (self.context.hand.cards[-1].loc[0] + 73/2, self.context.hand.cards[-1].loc[1] + 98/2))
         if slide_active:
             self.context.drawer.draw_player_card_slide(self.drawn_card, self.context.rects.discard_rect.center, (self.context.hand.cards[-1].loc[0], self.context.hand.cards[-1].loc[1]))
-        if self.context.animator.opp_card_flip.active and self.opp_drawn_card:
+        if opp_flip_active and self.opp_drawn_card:
             self.context.drawer.draw_opp_card_flip(self.context.rects.discard_rect.center, (self.opp_drawn_card.loc[0] + 73/2, self.opp_drawn_card.loc[1] + 98/2))
-        if self.context.animator.opp_card_slide.active:
+        if opp_slide_active and self.opp_drawn_card:
             self.context.drawer.draw_opp_card_slide(self.context.rects.draw_rect, (self.opp_drawn_card.loc[0], self.opp_drawn_card.loc[1]))
-        if self.context.animator.opp_discard_flip.active:
+        if self.context.animator.opp_discard_flip.active and not opp_flip_active and not opp_slide_active:
             self.context.drawer.draw_opp_discard_flip((self.opp_best_discard.loc[0] + 73/2, self.opp_best_discard.loc[1] + 98/2), self.context.rects.discard_rect.center)
 
         self.context.drawer.draw_round_overlay(self.round_overlay)

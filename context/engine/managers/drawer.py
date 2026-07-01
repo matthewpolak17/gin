@@ -89,6 +89,8 @@ class Drawer:
         surface = self.context.surface_loader.game_surface
         surface.blit(self.context.image_loader.blue_back, (surface.get_width() * 4/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
         pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
+        
+        
         for card in self.context.opp_hand.cards:
             if card.visible:
                 surface.blit(self.context.image_loader.blue_back, card.loc)
@@ -104,6 +106,7 @@ class Drawer:
                 discard_top = self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name]
                 surface.blit(discard_top, (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
 
+        #cards drawn while holding a card
         if active_card:
             active_card_x = active_card.loc[0]
 
