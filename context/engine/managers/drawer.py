@@ -162,16 +162,16 @@ class Drawer:
         y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
         self.context.surface_loader.game_surface.blit(self.context.image_loader.blue_back, (x,y))
 
-    def draw_opp_card_flip(self, start_pos, end_pos):
+    def draw_opp_card_flip(self, discard_top, start_pos, end_pos):
         progress = self.context.animator.opp_card_flip.frame / self.context.animator.opp_card_flip.total_frames
         progress_eased = progress_eased = 1 - (1 - progress) ** 3
         x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased
         y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
         if progress < 0.5:
-            scale = 1 - (2 * progress - 0.5)
-            image = self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name]
+            scale = 1 - (2 * progress)
+            image = self.context.image_loader.card_images[discard_top.name]
         else:
-            scale = 2 * (progress - 0.5)
+            scale = (2 * progress) - 1
             image = self.context.image_loader.blue_back
         
         scaled_width = max(1, int(image.get_width() * scale))
