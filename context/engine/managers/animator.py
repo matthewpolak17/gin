@@ -10,12 +10,12 @@ class Animator:
         self.title_wipe = Animation(0.05, self.context.screen.display_width)
         self.title_background = Animation(0.01, self.context.screen.display_width, True, True)
         self.title_text = Animation(0.005, 40, False)
-        self.player_card_flip = Animation((1/self.context.constants.CARD_MOVEMENT_SPEED), 60, False)
-        self.player_card_slide = Animation((1/self.context.constants.CARD_MOVEMENT_SPEED), 60, False)
-        self.opp_card_flip = Animation((1/self.context.constants.CARD_MOVEMENT_SPEED), 60, False)
-        self.opp_card_slide = Animation((1/self.context.constants.CARD_MOVEMENT_SPEED), 60, False)
-        self.opp_discard_flip = Animation((1/self.context.constants.CARD_MOVEMENT_SPEED), 60, False)
-        self.opp_hand_pickup_shift = Animation(0.05, 40, False)
+        self.player_card_flip = Animation((1/self.context.constants.CARD_MOVEMENT_SPEED), 90, False)
+        self.player_card_slide = Animation((1/self.context.constants.CARD_MOVEMENT_SPEED), 90, False)
+        self.opp_card_flip = Animation((1/self.context.constants.CARD_MOVEMENT_SPEED), 90, False)
+        self.opp_card_slide = Animation((1/self.context.constants.CARD_MOVEMENT_SPEED), 90, False)
+        self.opp_discard_flip = Animation((1/self.context.constants.CARD_MOVEMENT_SPEED), 90, False)
+        self.opp_hand_shift_left = Animation(0.05, 40, False)
 
     def opp_hand_pickup_shift(self):
         if self.opp_hand_pickup_shift.active:
@@ -47,7 +47,8 @@ class Animator:
 
     def animate_player_card_flip(self):
         if self.player_card_flip.active:
-            self.player_card_flip.update(self.context.dt)  
+            self.player_card_flip.update(self.context.dt)
+
     def animate_player_card_slide(self):
         if self.player_card_slide.active:
             self.player_card_slide.update(self.context.dt)
@@ -55,13 +56,18 @@ class Animator:
     def animate_opp_card_flip(self):
         if self.opp_card_flip.active:
             self.opp_card_flip.update(self.context.dt)
+
     def animate_opp_card_slide(self):
         if self.opp_card_slide.active:
             self.opp_card_slide.update(self.context.dt)
+
     def animate_opp_discard_flip(self):
         if self.opp_discard_flip.active and not self.opp_card_flip.active and not self.opp_card_slide.active:
             self.opp_discard_flip.update(self.context.dt)
 
+    def animate_opp_hand_shift_left(self):
+        if self.opp_hand_shift_left.active:
+            self.opp_hand_shift_left.update(self.context.dt)
 
 
 

@@ -52,10 +52,9 @@ class GameContext:
         self.discard_pile = DiscardPile(self.deck)
         self.text_renderer.player_score_text = None
         self.text_renderer.opp_score_text = None
-        self.updateLocations()
 
     def updateLocations(self):
-        def set_card_positions(cards, y_offset, spacing_scale = self.constants.CARD_SPACING):
+        def set_card_positions(cards, y_offset, spacing_scale=self.constants.CARD_SPACING):
             win_width = self.screen.display_surface.get_width()
             max_spacing = (win_width / 3) / len(cards)
             spacing = max_spacing * spacing_scale
@@ -67,15 +66,69 @@ class GameContext:
                     continue
                 x_pos = start_x + x * spacing
                 y_pos = y_offset
+                card.base_x = x_pos
+                card.target_x = x_pos
                 card.loc = (x_pos, y_pos)
                 card.base_y = y_pos
                 card.target_y = y_pos
-                card.base_x = x_pos
-                card.target_x = x_pos
 
         mid_y = self.screen.display_surface.get_height() / 2
         set_card_positions(self.hand.cards, 1.5 * mid_y)
         set_card_positions(self.opp_hand.cards, 0.5 * mid_y - 98)
+
+    def updateLocations(self):
+        mid_y = self.screen.display_surface.get_height() / 2
+        mouse_pos = pygame.mouse.get_pos()
+        hovered = None
+
+        for card in reversed(self.context.hand.cards):
+            width = 73 if card == self.context.hand.cards[-1] else (self.context.screen.display_surface.get_width() / 3) / max(len(self.context.hand.cards) - 1, 1) * 0.8
+            rect = pygame.Rect(int(card.loc[0]), int(card.base_y), int(width), 98)
+            if rect.collidepoint(mouse_pos) and not self.active_card:
+                hovered = card
+                break
+            
+        for card in self.context.hand.cards:
+            if card == hovered:
+                card.target_y = card.base_y - 15
+            else:
+                card.target_y = card.base_y
+
+        for card in self.context.hand.cards:
+            if card.dragging:
+                continue
+            x, y = card.loc
+            distance = card.target_y - y
+            card.velocity_y += distance * 0.3
+            card.velocity_y *= 0.5
+            y += card.velocity_y
+            if abs(distance) < 0.05 and abs(card.velocity_y) < 0.05:
+                y = card.target_y
+                card.velocity_y = 0
+            card.loc = (x, y)
+
+        
+        
+        set_card_positions(self.hand.cards, 1.5 * mid_y)
+        set_card_positions(self.opp_hand.cards, 0.5 * mid_y - 98)
+
+        def set_card_positions(cards, y_offset, spacing_scale=self.constants.CARD_SPACING):
+            win_width = self.screen.display_surface.get_width()
+            max_spacing = (win_width / 3) / len(cards)
+            spacing = max_spacing * spacing_scale
+            total_width = spacing * (len(cards) - 1)
+            start_x = (win_width - total_width) / 2 - 36
+            for x, card in enumerate(cards):
+                if card.dragging:
+                    continue
+                x_pos = start_x + x * spacing
+                y_pos = y_offset
+                card.base_x = x_pos
+                card.target_x = x_pos
+                card.loc = (x_pos, y_pos)
+                card.base_y = y_pos
+                card.target_y = y_pos
+
 
 
 

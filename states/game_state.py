@@ -26,8 +26,10 @@ class GameState(State):
         self.player_knock = False
         self.computer_knock = False
         self.round_overlay = False
+        self.sort_cards_rank(self.context.opp_hand)
 
     def update(self):
+        self.context.updateLocations()
         self.update_card_hover()
 
         self.context.animator.animate_player_card_slide()
@@ -98,7 +100,7 @@ class GameState(State):
         #advance the turn
         if (self.player_turn == -1):
             self.computer_play()
-            #self.sort_cards_rank(self.context.opp_hand)
+            self.sort_cards_rank(self.context.opp_hand)
             self.player_turn *= -1
         if self.manager.restart_from_main_menu:
             self.manager.menu_active = False
@@ -118,21 +120,24 @@ class GameState(State):
         flip_active = self.context.animator.player_card_flip.active
         slide_active = self.context.animator.player_card_slide.active
         suppressed = self.drawn_card if (flip_active or slide_active) else None
-        self.context.drawer.draw_cards(self.active_card, suppressed)
-        self.context.drawer.draw_hand_cards(self.active_card, suppressed)
 
         opp_flip_active = self.context.animator.opp_card_flip.active
         opp_slide_active = self.context.animator.opp_card_slide.active
+        opp_suppressed = self.opp_drawn_card if (opp_flip_active or opp_slide_active) else None
+
+        self.context.drawer.draw_cards(self.active_card, suppressed)
+        self.context.drawer.draw_opp_hand_cards(self.discard_top, opp_suppressed)
+        self.context.drawer.draw_hand_cards(self.active_card, suppressed)
 
         #animations
         if flip_active:
             self.context.drawer.draw_player_card_flip(self.drawn_card, self.context.rects.draw_rect.center, (self.context.hand.cards[-1].loc[0] + 73/2, self.context.hand.cards[-1].loc[1] + 98/2))
         if slide_active:
             self.context.drawer.draw_player_card_slide(self.drawn_card, self.context.rects.discard_rect.center, (self.context.hand.cards[-1].loc[0], self.context.hand.cards[-1].loc[1]))
-        if opp_flip_active and self.opp_drawn_card:
-            self.context.drawer.draw_opp_card_flip(self.discard_top, self.context.rects.discard_rect.center, (self.opp_drawn_card.loc[0] + 73/2, self.opp_drawn_card.loc[1] + 98/2))
-        if opp_slide_active and self.opp_drawn_card:
-            self.context.drawer.draw_opp_card_slide(self.context.rects.draw_rect, (self.opp_drawn_card.loc[0], self.opp_drawn_card.loc[1]))
+        # if opp_flip_active and self.opp_drawn_card:
+        #     self.context.drawer.draw_opp_card_flip(self.discard_top, self.context.rects.discard_rect.center, (self.opp_drawn_card.loc[0] + 73/2, self.opp_drawn_card.loc[1] + 98/2))
+        # if opp_slide_active and self.opp_drawn_card:
+        #     self.context.drawer.draw_opp_card_slide(self.context.rects.draw_rect, (self.opp_drawn_card.loc[0], self.opp_drawn_card.loc[1]))
         if self.context.animator.opp_discard_flip.active and not opp_flip_active and not opp_slide_active:
             self.context.drawer.draw_opp_discard_flip((self.opp_best_discard.loc[0] + 73/2, self.opp_best_discard.loc[1] + 98/2), self.context.rects.discard_rect.center)
 
@@ -143,7 +148,11 @@ class GameState(State):
         pass
 
     def enter(self):
-        pass
+        #self.context.updateLocations()
+        for card in self.context.hand.cards:
+            card.loc = (card.base_x, card.base_y)
+        for card in self.context.opp_hand.cards:
+            card.loc = (card.base_x, card.base_y)
 
     def handle_event(self, event):
         if event.type == pygame.QUIT:
@@ -267,13 +276,11 @@ class GameState(State):
                     card.hovered_x = False
                 self.active_card = None
                 self.clicked = False
-            self.context.updateLocations()
         
     def pickup_card(self, deck, hand): #replaced drawCard()
         choice = random.choice(deck.cards)
         hand.cards.append(choice)
         deck.cards.remove(choice)
-        self.context.updateLocations()
         return choice
     
     def sort_cards_rank(self, hand):
@@ -288,7 +295,6 @@ class GameState(State):
             hand.cards.remove(greatest_card)
             sorted_hand.append(greatest_card)
         hand.cards = sorted_hand
-        self.context.updateLocations()
 
     def sort_cards_suit(self, hand):
         self.sort_cards_rank(hand)
@@ -301,18 +307,15 @@ class GameState(State):
             for card in cards:
                 sorted_hand.append(card)
         hand.cards = sorted_hand
-        self.context.updateLocations()
     
     def discard(self, hand, active_card):
         hand.cards.remove(active_card)
-        self.context.updateLocations()
         self.context.discard_pile.cards.append(active_card)
 
     def pickup_discard(self, hand):
         choice = self.context.discard_pile.cards[-1]
         hand.cards.append(choice)
         self.context.discard_pile.cards.remove(choice)
-        self.context.updateLocations()
         return choice
 
     def can_knock(self, melds, cards):
@@ -538,7 +541,10 @@ class GameState(State):
             self.card_hovered = newly_hovered
 
         for card in self.context.hand.cards:
-            card.target_y = card.base_y - 15 if card == self.card_hovered else card.base_y
+            if card == self.card_hovered:
+                card.target_y = card.base_y - 15
+            else:
+                card.target_y = card.base_y
 
         for card in self.context.hand.cards:
             if card.dragging:
@@ -552,3 +558,7 @@ class GameState(State):
                 y = card.target_y
                 card.velocity_y = 0
             card.loc = (x, y)
+
+
+
+

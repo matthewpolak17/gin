@@ -90,11 +90,10 @@ class Drawer:
         surface.blit(self.context.image_loader.blue_back, (surface.get_width() * 4/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
         pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
         
-        
-        for card in self.context.opp_hand.cards:
-            if card.visible:
-                surface.blit(self.context.image_loader.blue_back, card.loc)
-                #surface.blit(self.context.image_loader.card_images[card.name], card.loc)
+        # for card in self.context.opp_hand.cards:
+        #     if card.visible:
+        #         surface.blit(self.context.image_loader.blue_back, card.loc)
+        #         #surface.blit(self.context.image_loader.card_images[card.name], card.loc)
 
         if self.context.discard_pile.cards:
             if len(self.context.discard_pile.cards) > 1:
@@ -107,18 +106,18 @@ class Drawer:
                 surface.blit(discard_top, (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
 
         #cards drawn while holding a card
-        if active_card:
-            active_card_x = active_card.loc[0]
+        # if active_card:
+        #     active_card_x = active_card.loc[0]
 
-            for card in self.context.hand.cards:
-                if card.loc[0] < active_card_x and card is not suppressed and card.visible: #draw all the card before the active card first
-                    surface.blit(self.context.image_loader.card_images[card.name], (card.loc))
+        #     for card in self.context.hand.cards:
+        #         if card.loc[0] < active_card_x and card is not suppressed and card.visible: #draw all the card before the active card first
+        #             surface.blit(self.context.image_loader.card_images[card.name], (card.loc))
 
-            surface.blit(self.context.image_loader.card_images[active_card.name], (active_card.loc)) #draw the active card
+        #     surface.blit(self.context.image_loader.card_images[active_card.name], (active_card.loc)) #draw the active card
 
-            for card in self.context.hand.cards:
-                if card.loc[0] > active_card_x and card is not suppressed and card.visible: #draw all the cards after the active card last
-                    surface.blit(self.context.image_loader.card_images[card.name], (card.loc))
+        #     for card in self.context.hand.cards:
+        #         if card.loc[0] > active_card_x and card is not suppressed and card.visible: #draw all the cards after the active card last
+        #             surface.blit(self.context.image_loader.card_images[card.name], (card.loc))
 
     def draw_hand_cards(self, active_card, suppressed_card=None):
         surface = self.context.surface_loader.game_surface
@@ -128,6 +127,37 @@ class Drawer:
                     continue
                 if card.visible:
                     surface.blit(self.context.image_loader.card_images[card.name], card.loc)
+        else:
+            active_card_x = active_card.loc[0]
+            for card in self.context.hand.cards:
+                if card.loc[0] < active_card_x and card is not suppressed_card and card.visible: #draw all the card before the active card first
+                    surface.blit(self.context.image_loader.card_images[card.name], (card.loc))
+
+            surface.blit(self.context.image_loader.card_images[active_card.name], (active_card.loc)) #draw the active card
+
+            for card in self.context.hand.cards:
+                if card.loc[0] > active_card_x and card is not suppressed_card and card.visible: #draw all the cards after the active card last
+                    surface.blit(self.context.image_loader.card_images[card.name], (card.loc))
+
+    def draw_opp_hand_cards(self, discard_top, opp_suppressed_card):
+        surface = self.context.surface_loader.game_surface
+        opp_flip_active = self.context.animator.opp_card_flip.active
+        opp_slide_active = self.context.animator.opp_card_slide.active
+
+        if opp_suppressed_card and (opp_flip_active or opp_slide_active) and opp_suppressed_card in self.context.opp_hand.cards:
+            suppressed_index = self.context.opp_hand.cards.index(opp_suppressed_card)
+            for i, card in enumerate(self.context.opp_hand.cards):
+                if i == suppressed_index:
+                    if opp_flip_active:
+                        self.draw_opp_card_flip(discard_top, self.context.rects.discard_rect.center, (opp_suppressed_card.loc[0] + 73/2, opp_suppressed_card.loc[1] + 98/2))
+                    else:
+                        self.draw_opp_card_slide(self.context.rects.draw_rect, (opp_suppressed_card.loc[0], opp_suppressed_card.loc[1]))
+                elif card.visible:
+                    surface.blit(self.context.image_loader.blue_back, card.loc)
+        else:
+            for card in self.context.opp_hand.cards:
+                if card.visible:
+                    surface.blit(self.context.image_loader.blue_back, card.loc)
 
     def draw_player_card_flip(self, drawn_card, start_pos, end_pos):
         progress = self.context.animator.player_card_flip.frame / self.context.animator.player_card_flip.total_frames
