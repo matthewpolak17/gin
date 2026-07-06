@@ -50,7 +50,10 @@ class Drawer:
         y = (self.context.screen.display_height - surface.get_height()) * 5/12
         self.context.surface_loader.title_surface.blit(surface, (x, y))
 
-    #game surface specific functions
+# ==========================================
+# GAME SURFACE METHODS
+# ==========================================
+
     def draw_button(self, rect, text_surface, visible=True):
         if not visible:
             return
@@ -237,3 +240,4 @@ class Drawer:
             self.context.screen.game_surface.blit(self.context.text_renderer.continue_text, self.context.text_renderer.continue_text.get_rect(center=(self.context.screen.display_width // 2, self.context.screen.display_height * 2/3)))
             self.context.screen.game_surface.blit(self.context.text_renderer.player_score_text, self.context.text_renderer.player_score_text.get_rect(center=(self.context.screen.display_width // 2, self.context.screen.display_height * 1/3)))
             self.context.screen.game_surface.blit(self.context.text_renderer.opp_score_text, self.context.text_renderer.opp_score_text.get_rect(center=(self.context.screen.display_width // 2, (self.context.screen.display_height * 1/3) + 25)))
+

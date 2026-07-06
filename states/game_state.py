@@ -28,8 +28,12 @@ class GameState(State):
         self.round_overlay = False
         self.sort_cards_rank(self.context.opp_hand)
 
+# ==========================================
+# INHERITED METHODS
+# ==========================================            
+
     def update(self):
-        self.context.updateLocations()
+        #self.context.updateLocations()
         self.update_card_hover()
 
         self.context.animator.animate_player_card_slide()
@@ -276,13 +280,12 @@ class GameState(State):
                     card.hovered_x = False
                 self.active_card = None
                 self.clicked = False
-        
-    def pickup_card(self, deck, hand): #replaced drawCard()
-        choice = random.choice(deck.cards)
-        hand.cards.append(choice)
-        deck.cards.remove(choice)
-        return choice
-    
+            self.context.updateLocations()
+            
+# ==========================================
+# SORTING METHODS
+# ==========================================            
+
     def sort_cards_rank(self, hand):
         sorted_hand = []
         greatest_card = None
@@ -295,6 +298,7 @@ class GameState(State):
             hand.cards.remove(greatest_card)
             sorted_hand.append(greatest_card)
         hand.cards = sorted_hand
+        self.context.updateLocations()
 
     def sort_cards_suit(self, hand):
         self.sort_cards_rank(hand)
@@ -307,16 +311,34 @@ class GameState(State):
             for card in cards:
                 sorted_hand.append(card)
         hand.cards = sorted_hand
+        self.context.updateLocations()
     
-    def discard(self, hand, active_card):
-        hand.cards.remove(active_card)
-        self.context.discard_pile.cards.append(active_card)
+# ==========================================
+# CARD MANAGEMENT METHODS
+# ========================================== 
+
+    def pickup_card(self, deck, hand):
+        choice = random.choice(deck.cards)
+        hand.cards.append(choice)
+        deck.cards.remove(choice)
+        self.context.updateLocations()
+        return choice
 
     def pickup_discard(self, hand):
         choice = self.context.discard_pile.cards[-1]
         hand.cards.append(choice)
         self.context.discard_pile.cards.remove(choice)
+        self.context.updateLocations()
         return choice
+
+    def discard(self, hand, active_card):
+        hand.cards.remove(active_card)
+        self.context.updateLocations()
+        self.context.discard_pile.cards.append(active_card)
+
+# ==========================================
+# GAME MANAGEMENT METHODS
+# ==========================================
 
     def can_knock(self, melds, cards):
         meld_cards = []
@@ -342,6 +364,19 @@ class GameState(State):
         else:
             return False
     
+    def can_contribute(self, card, meld):
+        type = self.get_meld_type(meld)
+        if type == "run":
+            if self.context.card_data[card.name]["suit"] == self.context.card_data[meld[0].name]["suit"]:
+                if self.context.card_data[card.name]["rank"] == self.context.card_data[meld[0].name]["rank"] - 1:
+                    return True
+                elif self.context.card_data[card.name]["rank"] == self.context.card_data[meld[-1].name]["rank"] + 1:
+                    return True
+        elif type == "set":
+            if self.context.card_data[card.name]["rank"] == self.context.card_data[meld[0].name]["rank"]:
+                return True
+        return False
+
     def update_melds(self, this_hand):
         rank_groups = defaultdict(list)
         suit_groups = defaultdict(list)
@@ -399,6 +434,14 @@ class GameState(State):
                         best_melds = list(combo)
         return best_melds
 
+    def get_meld_type(self, meld):
+        if self.context.card_data[meld[0].name]["rank"] == self.context.card_data[meld[1].name]["rank"]:
+            return "set"
+        elif (abs(self.context.card_data[meld[0].name]["rank"] - self.context.card_data[meld[1].name]["rank"]) == 1 and self.context.card_data[meld[0].name]["suit"] == self.context.card_data[meld[1].name]["suit"]):
+            return "run"
+        else:
+            return "none"
+
     def calculate_round_score(self, knocker_hand, defender_hand):
         #knocker_melds = update_melds(knocker_hand)
         #defender_melds = update_melds(defender_hand)
@@ -442,27 +485,6 @@ class GameState(State):
                 deadwood += min(self.context.card_data[card.name]["rank"], 10)
         return deadwood
     
-    def can_contribute(self, card, meld):
-        type = self.get_meld_type(meld)
-        if type == "run":
-            if self.context.card_data[card.name]["suit"] == self.context.card_data[meld[0].name]["suit"]:
-                if self.context.card_data[card.name]["rank"] == self.context.card_data[meld[0].name]["rank"] - 1:
-                    return True
-                elif self.context.card_data[card.name]["rank"] == self.context.card_data[meld[-1].name]["rank"] + 1:
-                    return True
-        elif type == "set":
-            if self.context.card_data[card.name]["rank"] == self.context.card_data[meld[0].name]["rank"]:
-                return True
-        return False
-
-    def get_meld_type(self, meld):
-        if self.context.card_data[meld[0].name]["rank"] == self.context.card_data[meld[1].name]["rank"]:
-            return "set"
-        elif (abs(self.context.card_data[meld[0].name]["rank"] - self.context.card_data[meld[1].name]["rank"]) == 1 and self.context.card_data[meld[0].name]["suit"] == self.context.card_data[meld[1].name]["suit"]):
-            return "run"
-        else:
-            return "none"
-
     def computer_play(self):
         self.context.opp_hand.melds = self.update_melds(self.context.opp_hand)
         current_deadwood = self.calculate_deadwood(self.context.opp_hand.melds, self.context.opp_hand.cards)
@@ -525,6 +547,10 @@ class GameState(State):
             computer_knock = True
             self.context.opp_hand.can_knock = False
             self.context.opp_hand.can_gin = False
+
+# ==========================================
+# UPDATE HELPER METHODS
+# ==========================================
 
     def update_card_hover(self):
         mouse_pos = pygame.mouse.get_pos()
