@@ -33,9 +33,8 @@ class GameState(State):
 # ==========================================            
 
     def update(self):
+
         #self.context.updateLocations()
-        self.update_card_hover_y()
-        self.update_card_hover_x()
 
         self.context.animator.animate_player_card_slide()
         if self.context.animator.player_card_slide.finished and self.drawn_card:
@@ -88,6 +87,9 @@ class GameState(State):
             self.context.reset_round()
             self.manager.menu_active = False
             self.manager.restart = False
+        
+        self.update_card_hover_y()
+        self.update_card_hover_x()
 
     def draw(self):
         self.context.drawer.draw_game_background()
@@ -125,7 +127,6 @@ class GameState(State):
         pass
 
     def enter(self):
-        #self.context.updateLocations()
         for card in self.context.hand.cards:
             card.loc = (card.base_x, card.base_y)
         for card in self.context.opp_hand.cards:
@@ -471,9 +472,11 @@ class GameState(State):
         if not self.context.animator.opp_card_flip.active:
             self.discard_top = self.context.discard_pile.cards[-1]
         if simulated_deadwood < current_deadwood:
+            print("flip animation started")
             self.context.animator.opp_card_flip.start()
             self.opp_drawn_card = self.pickup_discard(self.context.opp_hand)
         else:
+            print("slide animation started")
             self.context.animator.opp_card_slide.start()
             self.opp_drawn_card = self.pickup_card(self.context.deck, self.context.opp_hand)
         self.opp_drawn_card.visible = False
@@ -500,7 +503,11 @@ class GameState(State):
 
         if self.opp_best_discard is None:
             self.opp_best_discard = self.context.opp_hand.cards[-1]
+
         self.opp_best_discard.visible = False
+        #self.context.updateLocations()
+        #print(self.opp_best_discard.loc[0])
+        #print(self.opp_best_discard == self.opp_drawn_card)
         self.context.animator.opp_discard_flip.start()
         self.discard(self.context.opp_hand, self.opp_best_discard)
 

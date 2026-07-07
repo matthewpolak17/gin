@@ -156,11 +156,13 @@ class Drawer:
                     else:
                         self.draw_opp_card_slide(self.context.rects.draw_rect, (opp_suppressed_card.loc[0], opp_suppressed_card.loc[1]))
                 elif card.visible:
-                    surface.blit(self.context.image_loader.blue_back, card.loc)
+                    surface.blit(self.context.image_loader.card_images[card.name], card.loc)
+                    #surface.blit(self.context.image_loader.blue_back, card.loc)
         else:
             for card in self.context.opp_hand.cards:
                 if card.visible:
-                    surface.blit(self.context.image_loader.blue_back, card.loc)
+                    surface.blit(self.context.image_loader.card_images[card.name], card.loc)
+                    #surface.blit(self.context.image_loader.blue_back, card.loc)
 
     def draw_player_card_flip(self, drawn_card, start_pos, end_pos):
         progress = self.context.animator.player_card_flip.frame / self.context.animator.player_card_flip.total_frames
