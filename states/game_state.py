@@ -34,7 +34,8 @@ class GameState(State):
 
     def update(self):
         #self.context.updateLocations()
-        self.update_card_hover()
+        self.update_card_hover_y()
+        self.update_card_hover_x()
 
         self.context.animator.animate_player_card_slide()
         if self.context.animator.player_card_slide.finished and self.drawn_card:
@@ -56,34 +57,6 @@ class GameState(State):
         self.context.animator.animate_opp_discard_flip()
         if self.context.animator.opp_discard_flip.finished:
             self.opp_best_discard.visible = True
-
-        #hover_x logic
-        if self.active_card:
-            for i, card in enumerate(self.context.hand.cards):
-                if card.dragging:
-                    continue
-                if card.loc[0] > self.active_card.loc[0] and i < self.original_index and card != self.active_card: #moving active card to the left
-                    card.hovered_x = True
-                    card.target_x = card.base_x + self.horizontal_shift
-
-                elif card.loc[0] < self.active_card.loc[0] and i > self.original_index and card != self.active_card: #moving active card to the right
-                    card.hovered_x = True
-                    card.target_x = card.base_x - self.horizontal_shift
-
-                else:
-                    card.hovered_x = False
-                    card.target_x = card.base_x
-
-                x, y = card.loc
-                distance = card.target_x - x
-                card.velocity_x += distance * 0.2
-                card.velocity_x *= 0.35 #card movement speed
-                x += card.velocity_x
-
-                if abs(distance) < 0.5 and abs(card.velocity_x) < 0.5:
-                    x = card.target_x
-                    card.velocity_x = 0
-                card.loc = (x, y)
 
         #round overlay logic
         if self.player_knock or self.computer_knock:
@@ -137,7 +110,7 @@ class GameState(State):
         if flip_active:
             self.context.drawer.draw_player_card_flip(self.drawn_card, self.context.rects.draw_rect.center, (self.context.hand.cards[-1].loc[0] + 73/2, self.context.hand.cards[-1].loc[1] + 98/2))
         if slide_active:
-            self.context.drawer.draw_player_card_slide(self.drawn_card, self.context.rects.discard_rect.center, (self.context.hand.cards[-1].loc[0], self.context.hand.cards[-1].loc[1]))
+            self.context.drawer.draw_player_card_slide(self.drawn_card, self.context.rects.discard_rect, (self.context.hand.cards[-1].loc[0], self.context.hand.cards[-1].loc[1]))
         # if opp_flip_active and self.opp_drawn_card:
         #     self.context.drawer.draw_opp_card_flip(self.discard_top, self.context.rects.discard_rect.center, (self.opp_drawn_card.loc[0] + 73/2, self.opp_drawn_card.loc[1] + 98/2))
         # if opp_slide_active and self.opp_drawn_card:
@@ -552,7 +525,7 @@ class GameState(State):
 # UPDATE HELPER METHODS
 # ==========================================
 
-    def update_card_hover(self):
+    def update_card_hover_y(self):
         mouse_pos = pygame.mouse.get_pos()
         
         newly_hovered = None
@@ -584,6 +557,34 @@ class GameState(State):
                 y = card.target_y
                 card.velocity_y = 0
             card.loc = (x, y)
+
+    def update_card_hover_x(self):
+        if self.active_card:
+            for i, card in enumerate(self.context.hand.cards):
+                if card.dragging:
+                    continue
+                if card.loc[0] > self.active_card.loc[0] and i < self.original_index and card != self.active_card: #moving active card to the left
+                    card.hovered_x = True
+                    card.target_x = card.base_x + self.horizontal_shift
+
+                elif card.loc[0] < self.active_card.loc[0] and i > self.original_index and card != self.active_card: #moving active card to the right
+                    card.hovered_x = True
+                    card.target_x = card.base_x - self.horizontal_shift
+
+                else:
+                    card.hovered_x = False
+                    card.target_x = card.base_x
+
+                x, y = card.loc
+                distance = card.target_x - x
+                card.velocity_x += distance * 0.2
+                card.velocity_x *= 0.35 #card movement speed
+                x += card.velocity_x
+
+                if abs(distance) < 0.5 and abs(card.velocity_x) < 0.5:
+                    x = card.target_x
+                    card.velocity_x = 0
+                card.loc = (x, y)
 
 
 
