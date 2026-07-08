@@ -34,6 +34,7 @@ class GameState(State):
 
     def update(self):
 
+        #print(self.opp_drawn_card in self.context.opp_hand.cards)
         #self.context.updateLocations()
 
         self.context.animator.animate_player_card_slide()
@@ -472,11 +473,9 @@ class GameState(State):
         if not self.context.animator.opp_card_flip.active:
             self.discard_top = self.context.discard_pile.cards[-1]
         if simulated_deadwood < current_deadwood:
-            print("flip animation started")
             self.context.animator.opp_card_flip.start()
             self.opp_drawn_card = self.pickup_discard(self.context.opp_hand)
         else:
-            print("slide animation started")
             self.context.animator.opp_card_slide.start()
             self.opp_drawn_card = self.pickup_card(self.context.deck, self.context.opp_hand)
         self.opp_drawn_card.visible = False
@@ -506,8 +505,13 @@ class GameState(State):
 
         self.opp_best_discard.visible = False
         #self.context.updateLocations()
-        #print(self.opp_best_discard.loc[0])
-        #print(self.opp_best_discard == self.opp_drawn_card)
+
+
+        if self.opp_best_discard == self.opp_drawn_card:
+            #print(self.opp_drawn_card.loc[0])
+            pass
+
+
         self.context.animator.opp_discard_flip.start()
         self.discard(self.context.opp_hand, self.opp_best_discard)
 

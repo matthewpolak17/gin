@@ -147,13 +147,18 @@ class Drawer:
         opp_flip_active = self.context.animator.opp_card_flip.active
         opp_slide_active = self.context.animator.opp_card_slide.active
 
-        if opp_suppressed_card and (opp_flip_active or opp_slide_active) and opp_suppressed_card in self.context.opp_hand.cards:
-            suppressed_index = self.context.opp_hand.cards.index(opp_suppressed_card)
+        if opp_suppressed_card and (opp_flip_active or opp_slide_active): #and opp_suppressed_card in self.context.opp_hand.cards:
+            suppressed_index = -1
+            if opp_suppressed_card not in self.context.opp_hand.cards:
+                suppressed_index = len(self.context.opp_hand.cards) - 1
+            else:
+                suppressed_index = self.context.opp_hand.cards.index(opp_suppressed_card)
             for i, card in enumerate(self.context.opp_hand.cards):
                 if i == suppressed_index:
                     if opp_flip_active:
                         self.draw_opp_card_flip(discard_top, self.context.rects.discard_rect.center, (opp_suppressed_card.loc[0] + 73/2, opp_suppressed_card.loc[1] + 98/2))
                     else:
+                        #print(opp_suppressed_card.loc[0])
                         self.draw_opp_card_slide(self.context.rects.draw_rect, (opp_suppressed_card.loc[0], opp_suppressed_card.loc[1]))
                 elif card.visible:
                     surface.blit(self.context.image_loader.card_images[card.name], card.loc)
