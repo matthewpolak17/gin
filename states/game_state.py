@@ -33,9 +33,6 @@ class GameState(State):
 
     def update(self):
 
-        #print(self.opp_drawn_card in self.context.opp_hand.cards)
-        #self.context.updateLocations()
-
         self.context.animator.animate_player_card_slide()
         if self.context.animator.player_card_slide.finished and self.drawn_card:
             self.drawn_card.visible = True
@@ -56,6 +53,8 @@ class GameState(State):
         self.context.animator.animate_opp_discard_flip()
         if self.context.animator.opp_discard_flip.finished:
             self.opp_best_discard.visible = True
+
+        self.context.animator.animate_opp_hand_shift()
 
         #round overlay logic
         if self.player_knock or self.computer_knock:
@@ -477,6 +476,7 @@ class GameState(State):
         else:
             self.context.animator.opp_card_slide.start()
             self.opp_drawn_card = self.pickup_card(self.context.deck, self.context.opp_hand)
+        self.context.animator.opp_hand_shift.start()
         self.opp_drawn_card.visible = False
             
         #update melds after pickup
@@ -503,13 +503,6 @@ class GameState(State):
             self.opp_best_discard = self.context.opp_hand.cards[-1]
 
         self.opp_best_discard.visible = False
-        #self.context.updateLocations()
-
-
-        if self.opp_best_discard == self.opp_drawn_card:
-            #print(self.opp_drawn_card.loc[0])
-            pass
-
 
         self.context.animator.opp_discard_flip.start()
         self.discard(self.context.opp_hand, self.opp_best_discard)
