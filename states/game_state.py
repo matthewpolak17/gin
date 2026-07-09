@@ -22,7 +22,6 @@ class GameState(State):
         self.discard_top = None
         self.opp_best_discard = None
         self.knocking = False
-        self.horizontal_shift = (((self.context.screen.display_surface.get_width() / 3) / len(self.context.hand.cards)) * 0.8)
         self.player_knock = False
         self.computer_knock = False
         self.round_overlay = False
@@ -576,11 +575,12 @@ class GameState(State):
                     continue
                 if card.loc[0] > self.active_card.loc[0] and i < self.original_index and card != self.active_card: #moving active card to the left
                     card.hovered_x = True
-                    card.target_x = card.base_x + self.horizontal_shift
+                    card.target_x = card.base_x + (((self.context.screen.display_surface.get_width() / 3) / len(self.context.hand.cards)) * self.context.constants.CARD_SPACING)
+
 
                 elif card.loc[0] < self.active_card.loc[0] and i > self.original_index and card != self.active_card: #moving active card to the right
                     card.hovered_x = True
-                    card.target_x = card.base_x - self.horizontal_shift
+                    card.target_x = card.base_x - (((self.context.screen.display_surface.get_width() / 3) / len(self.context.hand.cards)) * self.context.constants.CARD_SPACING)
 
                 else:
                     card.hovered_x = False

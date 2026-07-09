@@ -136,7 +136,9 @@ class Drawer:
                 if card.loc[0] < active_card_x and card is not suppressed_card and card.visible: #draw all the card before the active card first
                     surface.blit(self.context.image_loader.card_images[card.name], (card.loc))
 
-            surface.blit(self.context.image_loader.card_images[active_card.name], (active_card.loc)) #draw the active card
+            temp_image = self.context.image_loader.card_images[active_card.name].copy()
+            temp_image.set_alpha(200)
+            surface.blit(temp_image, (active_card.loc)) #draw the active card
 
             for card in self.context.hand.cards:
                 if card.loc[0] > active_card_x and card is not suppressed_card and card.visible: #draw all the cards after the active card last
