@@ -38,3 +38,6 @@ class Animation:
         self.frame = 0
         self.active = False
         self.finished = False
+
+    def get_progress(self):
+        return self.frame / self.total_frames

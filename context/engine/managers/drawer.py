@@ -148,22 +148,30 @@ class Drawer:
         surface = self.context.surface_loader.game_surface
         opp_flip_active = self.context.animator.opp_card_flip.active
         opp_slide_active = self.context.animator.opp_card_slide.active
+        opp_hand_shift_active = self.context.animator.opp_hand_shift.active
+        shift_progress = self.context.animator.opp_hand_shift.get_progress()
 
-        if opp_suppressed_card and (opp_flip_active or opp_slide_active): #and opp_suppressed_card in self.context.opp_hand.cards:
+        if opp_suppressed_card and (opp_flip_active or opp_slide_active) and opp_hand_shift_active:
             suppressed_index = -1
             if opp_suppressed_card not in self.context.opp_hand.cards:
                 suppressed_index = len(self.context.opp_hand.cards) - 1
             else:
                 suppressed_index = self.context.opp_hand.cards.index(opp_suppressed_card)
             for i, card in enumerate(self.context.opp_hand.cards):
+                surface.blit(self.context.image_loader.blue_back, card.loc)
                 if i == suppressed_index:
                     if opp_flip_active:
                         self.draw_opp_card_flip(discard_top, self.context.rects.discard_rect.center, (opp_suppressed_card.loc[0] + 73/2, opp_suppressed_card.loc[1] + 98/2))
                     else:
-                        self.draw_opp_card_slide(self.context.rects.draw_rect, (opp_suppressed_card.loc[0], opp_suppressed_card.loc[1]))
-                elif card.visible:
-                    #surface.blit(self.context.image_loader.card_images[card.name], card.loc) #uncomment for testing
-                    surface.blit(self.context.image_loader.blue_back, card.loc)
+                         self.draw_opp_card_slide(self.context.rects.draw_rect, (opp_suppressed_card.loc[0], opp_suppressed_card.loc[1]))
+                # elif i < suppressed_index and card.visible:
+                #     #surface.blit(self.context.image_loader.card_images[card.name], card.loc) #uncomment for testing
+                #     surface.blit(self.context.image_loader.blue_back, card.loc)
+                # elif i > suppressed_index and card.visible:
+                #     #surface.blit(self.context.image_loader.card_images[card.name], card.loc) #uncomment for testing
+                #     surface.blit(self.context.image_loader.blue_back, card.loc)      
+                 
+
         else:
             for card in self.context.opp_hand.cards:
                 if card.visible:
@@ -171,7 +179,7 @@ class Drawer:
                     surface.blit(self.context.image_loader.blue_back, card.loc)
 
     def draw_player_card_flip(self, drawn_card, start_pos, end_pos):
-        progress = self.context.animator.player_card_flip.frame / self.context.animator.player_card_flip.total_frames
+        progress = self.context.animator.player_card_flip.get_progress()
         progress_eased = progress_eased = 1 - (1 - progress) ** 3
         x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased
         y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
@@ -190,21 +198,21 @@ class Drawer:
         self.context.surface_loader.game_surface.blit(scaled_image, (draw_x, draw_y))
         
     def draw_player_card_slide(self, drawn_card, start_pos, end_pos):
-        progress = self.context.animator.player_card_slide.frame / self.context.animator.player_card_slide.total_frames
+        progress = self.context.animator.player_card_slide.get_progress()
         progress_eased = progress_eased = 1 - (1 - progress) ** 3
         x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased #moves closer to the end_pos using the difference
         y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
         self.context.surface_loader.game_surface.blit(self.context.image_loader.card_images[drawn_card.name], (x,y))
 
     def draw_opp_card_slide(self, start_pos, end_pos):
-        progress = self.context.animator.opp_card_slide.frame / self.context.animator.opp_card_slide.total_frames
+        progress = self.context.animator.opp_card_slide.get_progress()
         progress_eased = progress_eased = 1 - (1 - progress) ** 3
         x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased #moves closer to the end_pos using the difference
         y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
         self.context.surface_loader.game_surface.blit(self.context.image_loader.blue_back, (x,y))
 
     def draw_opp_card_flip(self, discard_top, start_pos, end_pos):
-        progress = self.context.animator.opp_card_flip.frame / self.context.animator.opp_card_flip.total_frames
+        progress = self.context.animator.opp_card_flip.get_progress()
         progress_eased = progress_eased = 1 - (1 - progress) ** 3
         x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased
         y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
@@ -223,7 +231,7 @@ class Drawer:
         self.context.surface_loader.game_surface.blit(scaled_image, (draw_x, draw_y))
     
     def draw_opp_discard_flip(self, start_pos, end_pos):
-        progress = self.context.animator.opp_discard_flip.frame / self.context.animator.opp_discard_flip.total_frames
+        progress = self.context.animator.opp_discard_flip.get_progress()
         progress_eased = progress_eased = 1 - (1 - progress) ** 3
         x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased
         y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
