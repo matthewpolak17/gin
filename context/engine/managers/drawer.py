@@ -149,7 +149,7 @@ class Drawer:
         opp_flip_active = self.context.animator.opp_card_flip.active
         opp_slide_active = self.context.animator.opp_card_slide.active
         opp_hand_shift_active = self.context.animator.opp_hand_shift.active
-        shift_progress = self.context.animator.opp_hand_shift.get_progress()
+        print(len(self.context.opp_hand.cards))
 
         if opp_suppressed_card and (opp_flip_active or opp_slide_active) and opp_hand_shift_active:
             suppressed_index = -1
@@ -157,7 +157,9 @@ class Drawer:
                 suppressed_index = len(self.context.opp_hand.cards) - 1
             else:
                 suppressed_index = self.context.opp_hand.cards.index(opp_suppressed_card)
+            #print(suppressed_index)
             for i, card in enumerate(self.context.opp_hand.cards):
+                self.draw_opp_hand_shifting()
                 surface.blit(self.context.image_loader.blue_back, card.loc)
                 if i == suppressed_index:
                     if opp_flip_active:
@@ -177,6 +179,11 @@ class Drawer:
                 if card.visible:
                     #surface.blit(self.context.image_loader.card_images[card.name], card.loc) #uncomment for testing
                     surface.blit(self.context.image_loader.blue_back, card.loc)
+
+    def draw_opp_hand_shifting(self):
+        shift_progress = self.context.animator.opp_hand_shift.get_progress()
+
+
 
     def draw_player_card_flip(self, drawn_card, start_pos, end_pos):
         progress = self.context.animator.player_card_flip.get_progress()
