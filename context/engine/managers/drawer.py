@@ -149,29 +149,26 @@ class Drawer:
         opp_flip_active = self.context.animator.opp_card_flip.active
         opp_slide_active = self.context.animator.opp_card_slide.active
         opp_hand_shift_active = self.context.animator.opp_hand_shift.active
-        print(len(self.context.opp_hand.cards))
+        shift_progress = self.context.animator.opp_hand_shift.get_progress()
 
-        if opp_suppressed_card and (opp_flip_active or opp_slide_active) and opp_hand_shift_active:
+        if opp_suppressed_card and (opp_flip_active or opp_slide_active):
             suppressed_index = -1
             if opp_suppressed_card not in self.context.opp_hand.cards:
                 suppressed_index = len(self.context.opp_hand.cards) - 1
             else:
                 suppressed_index = self.context.opp_hand.cards.index(opp_suppressed_card)
-            #print(suppressed_index)
             for i, card in enumerate(self.context.opp_hand.cards):
-                self.draw_opp_hand_shifting()
-                surface.blit(self.context.image_loader.blue_back, card.loc)
                 if i == suppressed_index:
                     if opp_flip_active:
                         self.draw_opp_card_flip(discard_top, self.context.rects.discard_rect.center, (opp_suppressed_card.loc[0] + 73/2, opp_suppressed_card.loc[1] + 98/2))
                     else:
                          self.draw_opp_card_slide(self.context.rects.draw_rect, (opp_suppressed_card.loc[0], opp_suppressed_card.loc[1]))
-                # elif i < suppressed_index and card.visible:
-                #     #surface.blit(self.context.image_loader.card_images[card.name], card.loc) #uncomment for testing
-                #     surface.blit(self.context.image_loader.blue_back, card.loc)
-                # elif i > suppressed_index and card.visible:
-                #     #surface.blit(self.context.image_loader.card_images[card.name], card.loc) #uncomment for testing
-                #     surface.blit(self.context.image_loader.blue_back, card.loc)      
+                elif i < suppressed_index and card.visible:
+                    #surface.blit(self.context.image_loader.card_images[card.name], card.loc) #uncomment for testing
+                    surface.blit(self.context.image_loader.blue_back, (card.loc[0] - (self.context.constants.CARD_WIDTH*shift_progress), card.loc[1]))
+                elif i > suppressed_index and card.visible:
+                    #surface.blit(self.context.image_loader.card_images[card.name], card.loc) #uncomment for testing
+                    surface.blit(self.context.image_loader.blue_back, (card.loc[0] + (self.context.constants.CARD_WIDTH*shift_progress), card.loc[1]))      
                  
 
         else:
@@ -179,9 +176,6 @@ class Drawer:
                 if card.visible:
                     #surface.blit(self.context.image_loader.card_images[card.name], card.loc) #uncomment for testing
                     surface.blit(self.context.image_loader.blue_back, card.loc)
-
-    def draw_opp_hand_shifting(self):
-        shift_progress = self.context.animator.opp_hand_shift.get_progress()
 
 
 
