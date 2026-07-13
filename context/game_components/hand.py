@@ -1,4 +1,5 @@
 import random
+import copy
 
 class Hand:
     cards = []
@@ -29,5 +30,4 @@ class Hand:
         for card in self.cards:
             card.loc = (i * 73, 0)
             i = i + 1
-
             

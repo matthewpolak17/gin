@@ -18,9 +18,14 @@ class GameState(State):
         self.card_y = 0
         self.player_turn = 1
         self.drawn_card = None
-        self.opp_drawn_card = None
         self.discard_top = None
-        self.opp_best_discard = None
+
+        self.simulated_opp_hand_pickup = None
+        self.opp_drawn_card = None
+
+        self.simulated_opp_hand_discard = None
+        self.opp_discarded_card = None
+
         self.knocking = False
         self.player_knock = False
         self.computer_knock = False
@@ -52,7 +57,7 @@ class GameState(State):
 
         self.context.animator.animate_opp_discard_flip()
         if self.context.animator.opp_discard_flip.finished:
-            self.opp_best_discard.visible = True
+            self.opp_discarded_card.visible = True
 
         self.context.animator.animate_opp_hand_shift()
 
@@ -97,27 +102,21 @@ class GameState(State):
 
         flip_active = self.context.animator.player_card_flip.active
         slide_active = self.context.animator.player_card_slide.active
-        suppressed = self.drawn_card if (flip_active or slide_active) else None
 
         opp_flip_active = self.context.animator.opp_card_flip.active
         opp_slide_active = self.context.animator.opp_card_slide.active
-        opp_suppressed = self.opp_drawn_card if (opp_flip_active or opp_slide_active) else None
 
-        self.context.drawer.draw_cards(self.active_card, suppressed)
-        self.context.drawer.draw_opp_hand_cards(self.discard_top, opp_suppressed)
-        self.context.drawer.draw_hand_cards(self.active_card, suppressed)
+        self.context.drawer.draw_cards()
+        self.context.drawer.draw_opp_hand_cards(self.discard_top, self.opp_drawn_card, self.simulated_opp_hand_pickup, self.opp_discarded_card, self.simulated_opp_hand_discard)
+        self.context.drawer.draw_hand_cards(self.active_card, self.drawn_card if (flip_active or slide_active) else None)
 
         #animations
         if flip_active:
             self.context.drawer.draw_player_card_flip(self.drawn_card, self.context.rects.draw_rect.center, (self.context.hand.cards[-1].loc[0] + 73/2, self.context.hand.cards[-1].loc[1] + 98/2))
         if slide_active:
             self.context.drawer.draw_player_card_slide(self.drawn_card, self.context.rects.discard_rect, (self.context.hand.cards[-1].loc[0], self.context.hand.cards[-1].loc[1]))
-        # if opp_flip_active and self.opp_drawn_card:
-        #     self.context.drawer.draw_opp_card_flip(self.discard_top, self.context.rects.discard_rect.center, (self.opp_drawn_card.loc[0] + 73/2, self.opp_drawn_card.loc[1] + 98/2))
-        # if opp_slide_active and self.opp_drawn_card:
-        #     self.context.drawer.draw_opp_card_slide(self.context.rects.draw_rect, (self.opp_drawn_card.loc[0], self.opp_drawn_card.loc[1]))
         if self.context.animator.opp_discard_flip.active and not opp_flip_active and not opp_slide_active:
-            self.context.drawer.draw_opp_discard_flip((self.opp_best_discard.loc[0] + 73/2, self.opp_best_discard.loc[1] + 98/2), self.context.rects.discard_rect.center)
+            self.context.drawer.draw_opp_discard_flip((self.opp_discarded_card.loc[0] + 73/2, self.opp_discarded_card.loc[1] + 98/2), self.context.rects.discard_rect.center)
 
         self.context.drawer.draw_round_overlay(self.round_overlay)
         self.context.screen.display_surface.blit(self.context.surface_loader.game_surface, (0,0))
@@ -272,6 +271,19 @@ class GameState(State):
             sorted_hand.append(greatest_card)
         hand.cards = sorted_hand
         self.context.updateLocations()
+
+    def sort_cards_rank_nul(self, hand): #no update locations
+        sorted_hand = []
+        greatest_card = None
+        while hand.cards:
+            greatest_num = 0
+            for card in hand.cards:
+                if self.context.card_data[card.name]["rank"] >= greatest_num:
+                    greatest_num = self.context.card_data[card.name]["rank"]
+                    greatest_card = card
+            hand.cards.remove(greatest_card)
+            sorted_hand.append(greatest_card)
+        hand.cards = sorted_hand
 
     def sort_cards_suit(self, hand):
         self.sort_cards_rank(hand)
@@ -476,13 +488,15 @@ class GameState(State):
         else:
             self.context.animator.opp_card_slide.start()
             self.opp_drawn_card = self.pickup_card(self.context.deck, self.context.opp_hand)
+
+        self.simulated_opp_hand_pickup = self.context.opp_hand.cards[:]
         self.context.animator.opp_hand_shift.start()
         self.opp_drawn_card.visible = False
             
         #update melds after pickup
         self.context.opp_hand.melds = self.update_melds(self.context.opp_hand)
         
-        self.opp_best_discard = None
+        #self.opp_discarded_card = None
         best_deadwood = float('inf')
 
         for card in self.context.opp_hand.cards:
@@ -497,15 +511,15 @@ class GameState(State):
 
             if simulated_deadwood < best_deadwood:
                 best_deadwood = simulated_deadwood
-                self.opp_best_discard = card
+                self.opp_discarded_card = card
 
-        if self.opp_best_discard is None:
-            self.opp_best_discard = self.context.opp_hand.cards[-1]
+        if self.opp_discarded_card is None:
+            self.opp_discarded_card = self.context.opp_hand.cards[-1]
 
-        self.opp_best_discard.visible = False
-
+        self.opp_discarded_card.visible = False
         self.context.animator.opp_discard_flip.start()
-        self.discard(self.context.opp_hand, self.opp_best_discard)
+        self.discard(self.context.opp_hand, self.opp_discarded_card)
+        self.simulated_opp_hand_discard = self.context.opp_hand.cards[:]
 
         self.context.opp_hand.melds = self.update_melds(self.context.opp_hand)
         deadwood = self.calculate_deadwood(self.context.opp_hand.melds, self.context.opp_hand.cards)

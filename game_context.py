@@ -57,6 +57,8 @@ class GameContext:
         def set_card_positions(cards, y_offset, spacing_scale=self.constants.CARD_SPACING):
             win_width = self.screen.display_surface.get_width()
             max_spacing = (win_width / 3) / len(cards)
+            if len(cards) == 11:
+                spacing_scale *= 0.99
             spacing = max_spacing * spacing_scale
             total_width = spacing * (len(cards) - 1)
             start_x = (win_width - total_width) / 2 - 36
@@ -68,6 +70,7 @@ class GameContext:
                 y_pos = y_offset
                 card.base_x = x_pos
                 card.target_x = x_pos
+                #print(x_pos)
                 card.loc = (x_pos, y_pos)
                 card.base_y = y_pos
                 card.target_y = y_pos
@@ -75,6 +78,25 @@ class GameContext:
         mid_y = self.screen.display_surface.get_height() / 2
         set_card_positions(self.hand.cards, 1.5 * mid_y)
         set_card_positions(self.opp_hand.cards, 0.5 * mid_y - 98)
+
+
+        #win_width = 1920
+        # max_spacing = (win_width / 3) / 10
+        # spacing = max_spacing * 0.8
+        # total_width = spacing * (10 - 1)
+        # start_x = (win_width - total_width) / 2 - 36
+
+        # for i in range(10):
+        #     print("10 card spacing: " + str(start_x + i * spacing))
+
+        # max_spacing = (win_width / 3) / 11
+        # spacing = max_spacing * 0.792
+        # total_width = spacing * (11 - 1)
+        # start_x = (win_width - total_width) / 2 - 36
+
+        # for i in range(11):
+        #     print("11 card spacing: " + str(start_x + i * spacing))
+
 
 
 
