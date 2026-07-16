@@ -21,6 +21,7 @@ class GameState(State):
         self.discard_top = None
 
         self.simulated_opp_hand_pickup = None
+        self.simulated_opp_hand_prepickup = None
         self.opp_drawn_card = None
 
         self.simulated_opp_hand_discard = None
@@ -107,7 +108,7 @@ class GameState(State):
         opp_slide_active = self.context.animator.opp_card_slide.active
 
         self.context.drawer.draw_cards()
-        self.context.drawer.draw_opp_hand_cards(self.discard_top, self.opp_drawn_card, self.simulated_opp_hand_pickup, self.opp_discarded_card, self.simulated_opp_hand_discard)
+        self.context.drawer.draw_opp_hand_cards(self.discard_top, self.opp_drawn_card, self.simulated_opp_hand_prepickup, self.simulated_opp_hand_pickup, self.opp_discarded_card, self.simulated_opp_hand_discard)
         self.context.drawer.draw_hand_cards(self.active_card, self.drawn_card if (flip_active or slide_active) else None)
 
         #animations
@@ -482,6 +483,14 @@ class GameState(State):
         
         if not self.context.animator.opp_card_flip.active:
             self.discard_top = self.context.discard_pile.cards[-1]
+
+        self.sort_cards_rank(self.context.opp_hand) 
+        self.simulated_opp_hand_prepickup = sorted(
+            [(card, card.loc) for card in self.context.opp_hand.cards],
+            key=lambda x: self.context.card_data[x[0].name]["rank"],
+            reverse=True
+        )
+
         if simulated_deadwood < current_deadwood:
             self.context.animator.opp_card_flip.start()
             self.opp_drawn_card = self.pickup_discard(self.context.opp_hand)
@@ -489,11 +498,13 @@ class GameState(State):
             self.context.animator.opp_card_slide.start()
             self.opp_drawn_card = self.pickup_card(self.context.deck, self.context.opp_hand)
 
+        self.sort_cards_rank(self.context.opp_hand)
         self.simulated_opp_hand_pickup = sorted(
             [(card, card.loc) for card in self.context.opp_hand.cards],
             key=lambda x: self.context.card_data[x[0].name]["rank"],
             reverse=True
         )
+
         self.context.animator.opp_hand_shift.start()
         self.opp_drawn_card.visible = False
             

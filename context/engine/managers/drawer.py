@@ -3,6 +3,7 @@ import pygame
 class Drawer:
     def __init__(self, context):
         self.context = context
+        self.counter = 0
     
     def draw_loading_frame(self, frame, surface):
         surface.blit(frame, (self.context.screen.display_width - 2*frame.get_width() ,self.context.screen.display_height - 2*frame.get_height()))
@@ -125,7 +126,7 @@ class Drawer:
                 if card.loc[0] > active_card_x and card is not drawn_card and card.visible: #draw all the cards after the active card last
                     surface.blit(self.context.image_loader.card_images[card.name], (card.loc))
 
-    def draw_opp_hand_cards(self, discard_top, opp_drawn_card, simulated_opp_hand_pickup, opp_discarded_card, simulated_opp_hand_discard):
+    def draw_opp_hand_cards(self, discard_top, opp_drawn_card, simulated_opp_hand_prepickup, simulated_opp_hand_pickup, opp_discarded_card, simulated_opp_hand_discard):
         surface = self.context.surface_loader.game_surface
         opp_flip_active = self.context.animator.opp_card_flip.active
         opp_slide_active = self.context.animator.opp_card_slide.active
@@ -138,6 +139,16 @@ class Drawer:
             #     suppressed_index = len(self.context.opp_hand.cards) - 1
             # else:
             #     suppressed_index = self.context.opp_hand.cards.index(opp_drawn_card)
+
+            if self.counter < 1: #remove this block later, it's for testing values
+                cards1 = [card for card, _ in simulated_opp_hand_pickup]
+                cards2 = [card for card, _ in simulated_opp_hand_prepickup]
+                similar_cards = [card for card in cards1 if card not in cards2]
+                for card in similar_cards:
+                    print(card.loc)
+                self.counter += 2
+
+
             for i, (card, loc) in enumerate(simulated_opp_hand_pickup):
 
                 if i < suppressed_index:
