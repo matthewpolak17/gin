@@ -135,42 +135,40 @@ class Drawer:
 
         if (opp_flip_active or opp_slide_active):
             suppressed_index = next(i for i, (card, loc) in enumerate(simulated_opp_hand_pickup) if card is opp_drawn_card)
-            # if opp_drawn_card not in self.context.opp_hand.cards:
-            #     suppressed_index = len(self.context.opp_hand.cards) - 1
-            # else:
-            #     suppressed_index = self.context.opp_hand.cards.index(opp_drawn_card)
 
-            if self.counter < 1: #remove this block later, it's for testing values
-                cards1 = [card for card, _ in simulated_opp_hand_pickup]
-                cards2 = [card for card, _ in simulated_opp_hand_prepickup]
-                similar_cards = [card for card in cards1 if card not in cards2]
-                for card in similar_cards:
-                    print(card.loc)
-                self.counter += 2
+            #testing
+            # for pcard, new_loc in simulated_opp_hand_pickup:
+            #     if pcard is opp_drawn_card:
+            #         print("picked up: " + str(pcard) + "  --->  new_loc: " + str(new_loc))
+            #     for card, old_loc in simulated_opp_hand_prepickup:
+            #         if pcard is card:
+            #             print("pcard: " + str(pcard) + " card: " + str(card) + " old_loc: " + str(old_loc) + "  --->  new_loc: " + str(new_loc))
+                        
 
+            i = 0
+            for card, old_loc in simulated_opp_hand_prepickup:
+                new_loc = next(
+                    loc for c, loc in simulated_opp_hand_pickup
+                    if c is card
+                )
 
-            for i, (card, loc) in enumerate(simulated_opp_hand_pickup):
-
-                if i < suppressed_index:
-                    surface.blit(self.context.image_loader.blue_back, (loc[0], loc[1]))    
-
-                elif i == suppressed_index:
-                    #surface.blit(self.context.image_loader.card_images[card.name], card.loc)
-                    #surface.blit(self.context.image_loader.blue_back, (card.loc[0], card.loc[1]))
+                if i == suppressed_index:
                     if opp_flip_active:
-                        self.draw_opp_card_flip(discard_top, self.context.rects.discard_rect.center, (loc[0] + 73/2, loc[1] + 98/2))
+                        #self.draw_opp_card_flip(discard_top, self.context.rects.discard_rect.center, (card.loc[0] + 73/2, card.loc[1] + 98/2))
+                        self.draw_opp_card_flip(discard_top, self.context.rects.discard_rect.center, (new_loc[0] + 73/2, new_loc[1] + 98/2))
                     else:
-                         self.draw_opp_card_slide(self.context.rects.draw_rect, (loc[0], loc[1]))
+                         #self.draw_opp_card_slide(self.context.rects.draw_rect, (card.loc[0], card.loc[1]))
+                         self.draw_opp_card_slide(self.context.rects.draw_rect, (new_loc[0], new_loc[1]))
 
-                elif i > suppressed_index:
-                    #surface.blit(self.context.image_loader.card_images[card.name], card.loc) #uncomment for testing
-                    surface.blit(self.context.image_loader.blue_back, (loc[0], loc[1]))    
+                surface.blit(self.context.image_loader.card_images[card.name], (old_loc[0] + ((new_loc[0] - old_loc[0]) * shift_progress), card.loc[1])) #uncomment for testing
+                #surface.blit(self.context.image_loader.blue_back, (old_loc[0] + (new_loc[0] - old_loc[0]) * shift_progress, card.loc[1]))    
+                i += 1
 
         else:
             for card in self.context.opp_hand.cards:
                 if card.visible:
-                    #surface.blit(self.context.image_loader.card_images[card.name], card.loc) #uncomment for testing
-                    surface.blit(self.context.image_loader.blue_back, card.loc)
+                    surface.blit(self.context.image_loader.card_images[card.name], card.loc) #uncomment for testing
+                    #surface.blit(self.context.image_loader.blue_back, card.loc)
 
 
 

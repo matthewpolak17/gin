@@ -499,6 +499,7 @@ class GameState(State):
             self.opp_drawn_card = self.pickup_card(self.context.deck, self.context.opp_hand)
 
         self.sort_cards_rank(self.context.opp_hand)
+        self.sort_cards_rank(self.context.opp_hand)
         self.simulated_opp_hand_pickup = sorted(
             [(card, card.loc) for card in self.context.opp_hand.cards],
             key=lambda x: self.context.card_data[x[0].name]["rank"],
