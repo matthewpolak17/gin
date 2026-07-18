@@ -160,11 +160,14 @@ class Drawer:
         surface = self.context.surface_loader.game_surface
         opp_flip_active = self.context.animator.opp_card_flip.active
         opp_slide_active = self.context.animator.opp_card_slide.active
-        shift_progress = self.context.animator.opp_hand_shift.get_progress()
-        shift_progress = 1 - (1 - shift_progress) ** 3
+        pickup_shift_progress = self.context.animator.opp_hand_shift_pickup.get_progress()
+        pickup_shift_progress = 1 - (1 - pickup_shift_progress) ** 3
+
+        discard_shift_progress = self.context.animator.opp_hand_shift_discard.get_progress()
+        discard_shift_progress = 1 - (1 - discard_shift_progress) ** 3
 
         #opp hand pickup animation
-        if (opp_flip_active or opp_slide_active):
+        if (opp_flip_active or opp_slide_active) and self.context.animator.opp_hand_shift_pickup.active:
             suppressed_index = next(i for i, (card, loc) in enumerate(simulated_opp_hand_pickup) if card is opp_drawn_card)
             suppressed_loc = next(loc for c, loc in simulated_opp_hand_pickup if c is opp_drawn_card)
 
@@ -178,8 +181,8 @@ class Drawer:
                     else:
                          self.draw_opp_card_slide(self.context.rects.draw_rect, (suppressed_loc[0], suppressed_loc[1]))
 
-                #surface.blit(self.context.image_loader.card_images[card.name], (old_loc[0] + ((new_loc[0] - old_loc[0]) * shift_progress), card.loc[1])) #uncomment for testing
-                surface.blit(self.context.image_loader.blue_back, (old_loc[0] + (new_loc[0] - old_loc[0]) * shift_progress, card.loc[1]))    
+                #surface.blit(self.context.image_loader.card_images[card.name], (old_loc[0] + ((new_loc[0] - old_loc[0]) * pickup_shift_progress), card.loc[1])) #uncomment for testing
+                surface.blit(self.context.image_loader.blue_back, (old_loc[0] + (new_loc[0] - old_loc[0]) * pickup_shift_progress, card.loc[1]))    
                 i += 1
 
             if suppressed_index >= len(simulated_opp_hand_prepickup):
@@ -189,12 +192,23 @@ class Drawer:
                     self.draw_opp_card_slide(self.context.rects.draw_rect, suppressed_loc)
 
         #opp hand discard animation
-        elif self.context.animator.opp_discard_flip.active and not opp_flip_active and not opp_slide_active:
-            self.draw_opp_discard_flip((opp_discarded_card.loc[0] + 73/2, opp_discarded_card.loc[1] + 98/2), self.context.rects.discard_rect.center)
+        elif self.context.animator.opp_discard_flip.active and self.context.animator.opp_card_flip.finished and self.context.animator.opp_card_slide.finished and self.context.animator.opp_hand_shift_pickup.finished:
+            suppressed_index = next(i for i, (card, loc) in enumerate(simulated_opp_hand_pickup) if card is opp_discarded_card)
+            suppressed_loc = next(loc for c, loc in simulated_opp_hand_pickup if c is opp_discarded_card)
+            
+            i = 0
+            for card, old_loc in simulated_opp_hand_discard:
+                new_loc = next(loc for c, loc in simulated_opp_hand_discard if c is card)
 
-            for card in self.context.opp_hand.cards:
-                if card.visible:
-                    surface.blit(self.context.image_loader.blue_back, card.loc)
+                if i == suppressed_index:
+                    self.draw_opp_discard_flip((suppressed_loc[0] + 73/2, suppressed_loc[1] + 98/2), self.context.rects.discard_rect.center)
+                
+                #surface.blit(self.context.image_loader.card_images[card.name], (old_loc[0] + ((new_loc[0] - old_loc[0]) * discard_shift_progress), card.loc[1])) #uncomment for testing
+                surface.blit(self.context.image_loader.blue_back, (old_loc[0] + (new_loc[0] - old_loc[0]) * discard_shift_progress, card.loc[1]))  
+                i += 1  
+
+            if suppressed_index >= len(simulated_opp_hand_discard):
+                self.draw_opp_discard_flip((suppressed_loc[0] + 73/2, suppressed_loc[1] + 98/2), self.context.rects.discard_rect.center)
 
         else:
             for card in self.context.opp_hand.cards:

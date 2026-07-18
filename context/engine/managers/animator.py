@@ -15,7 +15,8 @@ class Animator:
         self.opp_card_flip = Animation((1/self.context.constants.CARD_MOVEMENT_SPEED), 90, False)
         self.opp_card_slide = Animation((1/self.context.constants.CARD_MOVEMENT_SPEED), 90, False)
         self.opp_discard_flip = Animation((1/self.context.constants.CARD_MOVEMENT_SPEED), 90, False)
-        self.opp_hand_shift = Animation(0.001, 500, False)
+        self.opp_hand_shift_pickup = Animation(0.01, 50, False)
+        self.opp_hand_shift_discard = Animation(0.01, 50, False)
 
     def opp_hand_pickup_shift(self):
         if self.opp_hand_pickup_shift.active:
@@ -65,9 +66,13 @@ class Animator:
         if self.opp_discard_flip.active and not self.opp_card_flip.active and not self.opp_card_slide.active:
             self.opp_discard_flip.update(self.context.dt)
 
-    def animate_opp_hand_shift(self):
-        if self.opp_hand_shift.active:
-            self.opp_hand_shift.update(self.context.dt)
+    def animate_opp_hand_shift_pickup(self):
+        if self.opp_hand_shift_pickup.active:
+            self.opp_hand_shift_pickup.update(self.context.dt)
+
+    def animate_opp_hand_shift_discard(self):
+        if self.opp_hand_shift_discard.active:
+            self.opp_hand_shift_discard.update(self.context.dt)
 
 
 

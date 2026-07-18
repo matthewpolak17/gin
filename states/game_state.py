@@ -60,7 +60,9 @@ class GameState(State):
         if self.context.animator.opp_discard_flip.finished:
             self.opp_discarded_card.visible = True
 
-        self.context.animator.animate_opp_hand_shift()
+        self.context.animator.animate_opp_hand_shift_pickup()
+        if self.context.animator.opp_hand_shift_pickup.finished:
+            self.context.animator.animate_opp_hand_shift_discard()
 
         #round overlay logic
         if self.player_knock or self.computer_knock:
@@ -479,6 +481,7 @@ class GameState(State):
         if not self.context.animator.opp_card_flip.active:
             self.discard_top = self.context.discard_pile.cards[-1]
 
+        #capture simulated pre pickup
         self.sort_cards_rank(self.context.opp_hand) 
         self.simulated_opp_hand_prepickup = sorted(
             [(card, card.loc) for card in self.context.opp_hand.cards],
@@ -493,21 +496,19 @@ class GameState(State):
             self.context.animator.opp_card_slide.start()
             self.opp_drawn_card = self.pickup_card(self.context.deck, self.context.opp_hand)
 
+        #capture simulated pickup
         self.sort_cards_rank(self.context.opp_hand)
-        self.context.updateLocations()
         self.simulated_opp_hand_pickup = sorted(
             [(card, card.loc) for card in self.context.opp_hand.cards],
             key=lambda x: self.context.card_data[x[0].name]["rank"],
             reverse=True
         )
 
-        self.context.animator.opp_hand_shift.start()
+        self.context.animator.opp_hand_shift_pickup.start()
         self.opp_drawn_card.visible = False
             
         #update melds after pickup
         self.context.opp_hand.melds = self.update_melds(self.context.opp_hand)
-        
-        #self.opp_discarded_card = None
         best_deadwood = float('inf')
 
         for card in self.context.opp_hand.cards:
@@ -530,7 +531,15 @@ class GameState(State):
         self.opp_discarded_card.visible = False
         self.context.animator.opp_discard_flip.start()
         self.discard(self.context.opp_hand, self.opp_discarded_card)
-        self.simulated_opp_hand_discard = self.context.opp_hand.cards[:]
+
+        #capture simulated post pickup
+        self.sort_cards_rank(self.context.opp_hand)
+        self.simulated_opp_hand_discard = sorted(
+            [(card, card.loc) for card in self.context.opp_hand.cards],
+            key=lambda x: self.context.card_data[x[0].name]["rank"],
+            reverse=True
+        )
+        self.context.animator
 
         self.context.opp_hand.melds = self.update_melds(self.context.opp_hand)
         deadwood = self.calculate_deadwood(self.context.opp_hand.melds, self.context.opp_hand.cards)
