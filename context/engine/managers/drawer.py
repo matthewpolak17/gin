@@ -130,11 +130,13 @@ class Drawer:
         surface = self.context.surface_loader.game_surface
         opp_flip_active = self.context.animator.opp_card_flip.active
         opp_slide_active = self.context.animator.opp_card_slide.active
-        opp_hand_shift_active = self.context.animator.opp_hand_shift.active
         shift_progress = self.context.animator.opp_hand_shift.get_progress()
+        shift_progress = 1 - (1 - shift_progress) ** 3
+        
 
         if (opp_flip_active or opp_slide_active):
             suppressed_index = next(i for i, (card, loc) in enumerate(simulated_opp_hand_pickup) if card is opp_drawn_card)
+            suppressed_loc = next(loc for c, loc in simulated_opp_hand_pickup if c is opp_drawn_card)
 
             #testing
             # for pcard, new_loc in simulated_opp_hand_pickup:
@@ -143,38 +145,37 @@ class Drawer:
             #     for card, old_loc in simulated_opp_hand_prepickup:
             #         if pcard is card:
             #             print("pcard: " + str(pcard) + " card: " + str(card) + " old_loc: " + str(old_loc) + "  --->  new_loc: " + str(new_loc))
-                        
+                         
 
             i = 0
             for card, old_loc in simulated_opp_hand_prepickup:
-                new_loc = next(
-                    loc for c, loc in simulated_opp_hand_pickup
-                    if c is card
-                )
+                new_loc = next(loc for c, loc in simulated_opp_hand_pickup if c is card)
 
                 if i == suppressed_index:
                     if opp_flip_active:
-                        #self.draw_opp_card_flip(discard_top, self.context.rects.discard_rect.center, (card.loc[0] + 73/2, card.loc[1] + 98/2))
-                        self.draw_opp_card_flip(discard_top, self.context.rects.discard_rect.center, (new_loc[0] + 73/2, new_loc[1] + 98/2))
+                        self.draw_opp_card_flip(discard_top, self.context.rects.discard_rect.center, (suppressed_loc[0] + 73/2, suppressed_loc[1] + 98/2))
                     else:
-                         #self.draw_opp_card_slide(self.context.rects.draw_rect, (card.loc[0], card.loc[1]))
-                         self.draw_opp_card_slide(self.context.rects.draw_rect, (new_loc[0], new_loc[1]))
+                         self.draw_opp_card_slide(self.context.rects.draw_rect, (suppressed_loc[0], suppressed_loc[1]))
 
-                surface.blit(self.context.image_loader.card_images[card.name], (old_loc[0] + ((new_loc[0] - old_loc[0]) * shift_progress), card.loc[1])) #uncomment for testing
-                #surface.blit(self.context.image_loader.blue_back, (old_loc[0] + (new_loc[0] - old_loc[0]) * shift_progress, card.loc[1]))    
+                #surface.blit(self.context.image_loader.card_images[card.name], (old_loc[0] + ((new_loc[0] - old_loc[0]) * shift_progress), card.loc[1])) #uncomment for testing
+                surface.blit(self.context.image_loader.blue_back, (old_loc[0] + (new_loc[0] - old_loc[0]) * shift_progress, card.loc[1]))    
                 i += 1
+
+            if suppressed_index >= len(simulated_opp_hand_prepickup): #if the animated card is at the end of the hand
+                if opp_flip_active:
+                    self.draw_opp_card_flip(discard_top, self.context.rects.discard_rect.center, (suppressed_loc[0] + 73/2, suppressed_loc[1] + 98/2))
+                else:
+                    self.draw_opp_card_slide(self.context.rects.draw_rect, suppressed_loc)
 
         else:
             for card in self.context.opp_hand.cards:
                 if card.visible:
-                    surface.blit(self.context.image_loader.card_images[card.name], card.loc) #uncomment for testing
-                    #surface.blit(self.context.image_loader.blue_back, card.loc)
-
-
+                    #surface.blit(self.context.image_loader.card_images[card.name], card.loc) #uncomment for testing
+                    surface.blit(self.context.image_loader.blue_back, card.loc)
 
     def draw_player_card_flip(self, drawn_card, start_pos, end_pos):
         progress = self.context.animator.player_card_flip.get_progress()
-        progress_eased = progress_eased = 1 - (1 - progress) ** 3
+        progress_eased = 1 - (1 - progress) ** 3
         x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased
         y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
         if progress < 0.5:

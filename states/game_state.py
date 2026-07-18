@@ -265,7 +265,7 @@ class GameState(State):
         while hand.cards:
             greatest_num = 0
             for card in hand.cards:
-                if self.context.card_data[card.name]["rank"] >= greatest_num:
+                if self.context.card_data[card.name]["rank"] > greatest_num:
                     greatest_num = self.context.card_data[card.name]["rank"]
                     greatest_card = card
             hand.cards.remove(greatest_card)
@@ -450,7 +450,7 @@ class GameState(State):
 
         # calculate defender's remaining deadwood after layoffs
         defender_deadwood_score = sum(
-            min(self.contextcard_data[card.name]["rank"], 10)
+            min(self.context.card_data[card.name]["rank"], 10)
             for card in defender_deadwood_cards
             if card not in laid_off
         )
@@ -499,7 +499,7 @@ class GameState(State):
             self.opp_drawn_card = self.pickup_card(self.context.deck, self.context.opp_hand)
 
         self.sort_cards_rank(self.context.opp_hand)
-        self.sort_cards_rank(self.context.opp_hand)
+        self.context.updateLocations()
         self.simulated_opp_hand_pickup = sorted(
             [(card, card.loc) for card in self.context.opp_hand.cards],
             key=lambda x: self.context.card_data[x[0].name]["rank"],
