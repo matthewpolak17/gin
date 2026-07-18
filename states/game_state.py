@@ -104,20 +104,15 @@ class GameState(State):
         flip_active = self.context.animator.player_card_flip.active
         slide_active = self.context.animator.player_card_slide.active
 
-        opp_flip_active = self.context.animator.opp_card_flip.active
-        opp_slide_active = self.context.animator.opp_card_slide.active
-
         self.context.drawer.draw_cards()
         self.context.drawer.draw_opp_hand_cards(self.discard_top, self.opp_drawn_card, self.simulated_opp_hand_prepickup, self.simulated_opp_hand_pickup, self.opp_discarded_card, self.simulated_opp_hand_discard)
         self.context.drawer.draw_hand_cards(self.active_card, self.drawn_card if (flip_active or slide_active) else None)
 
-        #animations
+        #hand pickup animations
         if flip_active:
             self.context.drawer.draw_player_card_flip(self.drawn_card, self.context.rects.draw_rect.center, (self.context.hand.cards[-1].loc[0] + 73/2, self.context.hand.cards[-1].loc[1] + 98/2))
         if slide_active:
             self.context.drawer.draw_player_card_slide(self.drawn_card, self.context.rects.discard_rect, (self.context.hand.cards[-1].loc[0], self.context.hand.cards[-1].loc[1]))
-        if self.context.animator.opp_discard_flip.active and not opp_flip_active and not opp_slide_active:
-            self.context.drawer.draw_opp_discard_flip((self.opp_discarded_card.loc[0] + 73/2, self.opp_discarded_card.loc[1] + 98/2), self.context.rects.discard_rect.center)
 
         self.context.drawer.draw_round_overlay(self.round_overlay)
         self.context.screen.display_surface.blit(self.context.surface_loader.game_surface, (0,0))
