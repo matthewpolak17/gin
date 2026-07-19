@@ -167,7 +167,7 @@ class Drawer:
         discard_shift_progress = 1 - (1 - discard_shift_progress) ** 3
 
         #opp hand pickup animation
-        if (opp_flip_active or opp_slide_active) and self.context.animator.opp_hand_shift_pickup.active:
+        if opp_flip_active or opp_slide_active or self.context.animator.opp_hand_shift_pickup.active:
             suppressed_index = next(i for i, (card, loc) in enumerate(simulated_opp_hand_pickup) if card is opp_drawn_card)
             suppressed_loc = next(loc for c, loc in simulated_opp_hand_pickup if c is opp_drawn_card)
 
@@ -178,7 +178,7 @@ class Drawer:
                 if i == suppressed_index:
                     if opp_flip_active:
                         self.draw_opp_card_flip(discard_top, self.context.rects.discard_rect.center, (suppressed_loc[0] + 73/2, suppressed_loc[1] + 98/2))
-                    else:
+                    elif opp_slide_active:
                          self.draw_opp_card_slide(self.context.rects.draw_rect, (suppressed_loc[0], suppressed_loc[1]))
 
                 #surface.blit(self.context.image_loader.card_images[card.name], (old_loc[0] + ((new_loc[0] - old_loc[0]) * pickup_shift_progress), card.loc[1])) #uncomment for testing
@@ -188,27 +188,20 @@ class Drawer:
             if suppressed_index >= len(simulated_opp_hand_prepickup):
                 if opp_flip_active:
                     self.draw_opp_card_flip(discard_top, self.context.rects.discard_rect.center, (suppressed_loc[0] + 73/2, suppressed_loc[1] + 98/2))
-                else:
+                elif opp_slide_active:
                     self.draw_opp_card_slide(self.context.rects.draw_rect, suppressed_loc)
 
         #opp hand discard animation
-        elif self.context.animator.opp_discard_flip.active and self.context.animator.opp_card_flip.finished and self.context.animator.opp_card_slide.finished and self.context.animator.opp_hand_shift_pickup.finished:
-            suppressed_index = next(i for i, (card, loc) in enumerate(simulated_opp_hand_pickup) if card is opp_discarded_card)
+        elif self.context.animator.opp_discard_flip.active and not opp_flip_active and not opp_slide_active:
             suppressed_loc = next(loc for c, loc in simulated_opp_hand_pickup if c is opp_discarded_card)
             
-            i = 0
-            for card, old_loc in simulated_opp_hand_discard:
-                new_loc = next(loc for c, loc in simulated_opp_hand_discard if c is card)
-
-                if i == suppressed_index:
-                    self.draw_opp_discard_flip((suppressed_loc[0] + 73/2, suppressed_loc[1] + 98/2), self.context.rects.discard_rect.center)
+            for card, new_loc in simulated_opp_hand_discard:
+                old_loc = next(loc for c, loc in simulated_opp_hand_pickup if c is card)
                 
                 #surface.blit(self.context.image_loader.card_images[card.name], (old_loc[0] + ((new_loc[0] - old_loc[0]) * discard_shift_progress), card.loc[1])) #uncomment for testing
                 surface.blit(self.context.image_loader.blue_back, (old_loc[0] + (new_loc[0] - old_loc[0]) * discard_shift_progress, card.loc[1]))  
-                i += 1  
 
-            if suppressed_index >= len(simulated_opp_hand_discard):
-                self.draw_opp_discard_flip((suppressed_loc[0] + 73/2, suppressed_loc[1] + 98/2), self.context.rects.discard_rect.center)
+            self.draw_opp_discard_flip((suppressed_loc[0] + 73/2, suppressed_loc[1] + 98/2), self.context.rects.discard_rect.center)
 
         else:
             for card in self.context.opp_hand.cards:

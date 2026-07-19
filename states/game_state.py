@@ -61,8 +61,7 @@ class GameState(State):
             self.opp_discarded_card.visible = True
 
         self.context.animator.animate_opp_hand_shift_pickup()
-        if self.context.animator.opp_hand_shift_pickup.finished:
-            self.context.animator.animate_opp_hand_shift_discard()
+        self.context.animator.animate_opp_hand_shift_discard()
 
         #round overlay logic
         if self.player_knock or self.computer_knock:
@@ -257,31 +256,12 @@ class GameState(State):
 # ==========================================            
 
     def sort_cards_rank(self, hand):
-        sorted_hand = []
-        greatest_card = None
-        while hand.cards:
-            greatest_num = 0
-            for card in hand.cards:
-                if self.context.card_data[card.name]["rank"] > greatest_num:
-                    greatest_num = self.context.card_data[card.name]["rank"]
-                    greatest_card = card
-            hand.cards.remove(greatest_card)
-            sorted_hand.append(greatest_card)
-        hand.cards = sorted_hand
+        suit_order = {"heart": 0, "diamond": 1, "club": 2, "spade": 3}
+        hand.cards.sort(key=lambda c: (
+            -self.context.card_data[c.name]["rank"],
+            suit_order[self.context.card_data[c.name]["suit"]]
+        ))
         self.context.updateLocations()
-
-    def sort_cards_rank_nul(self, hand): #no update locations
-        sorted_hand = []
-        greatest_card = None
-        while hand.cards:
-            greatest_num = 0
-            for card in hand.cards:
-                if self.context.card_data[card.name]["rank"] >= greatest_num:
-                    greatest_num = self.context.card_data[card.name]["rank"]
-                    greatest_card = card
-            hand.cards.remove(greatest_card)
-            sorted_hand.append(greatest_card)
-        hand.cards = sorted_hand
 
     def sort_cards_suit(self, hand):
         self.sort_cards_rank(hand)
@@ -539,7 +519,7 @@ class GameState(State):
             key=lambda x: self.context.card_data[x[0].name]["rank"],
             reverse=True
         )
-        self.context.animator
+        self.context.animator.opp_hand_shift_discard.start()
 
         self.context.opp_hand.melds = self.update_melds(self.context.opp_hand)
         deadwood = self.calculate_deadwood(self.context.opp_hand.melds, self.context.opp_hand.cards)

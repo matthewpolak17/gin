@@ -71,7 +71,7 @@ class Animator:
             self.opp_hand_shift_pickup.update(self.context.dt)
 
     def animate_opp_hand_shift_discard(self):
-        if self.opp_hand_shift_discard.active:
+        if self.opp_hand_shift_discard.active and not self.opp_card_flip.active and not self.opp_card_slide.active:
             self.opp_hand_shift_discard.update(self.context.dt)
 
 
