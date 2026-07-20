@@ -220,10 +220,9 @@ class GameState(State):
                             break
                     if starting_hover_index is None:
                         starting_hover_index = self.original_index
-                    placeholder = self.active_card
                     for i in range(self.original_index, starting_hover_index, -1):
                         self.context.hand.cards[i] = self.context.hand.cards[i-1]
-                    self.context.hand.cards[starting_hover_index] = placeholder
+                    self.context.hand.cards[starting_hover_index] = self.active_card
                 elif self.original_loc[0] < self.active_card.loc[0]:
                     for i in range(len(self.context.hand.cards)-1, -1, -1):
                         if self.context.hand.cards[i].hovered_x and self.context.hand.cards[i] != self.active_card:
@@ -231,10 +230,9 @@ class GameState(State):
                             break
                     if starting_hover_index is None:
                         starting_hover_index = self.original_index
-                    placeholder = self.active_card
                     for i in range(self.original_index, starting_hover_index, 1):
                         self.context.hand.cards[i] = self.context.hand.cards[i+1]
-                    self.context.hand.cards[starting_hover_index] = placeholder
+                    self.context.hand.cards[starting_hover_index] = self.active_card
 
                 if self.context.rects.discard_rect.collidepoint(event.pos) and self.turn == -1:
                     self.discard(self.context.hand, self.active_card)
