@@ -3,6 +3,7 @@ from collections import defaultdict
 from itertools import combinations
 import random
 import pygame
+import time
 
 class GameState(State):
     def __init__(self, manager, context):
@@ -10,6 +11,7 @@ class GameState(State):
         self.context = context
         self.clicked = False
         self.active_card = None
+        self.active_card_border = None
         self.card_hovered = None
         self.original_loc = (0,0)
         self.original_index = None
@@ -39,6 +41,8 @@ class GameState(State):
 
     def update(self):
 
+        print(self.context.clock.get_fps())
+
         self.context.animator.animate_player_card_slide()
         if self.context.animator.player_card_slide.finished and self.drawn_card:
             self.drawn_card.visible = True
@@ -60,8 +64,12 @@ class GameState(State):
         if self.context.animator.opp_discard_flip.finished:
             self.opp_discarded_card.visible = True
 
+        #opp_hand shifting animations
         self.context.animator.animate_opp_hand_shift_pickup()
         self.context.animator.animate_opp_hand_shift_discard()
+
+        #card border animations
+        self.context.animator.animate_active_card_border(self.active_card_border)
 
         #round overlay logic
         if self.player_knock or self.computer_knock:
@@ -94,6 +102,10 @@ class GameState(State):
             self.manager.menu_active = False
             self.manager.restart = False
         
+        if self.clicked and self.active_card:
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            self.active_card.loc = (mouse_x - self.card_x, mouse_y - self.card_y)
+        
         self.update_card_hover_y()
         self.update_card_hover_x()
 
@@ -107,7 +119,7 @@ class GameState(State):
 
         self.context.drawer.draw_cards()
         self.context.drawer.draw_opp_hand_cards(self.discard_top, self.opp_drawn_card, self.simulated_opp_hand_prepickup, self.simulated_opp_hand_pickup, self.opp_discarded_card, self.simulated_opp_hand_discard)
-        self.context.drawer.draw_hand_cards(self.active_card, self.drawn_card if (flip_active or slide_active) else None)
+        self.context.drawer.draw_hand_cards(self.active_card, self.active_card_border, self.drawn_card if (flip_active or slide_active) else None)
 
         #hand pickup animations
         if flip_active:
@@ -148,6 +160,10 @@ class GameState(State):
                         self.knocking = False
                         self.turn = 1
                         self.player_turn = 1
+            if event.key == pygame.K_1:
+                self.active_card_border = "spirit"
+            if event.key == pygame.K_2:
+                self.active_card_border = "rainbow"
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
@@ -205,9 +221,9 @@ class GameState(State):
                         self.sort_cards_suit(self.context.hand)
                     elif self.context.rects.player_knock_rect.collidepoint(event.pos):
                         self.knocking = True
-        elif event.type == pygame.MOUSEMOTION and self.clicked == True:
-            if self.active_card:
-                self.active_card.loc = (event.pos[0] - self.card_x, event.pos[1] - self.card_y)
+        # elif event.type == pygame.MOUSEMOTION and self.clicked == True:
+        #     if self.clicked and self.active_card:
+        #         self.active_card.loc = (event.pos[0] - self.card_x, event.pos[1] - self.card_y)
         elif event.type == pygame.MOUSEBUTTONUP:
             if self.active_card:
                 self.active_card.dragging = False

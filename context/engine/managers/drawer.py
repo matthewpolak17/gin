@@ -104,8 +104,9 @@ class Drawer:
                 discard_top = self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name]
                 surface.blit(discard_top, (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
 
-    def draw_hand_cards(self, active_card, drawn_card):
+    def draw_hand_cards(self, active_card, active_card_border, drawn_card):
         surface = self.context.surface_loader.game_surface
+
         if not active_card:
             for card in self.context.hand.cards:
                 if card is drawn_card:
@@ -117,10 +118,14 @@ class Drawer:
             for card in self.context.hand.cards:
                 if card.loc[0] < active_card_x and card is not drawn_card and card.visible: #draw all the card before the active card first
                     surface.blit(self.context.image_loader.card_images[card.name], (card.loc))
+            
+            #card border animations
+            if active_card_border == "rainbow":
+                surface.blit(self.context.image_loader.rainbow_card_border_frames[self.context.animator.rainbow_border.frame], (active_card.loc[0]-10, active_card.loc[1]-10))
+            elif active_card_border == "spirit":
+                surface.blit(self.context.image_loader.spirit_card_border_frames[self.context.animator.spirit_border.frame], (active_card.loc[0]-10, active_card.loc[1]-10))
 
-            temp_image = self.context.image_loader.card_images[active_card.name].copy()
-            temp_image.set_alpha(200)
-            surface.blit(temp_image, (active_card.loc)) #draw the active card
+            surface.blit(self.context.image_loader.card_images[active_card.name], (active_card.loc)) #draw the active card
 
             for card in self.context.hand.cards:
                 if card.loc[0] > active_card_x and card is not drawn_card and card.visible: #draw all the cards after the active card last
