@@ -164,6 +164,8 @@ class GameState(State):
                 self.active_card_border = "spirit"
             if event.key == pygame.K_2:
                 self.active_card_border = "rainbow"
+            if event.key == pygame.K_3:
+                self.active_card_border = None
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
