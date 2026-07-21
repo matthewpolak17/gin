@@ -19,7 +19,7 @@ class Animator:
         self.opp_hand_shift_discard = Animation(0.01, 50, False)
 
         #card border animations
-        self.rainbow_border = Animation(0.02, 24, True, True)
+        self.rainbow_border = Animation(0.03, 24, True, True)
         self.spirit_border = Animation(0.08, 10, True, True)
 
     def opp_hand_pickup_shift(self):
