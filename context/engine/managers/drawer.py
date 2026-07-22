@@ -119,13 +119,14 @@ class Drawer:
                 if card.loc[0] < active_card_x and card is not drawn_card and card.visible: #draw all the card before the active card first
                     surface.blit(self.context.image_loader.card_images[card.name], (card.loc))
             
-            #card border animations
-            if active_card_border == "rainbow":
-                surface.blit(self.context.image_loader.rainbow_card_border_frames[self.context.animator.rainbow_border.frame], (active_card.loc[0]-10, active_card.loc[1]-10))
-            elif active_card_border == "spirit":
-                surface.blit(self.context.image_loader.spirit_card_border_frames[self.context.animator.spirit_border.frame], (active_card.loc[0]-10, active_card.loc[1]-10))
+            if active_card is not drawn_card:
+                #card border animations
+                if active_card_border == "rainbow":
+                    surface.blit(self.context.image_loader.rainbow_card_border_frames[self.context.animator.rainbow_border.frame], (active_card.loc[0]-10, active_card.loc[1]-10))
+                elif active_card_border == "spirit":
+                    surface.blit(self.context.image_loader.spirit_card_border_frames[self.context.animator.spirit_border.frame], (active_card.loc[0]-10, active_card.loc[1]-10))
 
-            surface.blit(self.context.image_loader.card_images[active_card.name], (active_card.loc)) #draw the active card
+                surface.blit(self.context.image_loader.card_images[active_card.name], (active_card.loc)) #draw the active card
 
             for card in self.context.hand.cards:
                 if card.loc[0] > active_card_x and card is not drawn_card and card.visible: #draw all the cards after the active card last

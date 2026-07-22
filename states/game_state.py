@@ -41,8 +41,9 @@ class GameState(State):
 
     def update(self):
 
-        print(self.context.clock.get_fps())
-
+        #print(self.context.clock.get_fps())
+        #if self.active_card:
+            #print(self.active_card.visible)
         self.context.animator.animate_player_card_slide()
         if self.context.animator.player_card_slide.finished and self.drawn_card:
             self.drawn_card.visible = True
@@ -233,24 +234,25 @@ class GameState(State):
 
                 if self.original_loc[0] > self.active_card.loc[0]:
                     for i, card in enumerate(self.context.hand.cards):
-                        if card.hovered_x and card is not self.active_card:
+                        if card.hovered_x and card is not self.active_card: #goes to the first card that moves to the side for the active card
                             starting_hover_index = i
                             break
                     if starting_hover_index is None:
-                        starting_hover_index = self.original_index
+                        starting_hover_index = self.original_index #original index is the index of the active card when you clicked on it
                     for i in range(self.original_index, starting_hover_index, -1):
-                        self.context.hand.cards[i] = self.context.hand.cards[i-1]
-                    self.context.hand.cards[starting_hover_index] = self.active_card
+                        self.context.hand.cards[i] = self.context.hand.cards[i-1] #moves every card over between the original index and where the active card stopped 
+                    self.context.hand.cards[starting_hover_index] = self.active_card #sets the active card to the index it stopped
+
                 elif self.original_loc[0] < self.active_card.loc[0]:
                     for i in range(len(self.context.hand.cards)-1, -1, -1):
-                        if self.context.hand.cards[i].hovered_x and self.context.hand.cards[i] != self.active_card:
-                            starting_hover_index = i
+                        if self.context.hand.cards[i].hovered_x and self.context.hand.cards[i] != self.active_card: #goes to the first card that moves to the side for the active card
+                            starting_hover_index = i 
                             break
                     if starting_hover_index is None:
                         starting_hover_index = self.original_index
                     for i in range(self.original_index, starting_hover_index, 1):
-                        self.context.hand.cards[i] = self.context.hand.cards[i+1]
-                    self.context.hand.cards[starting_hover_index] = self.active_card
+                        self.context.hand.cards[i] = self.context.hand.cards[i+1] #moves every card over between the original index and where the active card stopped
+                    self.context.hand.cards[starting_hover_index] = self.active_card #sets the active card to the index it stopped
 
                 if self.context.rects.discard_rect.collidepoint(event.pos) and self.turn == -1:
                     self.discard(self.context.hand, self.active_card)
