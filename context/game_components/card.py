@@ -1,5 +1,5 @@
 class Card:
-    def __init__(self, name, loc=None) -> None:
+    def __init__(self, name, loc=(0,0)) -> None:
         if loc is None:
             loc = (0, 0)
         self.name = name

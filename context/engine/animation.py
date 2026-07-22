@@ -41,3 +41,6 @@ class Animation:
 
     def get_progress(self):
         return self.frame / self.total_frames
+    
+    def get_progress_eased(self):
+        return 1 - (1 - (self.frame / self.total_frames)) ** 3

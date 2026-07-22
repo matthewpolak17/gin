@@ -38,6 +38,8 @@ class GameState(State):
         self.computer_knock = False
         self.round_overlay = False
 
+        self.suit_order = {"heart": 0, "spade": 1, "diamond": 2, "club": 3}
+
 
 
 # ==========================================
@@ -77,7 +79,7 @@ class GameState(State):
         self.context.animator.animate_drop_active_card()
 
         #move cards in hand after sorting animation
-        self.context.animator.animate_sort_hand()
+        self.context.animator.animate_hand_sort()
 
         #round overlay logic
         if self.player_knock or self.computer_knock:
@@ -127,7 +129,7 @@ class GameState(State):
 
         self.context.drawer.draw_cards()
         self.context.drawer.draw_opp_hand_cards(self.discard_top, self.opp_drawn_card, self.simulated_opp_hand_prepickup, self.simulated_opp_hand_pickup, self.opp_discarded_card, self.simulated_opp_hand_discard)
-        self.context.drawer.draw_hand_cards(self.active_card, self.active_card_placeholder, self.active_card_border, self.drawn_card if (flip_active or slide_active) else None)
+        self.context.drawer.draw_hand_cards(self.active_card, self.active_card_placeholder, self.active_card_border, self.drawn_card if (flip_active or slide_active) else None, self.simulated_hand_presort)
 
         #hand pickup animations
         if flip_active:
@@ -189,11 +191,13 @@ class GameState(State):
                         self.manager.running = False
                     if self.context.rects.r_option_rect.collidepoint(event.pos):
                         self.manager.restart = True
+
                 for card in reversed(self.context.hand.cards):
                     if card == self.context.hand.cards[-1]:
                         card_rect = pygame.Rect(card.loc[0], card.loc[1], 73, 98)
                     else:
                         card_rect = pygame.Rect(card.loc[0], card.loc[1], ((self.context.screen.display_surface.get_width() / 3) / (len(self.context.hand.cards) - 1)) * 0.8, 98)
+
                     if card_rect.collidepoint(event.pos):
                         self.clicked = True
                         self.active_card = card
@@ -203,38 +207,39 @@ class GameState(State):
                         self.card_x = event.pos[0] - self.active_card.loc[0]
                         self.card_y = event.pos[1] - self.active_card.loc[1]
                         break
-                    elif self.context.rects.draw_rect.collidepoint(event.pos):
-                        if self.turn == 1:
-                            random.choice(self.context.audio.thwip_sounds).play()
-                            self.drawn_card = self.pickup_card(self.context.deck, self.context.hand)
-                            self.drawn_card.visible = False
-                            self.context.animator.player_card_flip.start()
-                            self.context.hand.melds = self.update_melds(self.context.hand)
-                            if self.can_knock(self.context.hand.melds, self.context.hand.cards):
-                                self.context.hand.can_knock = True
-                            self.turn *= -1
-                            break
-                    elif self.context.rects.discard_rect.collidepoint(event.pos):
-                        if self.turn == 1:
-                            self.context.audio.slide_sound.play()
-                            self.drawn_card = self.pickup_discard(self.context.hand)
-                            self.drawn_card.visible = False
-                            self.context.animator.player_card_slide.start()
-                            self.context.hand.melds = self.update_melds(self.context.hand)
-                            if self.can_knock(self.context.hand.melds, self.context.hand.cards):
-                                self.context.hand.can_knock = True
-                            self.turn *= -1
-                            break
-                    elif self.context.rects.sort_rect_rank.collidepoint(event.pos):
-                        self.simulated_hand_presort = [(card, card.loc) for card in self.context.hand.cards] # pickup here
-                        self.sort_cards_rank(self.context.hand)
-                    elif self.context.rects.sort_rect_suit.collidepoint(event.pos):
-                        self.sort_cards_suit(self.context.hand)
-                    elif self.context.rects.player_knock_rect.collidepoint(event.pos):
-                        self.knocking = True
-        # elif event.type == pygame.MOUSEMOTION and self.clicked == True:
-        #     if self.clicked and self.active_card:
-        #         self.active_card.loc = (event.pos[0] - self.card_x, event.pos[1] - self.card_y)
+
+                if self.context.rects.draw_rect.collidepoint(event.pos):
+                    if self.turn == 1:
+                        random.choice(self.context.audio.thwip_sounds).play()
+                        self.drawn_card = self.pickup_card(self.context.deck, self.context.hand)
+                        self.drawn_card.visible = False
+                        self.context.animator.player_card_flip.start()
+                        self.context.hand.melds = self.update_melds(self.context.hand)
+                        if self.can_knock(self.context.hand.melds, self.context.hand.cards):
+                            self.context.hand.can_knock = True
+                        self.turn *= -1
+                elif self.context.rects.discard_rect.collidepoint(event.pos):
+                    if self.turn == 1:
+                        self.context.audio.slide_sound.play()
+                        self.drawn_card = self.pickup_discard(self.context.hand)
+                        self.drawn_card.visible = False
+                        self.context.animator.player_card_slide.start()
+                        self.context.hand.melds = self.update_melds(self.context.hand)
+                        if self.can_knock(self.context.hand.melds, self.context.hand.cards):
+                            self.context.hand.can_knock = True
+                        self.turn *= -1
+                elif self.context.rects.sort_rect_rank.collidepoint(event.pos):
+                    self.simulated_hand_presort = [(card, tuple(card.loc)) for card in self.context.hand.cards]
+                    self.context.animator.sort_hand.start()
+                    self.sort_cards_rank(self.context.hand)
+
+                elif self.context.rects.sort_rect_suit.collidepoint(event.pos):
+                    self.simulated_hand_presort = [(card, tuple(card.loc)) for card in self.context.hand.cards]
+                    self.context.animator.sort_hand.start()
+                    self.sort_cards_suit(self.context.hand)
+
+                elif self.context.rects.player_knock_rect.collidepoint(event.pos):
+                    self.knocking = True
         elif event.type == pygame.MOUSEBUTTONUP:
             if self.active_card:
                 self.context.animator.drop_active_card.start()
@@ -284,24 +289,17 @@ class GameState(State):
 # ==========================================            
 
     def sort_cards_rank(self, hand):
-        suit_order = {"heart": 0, "diamond": 1, "club": 2, "spade": 3}
         hand.cards.sort(key=lambda c: (
             -self.context.card_data[c.name]["rank"],
-            suit_order[self.context.card_data[c.name]["suit"]]
+            self.suit_order[self.context.card_data[c.name]["suit"]]
         ))
         self.context.updateLocations()
 
     def sort_cards_suit(self, hand):
-        self.sort_cards_rank(hand)
-        suitgroups = defaultdict(list)
-        sorted_hand = []
-        for card in hand.cards:
-            suitgroups[self.context.card_data[card.name]["suit"]].append(card)
-        
-        for cards in suitgroups.values():
-            for card in cards:
-                sorted_hand.append(card)
-        hand.cards = sorted_hand
+        hand.cards.sort(key=lambda c: (
+            self.suit_order[self.context.card_data[c.name]["suit"]],
+            -self.context.card_data[c.name]["rank"]
+        ))
         self.context.updateLocations()
     
 # ==========================================

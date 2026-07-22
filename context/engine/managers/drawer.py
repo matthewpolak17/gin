@@ -104,10 +104,10 @@ class Drawer:
                 discard_top = self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name]
                 surface.blit(discard_top, (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
 
-    def draw_hand_cards(self, active_card, active_card_placeholder, active_card_border, drawn_card):
+    def draw_hand_cards(self, active_card, active_card_placeholder, active_card_border, drawn_card, simulated_hand_presort):
         surface = self.context.surface_loader.game_surface
-        drop_progress = self.context.animator.drop_active_card.get_progress()
-        drop_progress_eased = 1 - (1 - drop_progress) ** 3 
+        drop_progress_eased = self.context.animator.drop_active_card.get_progress_eased()
+        sort_progress_eased = self.context.animator.sort_hand.get_progress_eased()
 
         if not active_card:
             for card in self.context.hand.cards:
@@ -118,6 +118,15 @@ class Drawer:
                     draw_loc = (
                         start[0] + (end[0] - start[0]) * drop_progress_eased,
                         start[1] + (end[1] - start[1]) * drop_progress_eased
+                    )
+                elif simulated_hand_presort and self.context.animator.sort_hand.active:
+                    start = next(old_loc for c, old_loc in simulated_hand_presort if c is card)
+                    end = card.loc
+                    #print("card: " + str(self.context.card_data[card.name]["rank"]) + " " + self.context.card_data[card.name]["rank"])
+                    #print("start: " + str(start) + " end: " + str(end))
+                    draw_loc = (
+                        start[0] + (end[0] - start[0]) * sort_progress_eased,
+                        start[1] + (end[1] - start[1]) *  sort_progress_eased
                     )
                 else:
                     draw_loc = card.loc
@@ -165,8 +174,7 @@ class Drawer:
         self.context.surface_loader.game_surface.blit(scaled_image, (draw_x, draw_y))
         
     def draw_player_card_slide(self, drawn_card, start_pos, end_pos):
-        progress = self.context.animator.player_card_slide.get_progress()
-        progress_eased = progress_eased = 1 - (1 - progress) ** 3
+        progress_eased = self.context.animator.player_card_slide.get_progress_eased()
         x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased #moves closer to the end_pos using the difference
         y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
         self.context.surface_loader.game_surface.blit(self.context.image_loader.card_images[drawn_card.name], (x,y))
@@ -229,8 +237,7 @@ class Drawer:
                     surface.blit(self.context.image_loader.blue_back, card.loc)
 
     def draw_opp_card_slide(self, start_pos, end_pos):
-        progress = self.context.animator.opp_card_slide.get_progress()
-        progress_eased = progress_eased = 1 - (1 - progress) ** 3
+        progress_eased = self.context.animator.opp_card_slide.get_progress_eased()
         x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased #moves closer to the end_pos using the difference
         y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress_eased
         self.context.surface_loader.game_surface.blit(self.context.image_loader.blue_back, (x,y))
