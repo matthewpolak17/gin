@@ -597,7 +597,7 @@ class GameState(State):
             x, y = card.loc
             distance = card.target_y - y
             card.velocity_y += distance * 0.3
-            card.velocity_y *= 0.5
+            card.velocity_y *= 0.4
             y += card.velocity_y
             if abs(distance) < 0.05 and abs(card.velocity_y) < 0.05:
                 y = card.target_y
