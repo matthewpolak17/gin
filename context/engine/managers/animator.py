@@ -26,7 +26,7 @@ class Animator:
         self.drop_active_card = Animation(0.007, 50, False)
 
         #animates cards in hand when sorting button clicked
-        self.sort_hand = Animation(0.007, 80, False)
+        self.sort_hand = Animation(0.007, 50, False)
 
     def opp_hand_pickup_shift(self):
         if self.opp_hand_pickup_shift.active:

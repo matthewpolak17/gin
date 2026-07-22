@@ -122,8 +122,6 @@ class Drawer:
                 elif simulated_hand_presort and self.context.animator.sort_hand.active:
                     start = next(old_loc for c, old_loc in simulated_hand_presort if c is card)
                     end = card.loc
-                    #print("card: " + str(self.context.card_data[card.name]["rank"]) + " " + self.context.card_data[card.name]["rank"])
-                    #print("start: " + str(start) + " end: " + str(end))
                     draw_loc = (
                         start[0] + (end[0] - start[0]) * sort_progress_eased,
                         start[1] + (end[1] - start[1]) *  sort_progress_eased
