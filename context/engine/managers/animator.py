@@ -23,10 +23,10 @@ class Animator:
         self.spirit_border = Animation(0.08, 10, True, True)
 
         #animates active card to hand when dropped
-        self.drop_active_card = Animation(0.007, 60, False)
+        self.drop_active_card = Animation(0.007, 50, False)
 
         #animates cards in hand when sorting button clicked
-        self.sort_hand = Animation(0.01, 50, False)
+        self.sort_hand = Animation(0.007, 80, False)
 
     def opp_hand_pickup_shift(self):
         if self.opp_hand_pickup_shift.active:

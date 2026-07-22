@@ -32,6 +32,7 @@ class GameState(State):
 
         #used for hand animation when sorting
         self.simulated_hand_presort = None
+        self.current_sort = None
 
         self.knocking = False
         self.player_knock = False
@@ -228,15 +229,17 @@ class GameState(State):
                         if self.can_knock(self.context.hand.melds, self.context.hand.cards):
                             self.context.hand.can_knock = True
                         self.turn *= -1
-                elif self.context.rects.sort_rect_rank.collidepoint(event.pos):
+                elif self.context.rects.sort_rect_rank.collidepoint(event.pos) and (not self.context.animator.sort_hand.active or self.current_sort == "suit"):
                     self.simulated_hand_presort = [(card, tuple(card.loc)) for card in self.context.hand.cards]
                     self.context.animator.sort_hand.start()
                     self.sort_cards_rank(self.context.hand)
+                    self.current_sort = "rank"
 
-                elif self.context.rects.sort_rect_suit.collidepoint(event.pos):
+                elif self.context.rects.sort_rect_suit.collidepoint(event.pos) and (not self.context.animator.sort_hand.active or self.current_sort == "rank"):
                     self.simulated_hand_presort = [(card, tuple(card.loc)) for card in self.context.hand.cards]
                     self.context.animator.sort_hand.start()
                     self.sort_cards_suit(self.context.hand)
+                    self.current_sort = "suit"
 
                 elif self.context.rects.player_knock_rect.collidepoint(event.pos):
                     self.knocking = True
