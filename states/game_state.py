@@ -30,11 +30,15 @@ class GameState(State):
         self.simulated_opp_hand_discard = None
         self.opp_discarded_card = None
 
+        #used for hand animation when sorting
+        self.simulated_hand_presort = None
+
         self.knocking = False
         self.player_knock = False
         self.computer_knock = False
         self.round_overlay = False
-        self.sort_cards_rank(self.context.opp_hand)
+
+
 
 # ==========================================
 # INHERITED METHODS
@@ -69,8 +73,11 @@ class GameState(State):
         #card border animations
         self.context.animator.animate_active_card_border(self.active_card_border)
 
-        #drop active_card
+        #drop active_card animation
         self.context.animator.animate_drop_active_card()
+
+        #move cards in hand after sorting animation
+        self.context.animator.animate_sort_hand()
 
         #round overlay logic
         if self.player_knock or self.computer_knock:
@@ -219,6 +226,7 @@ class GameState(State):
                             self.turn *= -1
                             break
                     elif self.context.rects.sort_rect_rank.collidepoint(event.pos):
+                        self.simulated_hand_presort = [(card, card.loc) for card in self.context.hand.cards] # pickup here
                         self.sort_cards_rank(self.context.hand)
                     elif self.context.rects.sort_rect_suit.collidepoint(event.pos):
                         self.sort_cards_suit(self.context.hand)
@@ -231,8 +239,6 @@ class GameState(State):
             if self.active_card:
                 self.context.animator.drop_active_card.start()
                 self.active_card_placeholder = copy.copy(self.active_card)
-                self.active_card_placeholder.loc = self.active_card.loc
-                print("active_card: " + str(self.active_card))
                 self.active_card.dragging = False
                 starting_hover_index = None
 
