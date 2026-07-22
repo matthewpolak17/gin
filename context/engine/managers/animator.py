@@ -22,6 +22,9 @@ class Animator:
         self.rainbow_border = Animation(0.03, 24, True, True)
         self.spirit_border = Animation(0.08, 10, True, True)
 
+        #moves active card to hand
+        self.drop_active_card = Animation(0.007, 60, False)
+
     def opp_hand_pickup_shift(self):
         if self.opp_hand_pickup_shift.active:
             self.opp_hand_pickup_shift.update(self.context.dt)
@@ -79,7 +82,6 @@ class Animator:
             self.opp_hand_shift_discard.update(self.context.dt)
 
     def animate_active_card_border(self, active_card_border):
-        
         match active_card_border:
             case "rainbow":
                 self.rainbow_border.update(self.context.dt)
@@ -87,6 +89,10 @@ class Animator:
                 self.spirit_border.update(self.context.dt)
             case _:
                 pass
+
+    def animate_drop_active_card(self):
+        if self.drop_active_card.active:
+            self.drop_active_card.update(self.context.dt)
         
 
 

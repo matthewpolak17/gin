@@ -104,15 +104,28 @@ class Drawer:
                 discard_top = self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name]
                 surface.blit(discard_top, (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
 
-    def draw_hand_cards(self, active_card, active_card_border, drawn_card):
+    def draw_hand_cards(self, active_card, active_card_placeholder, active_card_border, drawn_card):
         surface = self.context.surface_loader.game_surface
+        drop_progress = self.context.animator.drop_active_card.get_progress()
+        drop_progress_eased = 1 - (1 - drop_progress) ** 3 
 
         if not active_card:
             for card in self.context.hand.cards:
+
+                if active_card_placeholder and card.name == active_card_placeholder.name and self.context.animator.drop_active_card.active:
+                    start = active_card_placeholder.loc
+                    end = card.loc
+                    draw_loc = (
+                        start[0] + (end[0] - start[0]) * drop_progress_eased,
+                        start[1] + (end[1] - start[1]) * drop_progress_eased
+                    )
+                else:
+                    draw_loc = card.loc
+                    
                 if card is drawn_card:
                     continue
                 if card.visible:
-                    surface.blit(self.context.image_loader.card_images[card.name], card.loc)
+                    surface.blit(self.context.image_loader.card_images[card.name], draw_loc)
         else:
             active_card_x = active_card.loc[0]
             for card in self.context.hand.cards:
