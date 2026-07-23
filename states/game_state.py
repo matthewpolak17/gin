@@ -190,6 +190,15 @@ class GameState(State):
                 self.active_card_border = None
             if event.key == pygame.K_4:
                 self.knocking = not self.knocking
+                print("melds:")
+                for meld in self.update_melds(self.context.hand):
+                    for card in meld:
+                        print(str(self.context.card_data[card.name]["rank"]) + " " + (self.context.card_data[card.name]["suit"]))
+                    print()
+                print("deadwood:")
+                for card in self.context.hand.cards:
+                    if card.deadwood:
+                        print(str(self.context.card_data[card.name]["rank"]) + " " + (self.context.card_data[card.name]["suit"]))
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
@@ -355,7 +364,6 @@ class GameState(State):
         total_deadwood = 0
         for card in cards:
             if card not in meld_cards:
-                card.deadwood = True
                 if self.context.card_data[card.name]["rank"] > 10:
                     total_deadwood += 10
                 else:
@@ -414,9 +422,12 @@ class GameState(State):
                     for end in range(start + 3, len(run) + 1):
                         all_melds.append(run[start:end])
         if not all_melds:
+            for card in this_hand.cards:
+                card.deadwood = True
             return []
         best_melds = []
         best_deadwood = 100
+        best_used = set()
         for r in range(1, len(all_melds) + 1):
             for combo in combinations(all_melds, r):
                 used = set()
@@ -437,6 +448,11 @@ class GameState(State):
                     if deadwood < best_deadwood:
                         best_deadwood = deadwood
                         best_melds = list(combo)
+                        best_used = set(used)
+
+        for card in this_hand.cards:
+            card.deadwood = card not in best_used
+
         return best_melds
 
     def get_meld_type(self, meld):
