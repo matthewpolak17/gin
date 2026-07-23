@@ -52,6 +52,7 @@ class GameContext:
         self.discard_pile = DiscardPile(self.deck)
         self.text_renderer.player_score_text = None
         self.text_renderer.opp_score_text = None
+        self.updateLocations()
 
     def updateLocations(self):
         def set_card_positions(cards, y_offset, spacing_scale=self.constants.CARD_SPACING):

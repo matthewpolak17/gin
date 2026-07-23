@@ -138,8 +138,16 @@ class GameState(State):
         if slide_active:
             self.context.drawer.draw_player_card_slide(self.drawn_card, self.context.rects.discard_rect, (self.context.hand.cards[-1].loc[0], self.context.hand.cards[-1].loc[1]))
 
+        #ui elements
+        self.context.drawer.draw_ui_elements(self.knocking)
+
+        #round overlay
         self.context.drawer.draw_round_overlay(self.round_overlay)
+
+        #final draw to display_surface
         self.context.screen.display_surface.blit(self.context.surface_loader.game_surface, (0,0))
+
+        
 
     def exit(self):
         pass
@@ -177,6 +185,8 @@ class GameState(State):
                 self.active_card_border = "rainbow"
             if event.key == pygame.K_3:
                 self.active_card_border = None
+            if event.key == pygame.K_4:
+                self.knocking = True
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:

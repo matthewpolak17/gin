@@ -86,10 +86,17 @@ class Drawer:
             visible=self.context.opp_hand.can_knock
         )
 
+    def draw_ui_elements(self, knocking):
+        if knocking:
+            print("discard text displayed")
+            text_surface = self.context.text_renderer.discard_knock_text
+            text_rect = text_surface.get_rect(center=(self.context.screen.display_width / 2, self.context.screen.display_height * 0.9))
+            self.context.surface_loader.game_surface.blit(text_surface, text_rect)
+    
     def draw_game_background(self):
         self.context.surface_loader.game_surface.blit(self.context.image_loader.background, (0,0))
 
-    def draw_cards(self):
+    def draw_cards(self): 
         surface = self.context.surface_loader.game_surface
         surface.blit(self.context.image_loader.blue_back, (surface.get_width() * 4/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
         pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
@@ -206,8 +213,8 @@ class Drawer:
                     elif opp_slide_active:
                          self.draw_opp_card_slide(self.context.rects.draw_rect, (suppressed_loc[0], suppressed_loc[1]))
 
-                #surface.blit(self.context.image_loader.card_images[card.name], (old_loc[0] + ((new_loc[0] - old_loc[0]) * pickup_shift_progress), card.loc[1])) #uncomment for testing
-                surface.blit(self.context.image_loader.blue_back, (old_loc[0] + (new_loc[0] - old_loc[0]) * pickup_shift_progress, card.loc[1]))    
+                surface.blit(self.context.image_loader.card_images[card.name], (old_loc[0] + ((new_loc[0] - old_loc[0]) * pickup_shift_progress), card.loc[1])) #uncomment for testing
+                #surface.blit(self.context.image_loader.blue_back, (old_loc[0] + (new_loc[0] - old_loc[0]) * pickup_shift_progress, card.loc[1]))    
                 i += 1
 
             if suppressed_index >= len(simulated_opp_hand_prepickup):
@@ -223,16 +230,16 @@ class Drawer:
             for card, new_loc in simulated_opp_hand_discard:
                 old_loc = next(loc for c, loc in simulated_opp_hand_pickup if c is card)
                 
-                #surface.blit(self.context.image_loader.card_images[card.name], (old_loc[0] + ((new_loc[0] - old_loc[0]) * discard_shift_progress), card.loc[1])) #uncomment for testing
-                surface.blit(self.context.image_loader.blue_back, (old_loc[0] + (new_loc[0] - old_loc[0]) * discard_shift_progress, card.loc[1]))  
+                surface.blit(self.context.image_loader.card_images[card.name], (old_loc[0] + ((new_loc[0] - old_loc[0]) * discard_shift_progress), card.loc[1])) #uncomment for testing
+                #surface.blit(self.context.image_loader.blue_back, (old_loc[0] + (new_loc[0] - old_loc[0]) * discard_shift_progress, card.loc[1]))  
 
             self.draw_opp_discard_flip((suppressed_loc[0] + 73/2, suppressed_loc[1] + 98/2), self.context.rects.discard_rect.center)
 
         else:
             for card in self.context.opp_hand.cards:
                 if card.visible:
-                    #surface.blit(self.context.image_loader.card_images[card.name], card.loc) #uncomment for testing
-                    surface.blit(self.context.image_loader.blue_back, card.loc)
+                    surface.blit(self.context.image_loader.card_images[card.name], card.loc) #uncomment for testing
+                    #surface.blit(self.context.image_loader.blue_back, card.loc)
 
     def draw_opp_card_slide(self, start_pos, end_pos):
         progress_eased = self.context.animator.opp_card_slide.get_progress_eased()
@@ -279,10 +286,11 @@ class Drawer:
         self.context.surface_loader.game_surface.blit(scaled_image, (draw_x, draw_y))
 
     def draw_round_overlay(self, round_overlay):
+        surface = self.context.surface_loader.game_surface
         if round_overlay:
-            self.context.surface_loader.game_surface.blit(self.context.surface_loader.overlay_surface, (0,0))
+            surface.blit(self.context.surface_loader.overlay_surface, (0,0))
             #if self.context.text_renderer.player_score_text and self.context.text_renderer.opp_score_text:
-            self.context.screen.game_surface.blit(self.context.text_renderer.continue_text, self.context.text_renderer.continue_text.get_rect(center=(self.context.screen.display_width // 2, self.context.screen.display_height * 2/3)))
-            self.context.screen.game_surface.blit(self.context.text_renderer.player_score_text, self.context.text_renderer.player_score_text.get_rect(center=(self.context.screen.display_width // 2, self.context.screen.display_height * 1/3)))
-            self.context.screen.game_surface.blit(self.context.text_renderer.opp_score_text, self.context.text_renderer.opp_score_text.get_rect(center=(self.context.screen.display_width // 2, (self.context.screen.display_height * 1/3) + 25)))
+            surface.blit(self.context.text_renderer.continue_text, self.context.text_renderer.continue_text.get_rect(center=(self.context.screen.display_width // 2, self.context.screen.display_height * 2/3)))
+            surface.blit(self.context.text_renderer.player_score_text, self.context.text_renderer.player_score_text.get_rect(center=(self.context.screen.display_width // 2, self.context.screen.display_height * 1/3)))
+            surface.blit(self.context.text_renderer.opp_score_text, self.context.text_renderer.opp_score_text.get_rect(center=(self.context.screen.display_width // 2, (self.context.screen.display_height * 1/3) + 25)))
 

@@ -8,6 +8,7 @@ class TextRenderer:
         self.sort_rank_text = self.context.ui_text.render_small("Rank", self.context.constants.BLACK)
         self.sort_suit_text = self.context.ui_text.render_small("Suit", self.context.constants.BLACK)
         self.player_knock_text = self.context.ui_text.render_small("Knock", self.context.constants.BLACK)
+        self.discard_knock_text = self.context.ui_text.render_small("Discard one of the following cards", self.context.constants.WHITE)
         self.opp_knock_text = self.context.ui_text.render_small("Knock", self.context.constants.BLACK)
         self.title_text = self.context.ui_text.render_title("Gin Rummy", self.context.constants.TAN)
 
