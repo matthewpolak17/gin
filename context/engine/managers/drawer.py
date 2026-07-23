@@ -88,7 +88,6 @@ class Drawer:
 
     def draw_ui_elements(self, knocking):
         if knocking:
-            print("discard text displayed")
             text_surface = self.context.text_renderer.discard_knock_text
             text_rect = text_surface.get_rect(center=(self.context.screen.display_width / 2, self.context.screen.display_height * 0.9))
             self.context.surface_loader.game_surface.blit(text_surface, text_rect)
@@ -111,7 +110,7 @@ class Drawer:
                 discard_top = self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name]
                 surface.blit(discard_top, (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
 
-    def draw_hand_cards(self, active_card, active_card_placeholder, active_card_border, drawn_card, simulated_hand_presort):
+    def draw_hand_cards(self, active_card, active_card_placeholder, active_card_border, drawn_card, simulated_hand_presort, knocking):
         surface = self.context.surface_loader.game_surface
         drop_progress_eased = self.context.animator.drop_active_card.get_progress_eased()
         sort_progress_eased = self.context.animator.sort_hand.get_progress_eased()
@@ -139,7 +138,12 @@ class Drawer:
                 if card is drawn_card:
                     continue
                 if card.visible:
-                    surface.blit(self.context.image_loader.card_images[card.name], draw_loc)
+                    opacity = 255
+                    if not card.deadwood and knocking:
+                        opacity = 60
+                    image = self.context.image_loader.card_images[card.name]
+                    image.set_alpha(opacity)
+                    surface.blit(image, draw_loc)
         else:
             active_card_x = active_card.loc[0]
             for card in self.context.hand.cards:
@@ -289,8 +293,8 @@ class Drawer:
         surface = self.context.surface_loader.game_surface
         if round_overlay:
             surface.blit(self.context.surface_loader.overlay_surface, (0,0))
-            #if self.context.text_renderer.player_score_text and self.context.text_renderer.opp_score_text:
-            surface.blit(self.context.text_renderer.continue_text, self.context.text_renderer.continue_text.get_rect(center=(self.context.screen.display_width // 2, self.context.screen.display_height * 2/3)))
-            surface.blit(self.context.text_renderer.player_score_text, self.context.text_renderer.player_score_text.get_rect(center=(self.context.screen.display_width // 2, self.context.screen.display_height * 1/3)))
-            surface.blit(self.context.text_renderer.opp_score_text, self.context.text_renderer.opp_score_text.get_rect(center=(self.context.screen.display_width // 2, (self.context.screen.display_height * 1/3) + 25)))
+            if self.context.text_renderer.player_score_text and self.context.text_renderer.opp_score_text:
+                surface.blit(self.context.text_renderer.continue_text, self.context.text_renderer.continue_text.get_rect(center=(self.context.screen.display_width // 2, self.context.screen.display_height * 2/3)))
+                surface.blit(self.context.text_renderer.player_score_text, self.context.text_renderer.player_score_text.get_rect(center=(self.context.screen.display_width // 2, self.context.screen.display_height * 1/3)))
+                surface.blit(self.context.text_renderer.opp_score_text, self.context.text_renderer.opp_score_text.get_rect(center=(self.context.screen.display_width // 2, (self.context.screen.display_height * 1/3) + 25)))
 

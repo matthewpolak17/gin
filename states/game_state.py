@@ -41,6 +41,9 @@ class GameState(State):
 
         self.suit_order = {"heart": 0, "spade": 1, "diamond": 2, "club": 3}
 
+        #organizes opp_hand for testing
+        self.sort_cards_rank(self.context.opp_hand)
+
 
 
 # ==========================================
@@ -130,7 +133,7 @@ class GameState(State):
 
         self.context.drawer.draw_cards()
         self.context.drawer.draw_opp_hand_cards(self.discard_top, self.opp_drawn_card, self.simulated_opp_hand_prepickup, self.simulated_opp_hand_pickup, self.opp_discarded_card, self.simulated_opp_hand_discard)
-        self.context.drawer.draw_hand_cards(self.active_card, self.active_card_placeholder, self.active_card_border, self.drawn_card if (flip_active or slide_active) else None, self.simulated_hand_presort)
+        self.context.drawer.draw_hand_cards(self.active_card, self.active_card_placeholder, self.active_card_border, self.drawn_card if (flip_active or slide_active) else None, self.simulated_hand_presort, self.knocking)
 
         #hand pickup animations
         if flip_active:
@@ -186,7 +189,7 @@ class GameState(State):
             if event.key == pygame.K_3:
                 self.active_card_border = None
             if event.key == pygame.K_4:
-                self.knocking = True
+                self.knocking = not self.knocking
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
@@ -251,7 +254,7 @@ class GameState(State):
                     self.sort_cards_suit(self.context.hand)
                     self.current_sort = "suit"
 
-                elif self.context.rects.player_knock_rect.collidepoint(event.pos):
+                elif self.context.rects.player_knock_rect.collidepoint(event.pos) and self.can_knock(self.update_melds(self.context.hand), self.context.hand.cards):
                     self.knocking = True
         elif event.type == pygame.MOUSEBUTTONUP:
             if self.active_card:
@@ -352,7 +355,7 @@ class GameState(State):
         total_deadwood = 0
         for card in cards:
             if card not in meld_cards:
-
+                card.deadwood = True
                 if self.context.card_data[card.name]["rank"] > 10:
                     total_deadwood += 10
                 else:
@@ -571,9 +574,8 @@ class GameState(State):
             self.context.opp_hand.can_gin = False
         
         if self.context.opp_hand.can_gin or self.context.opp_hand.can_knock:
-            global round_overlay, computer_knock
-            round_overlay = True
-            computer_knock = True
+            self.round_overlay = True
+            self.computer_knock = True
             self.context.opp_hand.can_knock = False
             self.context.opp_hand.can_gin = False
 

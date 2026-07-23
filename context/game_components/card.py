@@ -18,5 +18,6 @@ class Card:
         self.velocity_x = 0
 
         self.visible = True
+        self.deadwood = False
 
 
