@@ -17,7 +17,7 @@ state_manager.add_state("wipe", WipeState(state_manager, context))
 state_manager.set("title")
 
 while state_manager.running:
-    context.dt = context.clock.tick(200) / 1000 #fps
+    context.dt = context.clock.tick(80) / 1000 #fps
 
     for event in pygame.event.get():
         state_manager.handle_event(event)

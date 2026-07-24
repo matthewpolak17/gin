@@ -182,6 +182,10 @@ class GameState(State):
                         self.knocking = False
                         self.turn = 1
                         self.player_turn = 1
+            if event.key == pygame.K_q:
+                self.handle_pickup_card(self.context.deck, self.context.hand)
+            if event.key == pygame.K_e:
+                self.handle_pickup_discard(self.context.hand)
             if event.key == pygame.K_1:
                 self.active_card_border = "spirit"
             if event.key == pygame.K_2:
@@ -232,25 +236,9 @@ class GameState(State):
                         break
 
                 if self.context.rects.draw_rect.collidepoint(event.pos):
-                    if self.turn == 1:
-                        random.choice(self.context.audio.thwip_sounds).play()
-                        self.drawn_card = self.pickup_card(self.context.deck, self.context.hand)
-                        self.drawn_card.visible = False
-                        self.context.animator.player_card_flip.start()
-                        self.context.hand.melds = self.update_melds(self.context.hand)
-                        if self.can_knock(self.context.hand.melds, self.context.hand.cards):
-                            self.context.hand.can_knock = True
-                        self.turn *= -1
+                    self.handle_pickup_card(self.context.deck, self.context.hand)
                 elif self.context.rects.discard_rect.collidepoint(event.pos):
-                    if self.turn == 1:
-                        self.context.audio.slide_sound.play()
-                        self.drawn_card = self.pickup_discard(self.context.hand)
-                        self.drawn_card.visible = False
-                        self.context.animator.player_card_slide.start()
-                        self.context.hand.melds = self.update_melds(self.context.hand)
-                        if self.can_knock(self.context.hand.melds, self.context.hand.cards):
-                            self.context.hand.can_knock = True
-                        self.turn *= -1
+                    self.handle_pickup_discard(self.context.hand)
                 elif self.context.rects.sort_rect_rank.collidepoint(event.pos) and (not self.context.animator.sort_hand.active or self.current_sort == "suit"):
                     self.simulated_hand_presort = [(card, tuple(card.loc)) for card in self.context.hand.cards]
                     self.context.animator.sort_hand.start()
@@ -338,12 +326,34 @@ class GameState(State):
         self.context.updateLocations()
         return choice
 
+    def handle_pickup_card(self, deck, hand):
+        if self.turn == 1:
+            random.choice(self.context.audio.thwip_sounds).play()
+            self.drawn_card = self.pickup_card(deck, hand)
+            self.drawn_card.visible = False
+            self.context.animator.player_card_flip.start()
+            self.context.hand.melds = self.update_melds(self.context.hand)
+            if self.can_knock(self.context.hand.melds, self.context.hand.cards):
+                self.context.hand.can_knock = True
+            self.turn *= -1
+
     def pickup_discard(self, hand):
         choice = self.context.discard_pile.cards[-1]
         hand.cards.append(choice)
         self.context.discard_pile.cards.remove(choice)
         self.context.updateLocations()
         return choice
+
+    def handle_pickup_discard(self, hand):
+        if self.turn == 1:
+            self.context.audio.slide_sound.play()
+            self.drawn_card = self.pickup_discard(hand)
+            self.drawn_card.visible = False
+            self.context.animator.player_card_slide.start()
+            self.context.hand.melds = self.update_melds(self.context.hand)
+            if self.can_knock(self.context.hand.melds, self.context.hand.cards):
+                self.context.hand.can_knock = True
+            self.turn *= -1
 
     def discard(self, hand, active_card):
         hand.cards.remove(active_card)
