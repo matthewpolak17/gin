@@ -55,35 +55,41 @@ class Drawer:
 # GAME SURFACE METHODS
 # ==========================================
 
-    def draw_button(self, rect, text_surface, visible=True):
+    def draw_button(self, rect, text_surface, pressed=False, visible=True):
         if not visible:
             return
-        pygame.draw.rect(self.context.surface_loader.game_surface, (200, 200, 200), rect, border_radius=8)
-        pygame.draw.rect(self.context.surface_loader.game_surface, self.context.constants.BLACK, rect, 2, border_radius=8)
-        text_rect = text_surface.get_rect(center=rect.center)
+
+        if pressed:
+            button = self.context.image_loader.pressed_button
+        else:
+            button = self.context.image_loader.button
+
+        # Center the button image
+        button_rect = button.get_rect(center=rect.center)
+        self.context.surface_loader.game_surface.blit(button, button_rect)
+
+        # Center the text
+        text_rect = text_surface.get_rect(center=button_rect.center)
         self.context.surface_loader.game_surface.blit(text_surface, text_rect)
 
-    def draw_buttons(self):
+    def draw_buttons(self, pressed_button):
         self.draw_button(
             self.context.rects.sort_rect_rank,
-            self.context.text_renderer.sort_rank_text
+            self.context.text_renderer.sort_rank_text,
+            pressed=pressed_button=="rank"
         )
 
         self.draw_button(
             self.context.rects.sort_rect_suit,
-            self.context.text_renderer.sort_suit_text
+            self.context.text_renderer.sort_suit_text,
+            pressed=pressed_button=="suit"
         )
 
         self.draw_button(
             self.context.rects.player_knock_rect,
             self.context.text_renderer.player_knock_text,
+            pressed=pressed_button=="knock",
             visible=self.context.hand.can_knock
-        )
-
-        self.draw_button(
-            self.context.rects.opp_knock_rect,
-            self.context.text_renderer.opp_knock_text,
-            visible=self.context.opp_hand.can_knock
         )
 
     def draw_ui_elements(self, knocking):
@@ -139,7 +145,7 @@ class Drawer:
                     continue
                 if card.visible:
                     opacity = 255
-                    if not card.deadwood and knocking:
+                    if not card.can_discard_after_knock and knocking:
                         opacity = 60
                     image = self.context.image_loader.card_images[card.name]
                     image.set_alpha(opacity)

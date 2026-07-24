@@ -19,5 +19,6 @@ class Card:
 
         self.visible = True
         self.deadwood = False
+        self.can_discard_after_knock = False
 
 

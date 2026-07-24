@@ -40,8 +40,8 @@ class GameContext:
         self.drawer = Drawer(self)
         self.animator = Animator(self)
         self.text_renderer = TextRenderer(self)
-        self.rects = Rects(self)
         self.image_loader = ImageLoader(self)
+        self.rects = Rects(self)
         self.surface_loader = SurfaceLoader(self)
 
 

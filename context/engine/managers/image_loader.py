@@ -9,6 +9,7 @@ class ImageLoader:
 
         self.set_card_images(self.context.card_data)
         self.set_background()
+        self.set_ui_elements()
         self.set_networking_background()
         self.set_title_background()
         self.set_loading_images()
@@ -22,6 +23,13 @@ class ImageLoader:
     def set_background(self):
         self.background = pygame.image.load(r'./assets/images/background.png').convert_alpha()
         self.background = pygame.transform.scale(self.background, (self.context.screen.display_width, self.context.screen.display_height))
+
+    def set_ui_elements(self):
+        self.button = pygame.image.load(r'./assets/images/ui/ui_button.png').convert_alpha()
+        self.button =  self.scale_image(self.button, 0.35)
+
+        self.pressed_button = pygame.image.load(r'./assets/images/ui/ui_button_pressed.png').convert_alpha()
+        self.pressed_button =  self.scale_image(self.pressed_button, 0.35)
 
     def set_networking_background(self):
         self.networking_background = pygame.image.load(r'./assets/images/black.png').convert_alpha()
@@ -54,3 +62,10 @@ class ImageLoader:
         for i in range(24):
             image = pygame.image.load(f"./assets/images/card_border_frames/rainbow_border_frames/rainbow_frame_{i}.png").convert_alpha()
             self.rainbow_card_border_frames.append(image)
+
+    def scale_image(self, image, scale):
+        w, h = image.get_size()
+        return pygame.transform.smoothscale(
+            image,
+            (int(w * scale), int(h * scale))
+    )

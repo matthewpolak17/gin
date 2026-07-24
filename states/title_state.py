@@ -45,7 +45,7 @@ class TitleState(State):
         self.context.updateLocations()
         self.context.drawer.draw_game_background()
         self.context.drawer.draw_menu(self.context.surface_loader.game_surface, self.manager.menu_active, self.context.dt)
-        self.context.drawer.draw_buttons()
+        self.context.drawer.draw_buttons(None)
         self.context.drawer.draw_hand_cards(None, None, None, None, None, None)
         self.context.drawer.draw_opp_hand_cards(None, None, None, None, None, None)
         self.context.drawer.draw_cards()

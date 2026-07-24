@@ -44,6 +44,9 @@ class GameState(State):
         #organizes opp_hand for testing
         self.sort_cards_rank(self.context.opp_hand)
 
+        #buttons
+        self.pressed_button = None
+
 
 
 # ==========================================
@@ -115,10 +118,25 @@ class GameState(State):
             self.context.reset_round()
             self.manager.menu_active = False
             self.manager.restart = False
-        
+
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
         if self.clicked and self.active_card:
-            mouse_x, mouse_y = pygame.mouse.get_pos()
             self.active_card.loc = (mouse_x - self.card_x, mouse_y - self.card_y)
+
+        hovering = (
+            self.context.rects.sort_rect_rank.collidepoint(mouse_x, mouse_y)
+            or self.context.rects.sort_rect_suit.collidepoint(mouse_x, mouse_y)
+            or self.context.rects.player_knock_rect.collidepoint(mouse_x, mouse_y)
+        )
+
+        cursor = (
+            pygame.SYSTEM_CURSOR_HAND
+            if hovering
+            else pygame.SYSTEM_CURSOR_ARROW
+        )
+
+        pygame.mouse.set_cursor(cursor)
         
         self.update_card_hover_y()
         self.update_card_hover_x()
@@ -126,7 +144,7 @@ class GameState(State):
     def draw(self):
         self.context.drawer.draw_game_background()
         self.context.drawer.draw_menu(self.context.surface_loader.game_surface, self.manager.menu_active, self.context.dt)
-        self.context.drawer.draw_buttons()
+        self.context.drawer.draw_buttons(self.pressed_button)
 
         flip_active = self.context.animator.player_card_flip.active
         slide_active = self.context.animator.player_card_slide.active
@@ -193,16 +211,17 @@ class GameState(State):
             if event.key == pygame.K_3:
                 self.active_card_border = None
             if event.key == pygame.K_4:
+                self.get_discards_after_knocking(self.context.hand)
                 self.knocking = not self.knocking
-                print("melds:")
-                for meld in self.update_melds(self.context.hand):
-                    for card in meld:
-                        print(str(self.context.card_data[card.name]["rank"]) + " " + (self.context.card_data[card.name]["suit"]))
-                    print()
-                print("deadwood:")
-                for card in self.context.hand.cards:
-                    if card.deadwood:
-                        print(str(self.context.card_data[card.name]["rank"]) + " " + (self.context.card_data[card.name]["suit"]))
+                # print("melds:")
+                # for meld in self.update_melds(self.context.hand):
+                #     for card in meld:
+                #         print(str(self.context.card_data[card.name]["rank"]) + " " + (self.context.card_data[card.name]["suit"]))
+                #     print()
+                # print("deadwood:")
+                # for card in self.context.hand.cards:
+                #     if card.deadwood:
+                #         print(str(self.context.card_data[card.name]["rank"]) + " " + (self.context.card_data[card.name]["suit"]))
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
@@ -224,36 +243,55 @@ class GameState(State):
                         card_rect = pygame.Rect(card.loc[0], card.loc[1], 73, 98)
                     else:
                         card_rect = pygame.Rect(card.loc[0], card.loc[1], ((self.context.screen.display_surface.get_width() / 3) / (len(self.context.hand.cards) - 1)) * 0.8, 98)
-
-                    if card_rect.collidepoint(event.pos):
-                        self.clicked = True
-                        self.active_card = card
-                        self.active_card.dragging = True
-                        self.original_loc = self.active_card.loc
-                        self.original_index = self.context.hand.cards.index(self.active_card)
-                        self.card_x = event.pos[0] - self.active_card.loc[0]
-                        self.card_y = event.pos[1] - self.active_card.loc[1]
-                        break
+                    if self.knocking:
+                        if card_rect.collidepoint(event.pos) and card.can_discard_after_knock:
+                            self.clicked = True
+                            self.active_card = card
+                            self.active_card.dragging = True
+                            self.original_loc = self.active_card.loc
+                            self.original_index = self.context.hand.cards.index(self.active_card)
+                            self.card_x = event.pos[0] - self.active_card.loc[0]
+                            self.card_y = event.pos[1] - self.active_card.loc[1]
+                            break
+                    else:
+                        if card_rect.collidepoint(event.pos):
+                            self.clicked = True
+                            self.active_card = card
+                            self.active_card.dragging = True
+                            self.original_loc = self.active_card.loc
+                            self.original_index = self.context.hand.cards.index(self.active_card)
+                            self.card_x = event.pos[0] - self.active_card.loc[0]
+                            self.card_y = event.pos[1] - self.active_card.loc[1]
+                            break
 
                 if self.context.rects.draw_rect.collidepoint(event.pos):
                     self.handle_pickup_card(self.context.deck, self.context.hand)
                 elif self.context.rects.discard_rect.collidepoint(event.pos):
                     self.handle_pickup_discard(self.context.hand)
-                elif self.context.rects.sort_rect_rank.collidepoint(event.pos) and (not self.context.animator.sort_hand.active or self.current_sort == "suit"):
-                    self.simulated_hand_presort = [(card, tuple(card.loc)) for card in self.context.hand.cards]
-                    self.context.animator.sort_hand.start()
-                    self.sort_cards_rank(self.context.hand)
-                    self.current_sort = "rank"
+                elif self.context.rects.sort_rect_rank.collidepoint(event.pos):
+                    self.pressed_button = "rank"
+                    if (not self.context.animator.sort_hand.active or self.current_sort == "suit"):
+                        self.simulated_hand_presort = [(card, tuple(card.loc)) for card in self.context.hand.cards]
+                        self.context.animator.sort_hand.start()
+                        self.sort_cards_rank(self.context.hand)
+                        self.current_sort = "rank"
 
-                elif self.context.rects.sort_rect_suit.collidepoint(event.pos) and (not self.context.animator.sort_hand.active or self.current_sort == "rank"):
-                    self.simulated_hand_presort = [(card, tuple(card.loc)) for card in self.context.hand.cards]
-                    self.context.animator.sort_hand.start()
-                    self.sort_cards_suit(self.context.hand)
-                    self.current_sort = "suit"
+                elif self.context.rects.sort_rect_suit.collidepoint(event.pos):
+                    self.pressed_button = "suit"
+                    if (not self.context.animator.sort_hand.active or self.current_sort == "rank"):
+                        self.simulated_hand_presort = [(card, tuple(card.loc)) for card in self.context.hand.cards]
+                        self.context.animator.sort_hand.start()
+                        self.sort_cards_suit(self.context.hand)
+                        self.current_sort = "suit"
 
-                elif self.context.rects.player_knock_rect.collidepoint(event.pos) and self.can_knock(self.update_melds(self.context.hand), self.context.hand.cards):
-                    self.knocking = True
+                elif self.context.rects.player_knock_rect.collidepoint(event.pos): 
+                    self.pressed_button = "knock"
+                    if self.can_knock(self.update_melds(self.context.hand), self.context.hand.cards):
+                        self.get_discards_after_knocking(self.context.hand)
+                        self.knocking = not self.knocking
+                        
         elif event.type == pygame.MOUSEBUTTONUP:
+            self.pressed_button = None
             if self.active_card:
                 self.context.animator.drop_active_card.start()
                 self.active_card_placeholder = copy.copy(self.active_card)
@@ -283,6 +321,7 @@ class GameState(State):
                     self.context.hand.cards[starting_hover_index] = self.active_card #sets the active card to the index it stopped
 
                 if self.context.rects.discard_rect.collidepoint(event.pos) and self.turn == -1:
+                    self.context.hand.can_knock = False
                     self.discard(self.context.hand, self.active_card)
                     if self.knocking:
                         self.round_overlay = True
@@ -386,7 +425,14 @@ class GameState(State):
             return True
         else:
             return False
-    
+
+    def get_discards_after_knocking(self, hand):
+        total_deadwood = self.calculate_deadwood(self.update_melds(hand), hand.cards)
+        for card in hand.cards:
+            if card.deadwood:
+                if total_deadwood - max(self.context.card_data[card.name]["rank"], 10) <= 10:
+                    card.can_discard_after_knock = True
+
     def can_contribute(self, card, meld):
         type = self.get_meld_type(meld)
         if type == "run":
@@ -617,8 +663,15 @@ class GameState(State):
             width = 73 if card == self.context.hand.cards[-1] else (self.context.screen.display_surface.get_width() / 3) / max(len(self.context.hand.cards) - 1, 1) * 0.8
             rect = pygame.Rect(int(card.loc[0]), int(card.base_y), int(width), 98)
             if rect.collidepoint(mouse_pos) and not self.active_card:
-                newly_hovered = card
-                break
+                if self.knocking:
+                    if card.can_discard_after_knock:
+                        newly_hovered = card
+                        break
+                    else:
+                        continue
+                else:
+                    newly_hovered = card
+                    break
 
         if newly_hovered != self.card_hovered:
             self.card_hovered = newly_hovered
