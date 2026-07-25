@@ -7,7 +7,7 @@ class TextRenderer:
         self.multiplayer_menu_text = self.context.ui_text.render_small("Start a room here", self.context.constants.WHITE)
         self.sort_rank_text = self.context.ui_text.render_small("Rank", self.context.constants.DARKGRAY)
         self.sort_suit_text = self.context.ui_text.render_small("Suit", self.context.constants.DARKGRAY)
-        self.player_knock_text = self.context.ui_text.render_small("Knock", self.context.constants.BLACK)
+        self.player_knock_text = self.context.ui_text.render_small("Knock", self.context.constants.DARKGRAY)
         self.discard_knock_text = self.context.ui_text.render_small("Discard one of the following cards", self.context.constants.WHITE)
         self.title_text = self.context.ui_text.render_title("Gin Rummy", self.context.constants.TAN)
 
