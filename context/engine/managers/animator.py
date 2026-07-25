@@ -28,6 +28,9 @@ class Animator:
         #animates cards in hand when sorting button clicked
         self.sort_hand = Animation(0.007, 50, False)
 
+        #animates cards moving from discard to draw pile when deck.cards is empty
+        self.shuffle_cards = Animation(0.05, 40, False)
+
     def opp_hand_pickup_shift(self):
         if self.opp_hand_pickup_shift.active:
             self.opp_hand_pickup_shift.update(self.context.dt)
@@ -100,6 +103,10 @@ class Animator:
     def animate_hand_sort(self):
         if self.sort_hand.active:
             self.sort_hand.update(self.context.dt)
+
+    def animate_shuffle_cards(self):
+        if self.shuffle_cards.active:
+            self.shuffle_cards.update(self.context.dt)
         
 
 

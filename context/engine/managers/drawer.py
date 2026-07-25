@@ -101,11 +101,23 @@ class Drawer:
     def draw_game_background(self):
         self.context.surface_loader.game_surface.blit(self.context.image_loader.background, (0,0))
 
-    def draw_cards(self): 
+    def draw_cards(self, deck_empty): 
         surface = self.context.surface_loader.game_surface
-        surface.blit(self.context.image_loader.blue_back, (surface.get_width() * 4/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
-        pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
+        shuffle_progress_eased = self.context.animator.shuffle_cards.get_progress_eased()
 
+        #draw pile
+        pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 4/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
+        if deck_empty and self.counter  < 1:
+            for card in self.context.discard_pile.cards:
+                print(str(self.context.card_data[card.name]["rank"]) + " " + str(self.context.card_data[card.name]["suit"]))
+            self.counter += 1
+        elif deck_empty:
+            pass
+        else:
+            surface.blit(self.context.image_loader.blue_back, (surface.get_width() * 4/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
+
+        #discard pile
+        pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
         if self.context.discard_pile.cards:
             if len(self.context.discard_pile.cards) > 1:
                 second_card = self.context.discard_pile.cards[-2]

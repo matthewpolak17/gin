@@ -22,6 +22,7 @@ class GameState(State):
         self.player_turn = 1
         self.drawn_card = None
         self.discard_top = None
+        self.deck_empty = False
 
         self.simulated_opp_hand_pickup = None
         self.simulated_opp_hand_prepickup = None
@@ -88,6 +89,9 @@ class GameState(State):
         #move cards in hand after sorting animation
         self.context.animator.animate_hand_sort()
 
+        #animates cards shuffle when draw pile is empty
+        self.context.animator.animate_shuffle_cards()
+
         #round overlay logic
         if self.player_knock or self.computer_knock:
             self.context.hand.melds = self.update_melds(self.context.hand)
@@ -149,7 +153,7 @@ class GameState(State):
         flip_active = self.context.animator.player_card_flip.active
         slide_active = self.context.animator.player_card_slide.active
 
-        self.context.drawer.draw_cards()
+        self.context.drawer.draw_cards(self.deck_empty)
         self.context.drawer.draw_opp_hand_cards(self.discard_top, self.opp_drawn_card, self.simulated_opp_hand_prepickup, self.simulated_opp_hand_pickup, self.opp_discarded_card, self.simulated_opp_hand_discard)
         self.context.drawer.draw_hand_cards(self.active_card, self.active_card_placeholder, self.active_card_border, self.drawn_card if (flip_active or slide_active) else None, self.simulated_hand_presort, self.knocking)
 
@@ -362,6 +366,9 @@ class GameState(State):
         choice = random.choice(deck.cards)
         hand.cards.append(choice)
         deck.cards.remove(choice)
+        if not self.context.deck.cards:
+            self.deck_empty = True
+            self.context.animator.shuffle_cards.start()
         self.context.updateLocations()
         return choice
 
