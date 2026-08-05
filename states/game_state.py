@@ -48,6 +48,10 @@ class GameState(State):
         #buttons
         self.pressed_button = None
 
+        #card shuffle helpers
+        self.shuffle_batch = None
+        self.discard_top_at_shuffle = None
+
 
 
 # ==========================================
@@ -91,6 +95,12 @@ class GameState(State):
 
         #animates cards shuffle when draw pile is empty
         self.context.animator.animate_shuffle_cards()
+        if self.context.animator.shuffle_cards.finished and self.shuffle_batch:
+            random.shuffle(self.shuffle_batch)
+            self.context.deck.cards = self.shuffle_batch
+            self.context.discard_pile.cards = [self.discard_top_at_shuffle]
+            self.deck_empty = False
+            self.shuffle_batch = None
 
         #round overlay logic
         if self.player_knock or self.computer_knock:
@@ -121,6 +131,7 @@ class GameState(State):
         if self.manager.restart:
             self.context.reset_round()
             self.manager.menu_active = False
+            self.turn = 1
             self.manager.restart = False
 
         mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -153,7 +164,7 @@ class GameState(State):
         flip_active = self.context.animator.player_card_flip.active
         slide_active = self.context.animator.player_card_slide.active
 
-        self.context.drawer.draw_cards(self.deck_empty)
+        self.context.drawer.draw_cards(self.deck_empty, self.shuffle_batch, self.discard_top_at_shuffle)
         self.context.drawer.draw_opp_hand_cards(self.discard_top, self.opp_drawn_card, self.simulated_opp_hand_prepickup, self.simulated_opp_hand_pickup, self.opp_discarded_card, self.simulated_opp_hand_discard)
         self.context.drawer.draw_hand_cards(self.active_card, self.active_card_placeholder, self.active_card_border, self.drawn_card if (flip_active or slide_active) else None, self.simulated_hand_presort, self.knocking)
 
@@ -368,6 +379,8 @@ class GameState(State):
         deck.cards.remove(choice)
         if not self.context.deck.cards:
             self.deck_empty = True
+            self.shuffle_batch = self.context.discard_pile.cards[:-1]
+            self.discard_top_at_shuffle = self.context.discard_pile.cards[-1]
             self.context.animator.shuffle_cards.start()
         self.context.updateLocations()
         return choice

@@ -101,32 +101,100 @@ class Drawer:
     def draw_game_background(self):
         self.context.surface_loader.game_surface.blit(self.context.image_loader.background, (0,0))
 
-    def draw_cards(self, deck_empty): 
+    # def draw_cards(self, deck_empty): 
+    #     surface = self.context.surface_loader.game_surface
+    #     shuffle_progress_eased = self.context.animator.shuffle_cards.get_progress_eased()
+
+    #     #draw pile
+    #     pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 4/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
+    #     if deck_empty and self.counter  < 1:
+    #         for card in self.context.discard_pile.cards:
+    #             print(str(self.context.card_data[card.name]["rank"]) + " " + str(self.context.card_data[card.name]["suit"]))
+    #         self.counter += 1
+    #     elif deck_empty:
+    #         pass
+    #     else:
+    #         surface.blit(self.context.image_loader.blue_back, (surface.get_width() * 4/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
+
+    #     #discard pile
+    #     pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
+    #     if self.context.discard_pile.cards:
+    #         if len(self.context.discard_pile.cards) > 1:
+    #             second_card = self.context.discard_pile.cards[-2]
+    #             if second_card.visible:
+    #                 discard_top = self.context.image_loader.card_images[second_card.name]
+    #                 surface.blit(discard_top, (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
+    #         if self.context.discard_pile.cards[-1].visible:
+    #             discard_top = self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name]
+    #             surface.blit(discard_top, (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
+
+    def draw_cards(self, deck_empty, shuffle_batch, discard_top_at_shuffle):
         surface = self.context.surface_loader.game_surface
-        shuffle_progress_eased = self.context.animator.shuffle_cards.get_progress_eased()
+        draw_pos = (surface.get_width() * 4/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2)
+        discard_pos = (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2)
 
-        #draw pile
-        pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 4/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
-        if deck_empty and self.counter  < 1:
-            for card in self.context.discard_pile.cards:
-                print(str(self.context.card_data[card.name]["rank"]) + " " + str(self.context.card_data[card.name]["suit"]))
-            self.counter += 1
-        elif deck_empty:
-            pass
-        else:
-            surface.blit(self.context.image_loader.blue_back, (surface.get_width() * 4/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
+        #draw pile outline
+        pygame.draw.rect(surface, "white", pygame.Rect(*draw_pos, 73, 98), 4, border_radius=10)
 
-        #discard pile
-        pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
-        if self.context.discard_pile.cards:
+        shuffle_active = self.context.animator.shuffle_cards.active
+
+        if deck_empty and not shuffle_active:
+            pass  # deck is empty and the shuffle has already resolved — nothing to draw
+        elif not deck_empty:
+            surface.blit(self.context.image_loader.blue_back, draw_pos)
+
+        #discard pile outline
+        pygame.draw.rect(surface, "white", pygame.Rect(*discard_pos, 73, 98), 4, border_radius=10)
+
+        if not shuffle_active and self.context.discard_pile.cards:
             if len(self.context.discard_pile.cards) > 1:
                 second_card = self.context.discard_pile.cards[-2]
                 if second_card.visible:
-                    discard_top = self.context.image_loader.card_images[second_card.name]
-                    surface.blit(discard_top, (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
+                    surface.blit(self.context.image_loader.card_images[second_card.name], discard_pos)
             if self.context.discard_pile.cards[-1].visible:
-                discard_top = self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name]
-                surface.blit(discard_top, (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
+                surface.blit(self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name], discard_pos)
+
+        #shuffle animation: discard pile cards cascading over to the draw pile, flipping face-down
+        if shuffle_active:
+            # kept top card stays put on the discard pile throughout
+            if discard_top_at_shuffle and discard_top_at_shuffle.visible:
+                surface.blit(self.context.image_loader.card_images[discard_top_at_shuffle.name], discard_pos)
+
+            self.draw_shuffle_cards(shuffle_batch, discard_pos, draw_pos)
+
+    def draw_shuffle_cards(self, shuffle_batch, start_pos, end_pos):
+        surface = self.context.surface_loader.game_surface
+        overall = self.context.animator.shuffle_cards.get_progress()
+        n = len(shuffle_batch)
+        stagger_span = 0.6
+        card_duration = 1 - stagger_span
+
+        start_center = (start_pos[0] + 73/2, start_pos[1] + 98/2)
+        end_center = (end_pos[0] + 73/2, end_pos[1] + 98/2)
+
+        for i, card in enumerate(shuffle_batch):
+            start_i = (i / max(n - 1, 1)) * stagger_span
+            local = min(max((overall - start_i) / card_duration, 0), 1)
+            if local <= 0:
+                continue
+            eased = 1 - (1 - local) ** 3
+            self._draw_shuffle_card(card, eased, start_center, end_center)
+
+    def _draw_shuffle_card(self, card, progress, start_pos, end_pos):
+        surface = self.context.surface_loader.game_surface
+        x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress
+        y = start_pos[1] + (end_pos[1] - start_pos[1]) * progress
+
+        if progress < 0.5:
+            scale = 1 - (2 * progress)
+            image = self.context.image_loader.card_images[card.name]
+        else:
+            scale = (2 * progress) - 1
+            image = self.context.image_loader.blue_back
+
+        scaled_width = max(1, int(image.get_width() * scale))
+        scaled_image = pygame.transform.scale(image, (scaled_width, image.get_height()))
+        surface.blit(scaled_image, (int(x - scaled_width // 2), int(y - image.get_height() // 2)))
 
     def draw_hand_cards(self, active_card, active_card_placeholder, active_card_border, drawn_card, simulated_hand_presort, knocking):
         surface = self.context.surface_loader.game_surface
