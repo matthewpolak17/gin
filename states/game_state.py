@@ -164,7 +164,7 @@ class GameState(State):
         flip_active = self.context.animator.player_card_flip.active
         slide_active = self.context.animator.player_card_slide.active
 
-        self.context.drawer.draw_cards(self.deck_empty, self.shuffle_batch, self.discard_top_at_shuffle)
+        self.context.drawer.draw_cards(self.deck_empty, self.shuffle_batch)
         self.context.drawer.draw_opp_hand_cards(self.discard_top, self.opp_drawn_card, self.simulated_opp_hand_prepickup, self.simulated_opp_hand_pickup, self.opp_discarded_card, self.simulated_opp_hand_discard)
         self.context.drawer.draw_hand_cards(self.active_card, self.active_card_placeholder, self.active_card_border, self.drawn_card if (flip_active or slide_active) else None, self.simulated_hand_presort, self.knocking)
 
@@ -335,7 +335,7 @@ class GameState(State):
                         self.context.hand.cards[i] = self.context.hand.cards[i+1] #moves every card over between the original index and where the active card stopped
                     self.context.hand.cards[starting_hover_index] = self.active_card #sets the active card to the index it stopped
 
-                if self.context.rects.discard_rect.collidepoint(event.pos) and self.turn == -1:
+                if self.context.rects.discard_rect.collidepoint(event.pos) and self.turn == -1 and not self.context.animator.shuffle_cards.active:
                     self.context.hand.can_knock = False
                     self.discard(self.context.hand, self.active_card)
                     if self.knocking:
@@ -379,7 +379,7 @@ class GameState(State):
         deck.cards.remove(choice)
         if not self.context.deck.cards:
             self.deck_empty = True
-            self.shuffle_batch = self.context.discard_pile.cards[:-1]
+            self.shuffle_batch = list(reversed(self.context.discard_pile.cards))
             self.discard_top_at_shuffle = self.context.discard_pile.cards[-1]
             self.context.animator.shuffle_cards.start()
         self.context.updateLocations()

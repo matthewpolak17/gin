@@ -5,7 +5,7 @@ class Animator:
     def __init__(self, context):
         self.context = context
         self.frame = 0
-        self.frame_timer = 0
+        self.frame_timer = 0 
         self.loading = Animation(0.05, 11)
         self.title_wipe = Animation(0.05, self.context.screen.display_width)
         self.title_background = Animation(0.01, self.context.screen.display_width, True, True)

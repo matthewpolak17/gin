@@ -128,7 +128,7 @@ class Drawer:
     #             discard_top = self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name]
     #             surface.blit(discard_top, (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
 
-    def draw_cards(self, deck_empty, shuffle_batch, discard_top_at_shuffle):
+    def draw_cards(self, deck_empty, shuffle_batch):
         surface = self.context.surface_loader.game_surface
         draw_pos = (surface.get_width() * 4/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2)
         discard_pos = (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2)
@@ -154,12 +154,7 @@ class Drawer:
             if self.context.discard_pile.cards[-1].visible:
                 surface.blit(self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name], discard_pos)
 
-        #shuffle animation: discard pile cards cascading over to the draw pile, flipping face-down
         if shuffle_active:
-            # kept top card stays put on the discard pile throughout
-            if discard_top_at_shuffle and discard_top_at_shuffle.visible:
-                surface.blit(self.context.image_loader.card_images[discard_top_at_shuffle.name], discard_pos)
-
             self.draw_shuffle_cards(shuffle_batch, discard_pos, draw_pos)
 
     def draw_shuffle_cards(self, shuffle_batch, start_pos, end_pos):
@@ -172,9 +167,19 @@ class Drawer:
         start_center = (start_pos[0] + 73/2, start_pos[1] + 98/2)
         end_center = (end_pos[0] + 73/2, end_pos[1] + 98/2)
 
-        for i, card in enumerate(shuffle_batch):
+        locals_ = []
+        for i in range(n):
             start_i = (i / max(n - 1, 1)) * stagger_span
-            local = min(max((overall - start_i) / card_duration, 0), 1)
+            locals_.append(min(max((overall - start_i) / card_duration, 0), 1))
+
+        # whichever card hasn't launched yet (smallest index) is the current top of the remaining pile
+        for card, local in zip(shuffle_batch, locals_):
+            if local <= 0:
+                if card.visible:
+                    surface.blit(self.context.image_loader.card_images[card.name], start_pos)
+                break
+
+        for card, local in zip(shuffle_batch, locals_):
             if local <= 0:
                 continue
             eased = 1 - (1 - local) ** 3
