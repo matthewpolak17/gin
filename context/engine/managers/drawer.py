@@ -151,7 +151,7 @@ class Drawer:
                 second_card = self.context.discard_pile.cards[-2]
                 if second_card.visible:
                     surface.blit(self.context.image_loader.card_images[second_card.name], discard_pos)
-            if self.context.discard_pile.cards[-1].visible:
+            if self.context.discard_pile.cards[-1].visible and not self.context.animator.opp_discard_flip.active:
                 surface.blit(self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name], discard_pos)
 
         if shuffle_active:

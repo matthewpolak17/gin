@@ -42,7 +42,7 @@ class GameState(State):
 
         self.suit_order = {"heart": 0, "spade": 1, "diamond": 2, "club": 3}
 
-        #organizes opp_hand for testing
+        #organizes opp_hand for testing  
         self.sort_cards_rank(self.context.opp_hand)
 
         #buttons
