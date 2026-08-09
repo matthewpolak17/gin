@@ -284,6 +284,9 @@ class Drawer:
 # ==========================================
 
     def draw_opp_hand_cards(self, discard_top, opp_drawn_card, simulated_opp_hand_prepickup, simulated_opp_hand_pickup, opp_discarded_card, simulated_opp_hand_discard):
+
+        testing = False
+
         surface = self.context.surface_loader.game_surface
         opp_flip_active = self.context.animator.opp_card_flip.active
         opp_slide_active = self.context.animator.opp_card_slide.active
@@ -308,8 +311,11 @@ class Drawer:
                     elif opp_slide_active:
                          self.draw_opp_card_slide(self.context.rects.draw_rect, (suppressed_loc[0], suppressed_loc[1]))
 
-                surface.blit(self.context.image_loader.card_images[card.name], (old_loc[0] + ((new_loc[0] - old_loc[0]) * pickup_shift_progress), card.loc[1])) #uncomment for testing
-                #surface.blit(self.context.image_loader.blue_back, (old_loc[0] + (new_loc[0] - old_loc[0]) * pickup_shift_progress, card.loc[1]))    
+                if testing:
+                    surface.blit(self.context.image_loader.card_images[card.name], (old_loc[0] + ((new_loc[0] - old_loc[0]) * pickup_shift_progress), card.loc[1]))
+                else:
+                    surface.blit(self.context.image_loader.blue_back, (old_loc[0] + (new_loc[0] - old_loc[0]) * pickup_shift_progress, card.loc[1]))    
+
                 i += 1
 
             if suppressed_index >= len(simulated_opp_hand_prepickup):
@@ -324,17 +330,21 @@ class Drawer:
             
             for card, new_loc in simulated_opp_hand_discard:
                 old_loc = next(loc for c, loc in simulated_opp_hand_pickup if c is card)
-                
-                surface.blit(self.context.image_loader.card_images[card.name], (old_loc[0] + ((new_loc[0] - old_loc[0]) * discard_shift_progress), card.loc[1])) #uncomment for testing
-                #surface.blit(self.context.image_loader.blue_back, (old_loc[0] + (new_loc[0] - old_loc[0]) * discard_shift_progress, card.loc[1]))  
 
-            self.draw_opp_discard_flip((suppressed_loc[0] + 73/2, suppressed_loc[1] + 98/2), self.context.rects.discard_rect.center)
+                if testing:
+                    surface.blit(self.context.image_loader.card_images[card.name], (old_loc[0] + ((new_loc[0] - old_loc[0]) * discard_shift_progress), card.loc[1])) #uncomment for testing
+                else:
+                    surface.blit(self.context.image_loader.blue_back, (old_loc[0] + (new_loc[0] - old_loc[0]) * discard_shift_progress, card.loc[1]))  
+
+            self.draw_opp_discard_flip((suppressed_loc[0] + 73/2, suppressed_loc[1] + 98/2), self.context.rects.discard_rect.center, opp_discarded_card)
 
         else:
             for card in self.context.opp_hand.cards:
                 if card.visible:
-                    surface.blit(self.context.image_loader.card_images[card.name], card.loc) #uncomment for testing
-                    #surface.blit(self.context.image_loader.blue_back, card.loc)
+                    if testing:
+                        surface.blit(self.context.image_loader.card_images[card.name], card.loc) #uncomment for testing
+                    else:
+                        surface.blit(self.context.image_loader.blue_back, card.loc)
 
     def draw_opp_card_slide(self, start_pos, end_pos):
         progress_eased = self.context.animator.opp_card_slide.get_progress_eased()
@@ -361,7 +371,7 @@ class Drawer:
         draw_y = int(y - image.get_height() // 2)
         self.context.surface_loader.game_surface.blit(scaled_image, (draw_x, draw_y))
     
-    def draw_opp_discard_flip(self, start_pos, end_pos):
+    def draw_opp_discard_flip(self, start_pos, end_pos, opp_discarded_card):
         progress = self.context.animator.opp_discard_flip.get_progress()
         progress_eased = progress_eased = 1 - (1 - progress) ** 3
         x = start_pos[0] + (end_pos[0] - start_pos[0]) * progress_eased
@@ -371,7 +381,7 @@ class Drawer:
             image = self.context.image_loader.blue_back
         else:
             scale = (2 * progress) - 1
-            image = self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name]
+            image = self.context.image_loader.card_images[opp_discarded_card.name]
         
         scaled_width = max(1, int(image.get_width() * scale))
         scaled_image = pygame.transform.scale(image, (scaled_width, image.get_height()))

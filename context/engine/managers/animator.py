@@ -29,7 +29,7 @@ class Animator:
         self.sort_hand = Animation(0.007, 50, False)
 
         #animates cards moving from discard to draw pile when deck.cards is empty
-        self.shuffle_cards = Animation(0.05, 40, False)
+        self.shuffle_cards = Animation(0.05, 120, False)
 
     def opp_hand_pickup_shift(self):
         if self.opp_hand_pickup_shift.active:
@@ -84,7 +84,7 @@ class Animator:
             self.opp_hand_shift_pickup.update(self.context.dt)
 
     def animate_opp_hand_shift_discard(self):
-        if self.opp_hand_shift_discard.active and not self.opp_card_flip.active and not self.opp_card_slide.active:
+        if self.opp_hand_shift_discard.active and not self.opp_card_flip.active and not self.opp_card_slide.active and not self.shuffle_cards.active:
             self.opp_hand_shift_discard.update(self.context.dt)
 
     def animate_active_card_border(self, active_card_border):

@@ -98,7 +98,7 @@ class GameState(State):
         if self.context.animator.shuffle_cards.finished and self.shuffle_batch:
             random.shuffle(self.shuffle_batch)
             self.context.deck.cards = self.shuffle_batch
-            self.context.discard_pile.cards = [self.discard_top_at_shuffle]
+            self.context.discard_pile.cards = []
             self.deck_empty = False
             self.shuffle_batch = None
 
@@ -131,7 +131,8 @@ class GameState(State):
         if self.manager.restart:
             self.context.reset_round()
             self.manager.menu_active = False
-            self.turn = 1
+            self.turn = 1  
+            self.sort_cards_rank(self.context.opp_hand)
             self.manager.restart = False
 
         mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -380,7 +381,7 @@ class GameState(State):
         if not self.context.deck.cards:
             self.deck_empty = True
             self.shuffle_batch = list(reversed(self.context.discard_pile.cards))
-            self.discard_top_at_shuffle = self.context.discard_pile.cards[-1]
+            #self.discard_top_at_shuffle = self.context.discard_pile.cards[-1]
             self.context.animator.shuffle_cards.start()
         self.context.updateLocations()
         return choice
