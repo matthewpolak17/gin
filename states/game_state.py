@@ -51,6 +51,7 @@ class GameState(State):
         #card shuffle helpers
         self.shuffle_batch = None
         self.discard_top_at_shuffle = None
+        self.pending_discard = None
 
 
 
@@ -99,6 +100,9 @@ class GameState(State):
             random.shuffle(self.shuffle_batch)
             self.context.deck.cards = self.shuffle_batch
             self.context.discard_pile.cards = []
+            if self.pending_discard is not None:
+                self.context.discard_pile.cards.append(self.pending_discard)
+                self.pending_discard = None
             self.deck_empty = False
             self.shuffle_batch = None
 
@@ -387,7 +391,7 @@ class GameState(State):
         return choice
 
     def handle_pickup_card(self, deck, hand):
-        if self.turn == 1:
+        if self.turn == 1 and not self.context.animator.opp_discard_flip.active:
             random.choice(self.context.audio.thwip_sounds).play()
             self.drawn_card = self.pickup_card(deck, hand)
             self.drawn_card.visible = False
@@ -418,7 +422,10 @@ class GameState(State):
     def discard(self, hand, active_card):
         hand.cards.remove(active_card)
         self.context.updateLocations()
-        self.context.discard_pile.cards.append(active_card)
+        if self.context.animator.shuffle_cards.active:
+            self.pending_discard = active_card
+        else:
+            self.context.discard_pile.cards.append(active_card)
 
 # ==========================================
 # GAME MANAGEMENT METHODS
@@ -660,11 +667,13 @@ class GameState(State):
         deadwood = self.calculate_deadwood(self.context.opp_hand.melds, self.context.opp_hand.cards)
 
         if deadwood == 0:
-            self.context.opp_hand.can_knock = True
-            self.context.opp_hand.can_gin = True
+            #self.context.opp_hand.can_knock = True testing
+            #self.context.opp_hand.can_gin = True
+            pass #testing
         elif deadwood <= 10:
-            self.context.opp_hand.can_knock = True
-            self.context.opp_hand.can_gin = False
+            #self.context.opp_hand.can_knock = True testing
+            #self.context.opp_hand.can_gin = False
+            pass #testing
         
         if self.context.opp_hand.can_gin or self.context.opp_hand.can_knock:
             self.round_overlay = True
