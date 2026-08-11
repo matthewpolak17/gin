@@ -1,1 +1,3 @@
 ginvenv/
+**/__pycache__/
+*.pyc
