@@ -148,6 +148,12 @@ class GameState(State):
             self.context.rects.sort_rect_rank.collidepoint(mouse_x, mouse_y)
             or self.context.rects.sort_rect_suit.collidepoint(mouse_x, mouse_y)
             or self.context.rects.player_knock_rect.collidepoint(mouse_x, mouse_y)
+            or self.context.rects.r_option_rect.collidepoint(mouse_x, mouse_y)
+            or self.context.rects.mm_option_rect.collidepoint(mouse_x, mouse_y)
+            or self.context.rects.c_option_rect.collidepoint(mouse_x, mouse_y)
+            or self.context.rects.s_option_rect.collidepoint(mouse_x, mouse_y)
+            or self.context.rects.qg_option_rect.collidepoint(mouse_x, mouse_y)
+            or (self.context.rects.menu_rect.collidepoint(mouse_x, mouse_y) and not self.manager.menu_active)
         )
 
         cursor = (
@@ -591,6 +597,7 @@ class GameState(State):
         return deadwood
     
     def computer_play(self):
+        self.opp_discarded_card = None
         self.context.opp_hand.melds = self.update_melds(self.context.opp_hand)
         current_deadwood = self.calculate_deadwood(self.context.opp_hand.melds, self.context.opp_hand.cards)
 
