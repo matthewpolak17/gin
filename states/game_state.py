@@ -145,14 +145,14 @@ class GameState(State):
             self.active_card.loc = (mouse_x - self.card_x, mouse_y - self.card_y)
 
         hovering = (
-            self.context.rects.sort_rect_rank.collidepoint(mouse_x, mouse_y)
+            self.context.rects.sort_rect_rank.collidepoint(mouse_x, mouse_y) 
             or self.context.rects.sort_rect_suit.collidepoint(mouse_x, mouse_y)
-            or self.context.rects.player_knock_rect.collidepoint(mouse_x, mouse_y)
-            or self.context.rects.r_option_rect.collidepoint(mouse_x, mouse_y)
-            or self.context.rects.mm_option_rect.collidepoint(mouse_x, mouse_y)
-            or self.context.rects.c_option_rect.collidepoint(mouse_x, mouse_y)
-            or self.context.rects.s_option_rect.collidepoint(mouse_x, mouse_y)
-            or self.context.rects.qg_option_rect.collidepoint(mouse_x, mouse_y)
+            or (self.context.rects.player_knock_rect.collidepoint(mouse_x, mouse_y) and self.context.hand.can_knock)
+            or self.context.text_renderer.r_option_text.get_rect(center=self.context.rects.r_option_rect.center).collidepoint(mouse_x, mouse_y)
+            or self.context.text_renderer.mm_option_text.get_rect(center=self.context.rects.mm_option_rect.center).collidepoint(mouse_x, mouse_y)
+            or self.context.text_renderer.c_option_text.get_rect(center=self.context.rects.c_option_rect.center).collidepoint(mouse_x, mouse_y)
+            or self.context.text_renderer.s_option_text.get_rect(center=self.context.rects.s_option_rect.center).collidepoint(mouse_x, mouse_y)
+            or self.context.text_renderer.qg_option_text.get_rect(center=self.context.rects.qg_option_rect.center).collidepoint(mouse_x, mouse_y)
             or (self.context.rects.menu_rect.collidepoint(mouse_x, mouse_y) and not self.manager.menu_active)
         )
 
@@ -257,11 +257,11 @@ class GameState(State):
                     self.manager.menu_active = False
                 if self.manager.menu_active:
                     self.context.rects.update_option_rects()
-                    if self.context.rects.mm_option_rect.collidepoint(event.pos):
+                    if self.context.text_renderer.mm_option_text.get_rect(center=self.context.rects.mm_option_rect.center).collidepoint(event.pos):
                         self.manager.restart_from_main_menu = True
-                    if self.context.rects.qg_option_rect.collidepoint(event.pos):
+                    if self.context.text_renderer.qg_option_text.get_rect(center=self.context.rects.qg_option_rect.center).collidepoint(event.pos):
                         self.manager.running = False
-                    if self.context.rects.r_option_rect.collidepoint(event.pos):
+                    if self.context.text_renderer.r_option_text.get_rect(center=self.context.rects.r_option_rect.center).collidepoint(event.pos):
                         self.manager.restart = True
 
                 for card in reversed(self.context.hand.cards):
@@ -415,7 +415,7 @@ class GameState(State):
         return choice
 
     def handle_pickup_discard(self, hand):
-        if self.turn == 1:
+        if self.turn == 1 and not self.context.animator.opp_discard_flip.active:
             self.context.audio.slide_sound.play()
             self.drawn_card = self.pickup_discard(hand)
             self.drawn_card.visible = False
@@ -674,13 +674,11 @@ class GameState(State):
         deadwood = self.calculate_deadwood(self.context.opp_hand.melds, self.context.opp_hand.cards)
 
         if deadwood == 0:
-            #self.context.opp_hand.can_knock = True testing
-            #self.context.opp_hand.can_gin = True
-            pass #testing
+            self.context.opp_hand.can_knock = True
+            self.context.opp_hand.can_gin = True
         elif deadwood <= 10:
-            #self.context.opp_hand.can_knock = True testing
-            #self.context.opp_hand.can_gin = False
-            pass #testing
+            self.context.opp_hand.can_knock = True
+            self.context.opp_hand.can_gin = False
         
         if self.context.opp_hand.can_gin or self.context.opp_hand.can_knock:
             self.round_overlay = True

@@ -1,4 +1,5 @@
 import pygame
+import math
 
 class Drawer:
     def __init__(self, context):
@@ -97,36 +98,23 @@ class Drawer:
             text_surface = self.context.text_renderer.discard_knock_text
             text_rect = text_surface.get_rect(center=(self.context.screen.display_width / 2, self.context.screen.display_height * 0.9))
             self.context.surface_loader.game_surface.blit(text_surface, text_rect)
+
+        if self.context.animator.shuffle_cards.active:
+            progress = self.context.animator.shuffle_cards.get_progress()
+            alpha = 255 * (math.sin(progress * 9 * math.pi) + 1) / 2 #converts from (-1, 1) to (0, 1) to (0,255)
+            fade_out_start = 0.80
+            if progress < fade_out_start:
+                fade_multiplier = 1
+            else:
+                fade_multiplier = 1 - (progress - fade_out_start) / (1 - fade_out_start)
+            alpha = int(alpha * fade_multiplier)
+            text_surface = self.context.text_renderer.shuffle_text
+            text_surface.set_alpha(alpha)
+            text_rect = text_surface.get_rect(center=(self.context.screen.display_width / 2, self.context.screen.display_height * 13/32))
+            self.context.surface_loader.game_surface.blit(text_surface, text_rect)
     
     def draw_game_background(self):
         self.context.surface_loader.game_surface.blit(self.context.image_loader.background, (0,0))
-
-    # def draw_cards(self, deck_empty): 
-    #     surface = self.context.surface_loader.game_surface
-    #     shuffle_progress_eased = self.context.animator.shuffle_cards.get_progress_eased()
-
-    #     #draw pile
-    #     pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 4/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
-    #     if deck_empty and self.counter  < 1:
-    #         for card in self.context.discard_pile.cards:
-    #             print(str(self.context.card_data[card.name]["rank"]) + " " + str(self.context.card_data[card.name]["suit"]))
-    #         self.counter += 1
-    #     elif deck_empty:
-    #         pass
-    #     else:
-    #         surface.blit(self.context.image_loader.blue_back, (surface.get_width() * 4/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
-
-    #     #discard pile
-    #     pygame.draw.rect(surface, "white", pygame.Rect(surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2, 73, 98), 4, border_radius=10)
-    #     if self.context.discard_pile.cards:
-    #         if len(self.context.discard_pile.cards) > 1:
-    #             second_card = self.context.discard_pile.cards[-2]
-    #             if second_card.visible:
-    #                 discard_top = self.context.image_loader.card_images[second_card.name]
-    #                 surface.blit(discard_top, (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
-    #         if self.context.discard_pile.cards[-1].visible:
-    #             discard_top = self.context.image_loader.card_images[self.context.discard_pile.cards[-1].name]
-    #             surface.blit(discard_top, (surface.get_width() * 5/9 - self.context.constants.CARD_WIDTH / 2, surface.get_height() / 2 - self.context.constants.CARD_HEIGHT / 2))
 
     def draw_cards(self, deck_empty, shuffle_batch):
         surface = self.context.surface_loader.game_surface
@@ -161,7 +149,7 @@ class Drawer:
         surface = self.context.surface_loader.game_surface
         overall = self.context.animator.shuffle_cards.get_progress()
         n = len(shuffle_batch)
-        stagger_span = 0.6
+        stagger_span = 0.9
         card_duration = 1 - stagger_span
 
         start_center = (start_pos[0] + 73/2, start_pos[1] + 98/2)

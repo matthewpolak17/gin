@@ -10,6 +10,7 @@ class TextRenderer:
         self.player_knock_text = self.context.ui_text.render_small("Knock", self.context.constants.DARKGRAY)
         self.discard_knock_text = self.context.ui_text.render_small("Discard one of the following cards", self.context.constants.WHITE)
         self.title_text = self.context.ui_text.render_title("Gin Rummy", self.context.constants.TAN)
+        self.shuffle_text = self.context.ui_text.render_medium("Shuffling ...", self.context.constants.WHITE)
 
         #menu text
         self.r_option_text = self.context.ui_text.render_medium("Retry", self.context.constants.WHITE)

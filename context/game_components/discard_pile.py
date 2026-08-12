@@ -11,4 +11,11 @@ class DiscardPile:
         self.cards.append(choice)
         deck.cards.remove(choice)
 
+    # def __init__(self, deck, test):
+    #     if test:
+    #         self.cards = []
+    #         self.cards.extend(deck.cards)
+    #         deck.cards.clear()
+    #         deck.cards.append(self.cards[-1])
+
             
