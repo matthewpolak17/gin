@@ -1,10 +1,10 @@
 from context.game_components.deck import Deck
 from context.game_components.hand import Hand
 from context.game_components.discard_pile import DiscardPile
-from context.engine.managers.drawer import Drawer
-from context.engine.managers.title_drawer import TitleDrawer
-from context.engine.managers.animator import Animator
-from context.engine.managers.title_animator import TitleAnimator
+from states.game_state.drawer import Drawer
+from states.title_state.title_drawer import TitleDrawer
+from states.game_state.animator import Animator
+from states.title_state.title_animator import TitleAnimator
 from context.engine.managers.text_renderer import TextRenderer
 from context.engine.managers.image_loader import ImageLoader
 from context.engine.managers.surface_loader import SurfaceLoader
@@ -16,6 +16,7 @@ from context.engine.screen import Screen
 from context.engine import constants
 import pygame
 import csv
+import json
 
 class GameContext:
     def __init__(self):
@@ -31,6 +32,10 @@ class GameContext:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 self.card_data[row['name']] = {'suit': row['suit'], 'rank': int(row['rank'])}
+
+        self.coin_data = {}
+        with open('./data/coins.json') as f:
+            self.coin_data = json.load(f)
 
         self.constants = constants
         self.clock = pygame.time.Clock()
@@ -57,6 +62,10 @@ class GameContext:
         self.text_renderer.player_score_text = None
         self.text_renderer.opp_score_text = None
         self.updateLocations()
+
+    def save_coin_data(self):
+        with open('./data/coins.json', 'w') as f:
+            json.dump(self.coin_data, f, indent=4)
 
     def updateLocations(self):
         def set_card_positions(cards, y_offset, spacing_scale=self.constants.CARD_SPACING):

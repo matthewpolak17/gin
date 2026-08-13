@@ -4,6 +4,8 @@ class TextRenderer:
 
         self.start_text = self.context.ui_text.render_small("Press ENTER to Start")
         self.multiplayer_text = self.context.ui_text.render_small("Press SHIFT for Multiplayer")
+        self.coin_text = self.context.ui_text.render_medium(f'{self.context.coin_data["coin"]}', self.context.constants.TAN)
+        self.lucky_coin_text = self.context.ui_text.render_medium(f'{self.context.coin_data["lucky_coin"]}', self.context.constants.TAN)
         self.multiplayer_menu_text = self.context.ui_text.render_small("Start a room here", self.context.constants.WHITE)
         self.sort_rank_text = self.context.ui_text.render_small("Rank", self.context.constants.DARKGRAY)
         self.sort_suit_text = self.context.ui_text.render_small("Suit", self.context.constants.DARKGRAY)

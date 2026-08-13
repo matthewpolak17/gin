@@ -1,6 +1,6 @@
-from states.title_state import TitleState
-from states.networking_state import NetworkingState
-from states.game_state import GameState
+from states.title_state.title_state import TitleState
+from states.networking_state.networking_state import NetworkingState
+from states.game_state.game_state import GameState
 
 class StateManager:
     def __init__(self):

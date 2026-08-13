@@ -1,9 +1,9 @@
 import pygame
 from game_context import GameContext
 from state_manager import StateManager
-from states.title_state import TitleState
-from states.game_state import GameState
-from states.networking_state import NetworkingState
+from states.title_state.title_state import TitleState
+from states.game_state.game_state import GameState
+from states.networking_state.networking_state import NetworkingState
 from states.wipe_state import WipeState
 
 

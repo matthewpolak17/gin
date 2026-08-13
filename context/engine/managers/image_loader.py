@@ -14,6 +14,7 @@ class ImageLoader:
         self.set_title_background()
         self.set_loading_images()
         self.set_coin_frames()
+        self.set_lucky_coin_frames()
         self.set_card_border_frames()
         self.set_icon()
 
@@ -68,7 +69,15 @@ class ImageLoader:
         self.coin_frames = []
         for i in range(19):
             image = pygame.image.load(f"./assets/images/frames/coin_frames/coin_frame_{i}.png").convert_alpha()
+            image = self.scale_image(image, 0.6)
             self.coin_frames.append(image)
+
+    def set_lucky_coin_frames(self): 
+            self.lucky_coin_frames = []
+            for i in range(19):
+                image = pygame.image.load(f"./assets/images/frames/lucky_coin_frames/lucky_coin_frame_{i}.png").convert_alpha()
+                image = self.scale_image(image, 0.6)
+                self.lucky_coin_frames.append(image)
 
     def scale_image(self, image, scale):
         w, h = image.get_size()
