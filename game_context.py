@@ -2,7 +2,9 @@ from context.game_components.deck import Deck
 from context.game_components.hand import Hand
 from context.game_components.discard_pile import DiscardPile
 from context.engine.managers.drawer import Drawer
+from context.engine.managers.title_drawer import TitleDrawer
 from context.engine.managers.animator import Animator
+from context.engine.managers.title_animator import TitleAnimator
 from context.engine.managers.text_renderer import TextRenderer
 from context.engine.managers.image_loader import ImageLoader
 from context.engine.managers.surface_loader import SurfaceLoader
@@ -38,7 +40,9 @@ class GameContext:
         self.screen = Screen(self)
         self.ui_text = UI_Text(self)
         self.drawer = Drawer(self)
+        self.title_drawer = TitleDrawer(self)
         self.animator = Animator(self)
+        self.title_animator = TitleAnimator(self)
         self.text_renderer = TextRenderer(self)
         self.image_loader = ImageLoader(self)
         self.rects = Rects(self)

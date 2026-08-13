@@ -13,6 +13,7 @@ class ImageLoader:
         self.set_networking_background()
         self.set_title_background()
         self.set_loading_images()
+        self.set_coin_frames()
         self.set_card_border_frames()
         self.set_icon()
 
@@ -48,20 +49,26 @@ class ImageLoader:
     def set_loading_images(self):
         self.loading_frames = []
         for i in range(12):
-            image = pygame.image.load(f"./assets/images/loading_frames/loading_frame_{i}.png").convert_alpha()
+            image = pygame.image.load(f"./assets/images/frames/loading_frames/loading_frame_{i}.png").convert_alpha()
             image = pygame.transform.smoothscale(image, (self.context.screen.display_width // 50, self.context.screen.display_width // 50)) #width x width
             self.loading_frames.append(image)
     
     def set_card_border_frames(self):
         self.spirit_card_border_frames = []
         for i in range(10):
-            image = pygame.image.load(f"./assets/images/card_border_frames/spirit_border_frames/spirit_frame_{i}.png").convert_alpha()
+            image = pygame.image.load(f"./assets/images/frames/card_border_frames/spirit_border_frames/spirit_frame_{i}.png").convert_alpha()
             self.spirit_card_border_frames.append(image)
 
         self.rainbow_card_border_frames = []
         for i in range(24):
-            image = pygame.image.load(f"./assets/images/card_border_frames/rainbow_border_frames/rainbow_frame_{i}.png").convert_alpha()
+            image = pygame.image.load(f"./assets/images/frames/card_border_frames/rainbow_border_frames/rainbow_frame_{i}.png").convert_alpha()
             self.rainbow_card_border_frames.append(image)
+
+    def set_coin_frames(self): 
+        self.coin_frames = []
+        for i in range(19):
+            image = pygame.image.load(f"./assets/images/frames/coin_frames/coin_frame_{i}.png").convert_alpha()
+            self.coin_frames.append(image)
 
     def scale_image(self, image, scale):
         w, h = image.get_size()

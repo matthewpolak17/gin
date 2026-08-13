@@ -9,12 +9,15 @@ class TitleState(State):
     def update(self):
         self.context.animator.animate_title_background()
         self.context.animator.animate_title_text()
+        self.context.title_animator.animate_coin()
         if self.context.animator.title_text.finished:
             self.prepare_wipe()
             self.manager.set("wipe")
+        
     def draw(self):
         self.context.drawer.draw_title_background()
         self.context.drawer.draw_title_text()
+        self.context.title_drawer.draw_coin_frame()
         self.context.screen.display_surface.blit(self.context.surface_loader.title_surface, (0,0))
 
     def exit(self):

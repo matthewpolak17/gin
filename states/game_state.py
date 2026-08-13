@@ -130,8 +130,11 @@ class GameState(State):
         if self.manager.restart_from_main_menu:
             self.manager.menu_active = False
             self.manager.restart_from_main_menu = False
+            self.context.screen.menu_x = -1.5 * self.context.screen.menu_width
+            self.context.screen.hamburger_x = 30
             self.turn = 1
             self.manager.set("title")
+            return
         if self.manager.restart:
             self.context.reset_round()
             self.manager.menu_active = False
@@ -197,7 +200,7 @@ class GameState(State):
         
 
     def exit(self):
-        pass
+        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
     def enter(self):
         for card in self.context.hand.cards:
