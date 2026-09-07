@@ -5,8 +5,11 @@ class TitleState(State):
     def __init__(self, manager, context):
         super().__init__(manager)
         self.context = context
+        self.manager.set_active_cursor("resting")
+        self.mouse_x, self.mouse_y = (0, 0)
 
     def update(self):
+        self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
         self.context.animator.animate_title_background()
         self.context.animator.animate_title_text()
         self.context.title_animator.animate_coin()
@@ -20,7 +23,9 @@ class TitleState(State):
         self.context.drawer.draw_title_text()
         self.context.title_drawer.draw_coin_frame()
         self.context.title_drawer.draw_lucky_coin_frame()
+        self.context.drawer.draw_cursor(self.manager.active_cursor, self.mouse_x, self.mouse_y, self.context.surface_loader.title_surface)
         self.context.screen.display_surface.blit(self.context.surface_loader.title_surface, (0,0))
+        
 
     def exit(self):
         pass

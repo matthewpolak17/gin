@@ -10,6 +10,7 @@ class StateManager:
         self.menu_active = False
         self.restart_from_main_menu = False
         self.restart = False
+        self.active_cursor = None
 
     def add_state(self, name, state):
         self.states[name] = state
@@ -25,9 +26,13 @@ class StateManager:
 
     def update(self):
         self.active_state.update()
+        
 
         if self.active_state.requested_state_change:
             self.set(self.active_state.requested_state_change)
 
     def draw(self):
         self.active_state.draw()
+
+    def set_active_cursor(self, cursor):
+        self.active_cursor = cursor

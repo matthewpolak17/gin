@@ -25,6 +25,7 @@ class GameContext:
         self.hand = Hand(self.deck)
         self.opp_hand = Hand(self.deck)
         self.discard_pile = DiscardPile(self.deck)
+        
 
         #engine components
         self.card_data = {}

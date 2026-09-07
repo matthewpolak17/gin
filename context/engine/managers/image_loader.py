@@ -17,6 +17,7 @@ class ImageLoader:
         self.set_lucky_coin_frames()
         self.set_card_border_frames()
         self.set_icon()
+        self.set_cursors()
 
     def set_icon(self):
         self.icon = pygame.image.load(f'./assets/images/icon.png').convert_alpha()
@@ -44,7 +45,8 @@ class ImageLoader:
 
     def set_card_images(self, card_data):
         for name in card_data:
-            img = pygame.image.load(f'./assets/cards/{name}').convert_alpha()
+            #img = pygame.image.load(f'./assets/cards/{name}').convert_alpha()
+            img = pygame.image.load(f'./assets/images/custom_cards/new/{name}').convert_alpha()
             self.card_images[name] = pygame.transform.smoothscale(img, (self.context.constants.CARD_WIDTH, self.context.constants.CARD_HEIGHT))
 
     def set_loading_images(self):
@@ -78,6 +80,12 @@ class ImageLoader:
                 image = pygame.image.load(f"./assets/images/frames/lucky_coin_frames/lucky_coin_frame_{i}.png").convert_alpha()
                 image = self.scale_image(image, 0.6)
                 self.lucky_coin_frames.append(image)
+
+    def set_cursors(self):
+        self.closed_hand_cursor = pygame.image.load(f"./assets/images/cursors/closed_hand.png").convert_alpha()
+        self.open_hand_cursor = pygame.image.load(f"./assets/images/cursors/open_hand.png").convert_alpha()
+        self.pointing_hand_cursor = pygame.image.load(f"./assets/images/cursors/pointing_hand.png").convert_alpha()
+        self.resting_cursor = pygame.image.load(f"./assets/images/cursors/resting.png").convert_alpha()
 
     def scale_image(self, image, scale):
         w, h = image.get_size()

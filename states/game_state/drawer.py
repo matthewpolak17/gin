@@ -397,3 +397,17 @@ class Drawer:
                 surface.blit(self.context.text_renderer.player_score_text, self.context.text_renderer.player_score_text.get_rect(center=(self.context.screen.display_width // 2, self.context.screen.display_height * 1/3)))
                 surface.blit(self.context.text_renderer.opp_score_text, self.context.text_renderer.opp_score_text.get_rect(center=(self.context.screen.display_width // 2, (self.context.screen.display_height * 1/3) + 25)))
 
+    def draw_cursor(self, cursor, mouse_x, mouse_y, surface):
+        if cursor:
+            hotspot_x, hotspot_y = self.context.constants.CURSOR_HOTSPOTS[cursor]
+            cursor_draw_x = mouse_x - hotspot_x
+            cursor_draw_y = mouse_y - hotspot_y
+            match cursor:
+                case "pointing":
+                    surface.blit(self.context.image_loader.pointing_hand_cursor, (cursor_draw_x, cursor_draw_y))
+                case "resting":
+                    surface.blit(self.context.image_loader.resting_cursor, (cursor_draw_x, cursor_draw_y))
+                case "open":
+                    surface.blit(self.context.image_loader.open_hand_cursor, (cursor_draw_x, cursor_draw_y))
+                case "closed":
+                    surface.blit(self.context.image_loader.closed_hand_cursor, (cursor_draw_x, cursor_draw_y))

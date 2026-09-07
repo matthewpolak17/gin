@@ -8,6 +8,7 @@ from states.wipe_state import WipeState
 
 
 pygame.init()
+pygame.mouse.set_visible(False)
 context = GameContext()
 state_manager = StateManager()
 state_manager.add_state("title", TitleState(state_manager, context))

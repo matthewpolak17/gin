@@ -53,6 +53,8 @@ class GameState(State):
         self.discard_top_at_shuffle = None
         self.pending_discard = None
 
+        self.mouse_x, self.mouse_y = (0,0)
+
 
 
 # ==========================================
@@ -142,30 +144,31 @@ class GameState(State):
             self.sort_cards_rank(self.context.opp_hand)
             self.manager.restart = False
 
-        mouse_x, mouse_y = pygame.mouse.get_pos()
+        self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 
         if self.clicked and self.active_card:
-            self.active_card.loc = (mouse_x - self.card_x, mouse_y - self.card_y)
+            self.active_card.loc = (self.mouse_x - self.card_x, self.mouse_y - self.card_y)
 
         hovering = (
-            self.context.rects.sort_rect_rank.collidepoint(mouse_x, mouse_y) 
-            or self.context.rects.sort_rect_suit.collidepoint(mouse_x, mouse_y)
-            or (self.context.rects.player_knock_rect.collidepoint(mouse_x, mouse_y) and self.context.hand.can_knock)
-            or self.context.text_renderer.r_option_text.get_rect(center=self.context.rects.r_option_rect.center).collidepoint(mouse_x, mouse_y)
-            or self.context.text_renderer.mm_option_text.get_rect(center=self.context.rects.mm_option_rect.center).collidepoint(mouse_x, mouse_y)
-            or self.context.text_renderer.c_option_text.get_rect(center=self.context.rects.c_option_rect.center).collidepoint(mouse_x, mouse_y)
-            or self.context.text_renderer.s_option_text.get_rect(center=self.context.rects.s_option_rect.center).collidepoint(mouse_x, mouse_y)
-            or self.context.text_renderer.qg_option_text.get_rect(center=self.context.rects.qg_option_rect.center).collidepoint(mouse_x, mouse_y)
-            or (self.context.rects.menu_rect.collidepoint(mouse_x, mouse_y) and not self.manager.menu_active)
+            self.context.rects.sort_rect_rank.collidepoint(self.mouse_x, self.mouse_y) 
+            or self.context.rects.sort_rect_suit.collidepoint(self.mouse_x, self.mouse_y)
+            or (self.context.rects.player_knock_rect.collidepoint(self.mouse_x, self.mouse_y) and self.context.hand.can_knock)
+            or self.context.text_renderer.r_option_text.get_rect(center=self.context.rects.r_option_rect.center).collidepoint(self.mouse_x, self.mouse_y)
+            or self.context.text_renderer.mm_option_text.get_rect(center=self.context.rects.mm_option_rect.center).collidepoint(self.mouse_x, self.mouse_y)
+            or self.context.text_renderer.c_option_text.get_rect(center=self.context.rects.c_option_rect.center).collidepoint(self.mouse_x, self.mouse_y)
+            or self.context.text_renderer.s_option_text.get_rect(center=self.context.rects.s_option_rect.center).collidepoint(self.mouse_x, self.mouse_y)
+            or self.context.text_renderer.qg_option_text.get_rect(center=self.context.rects.qg_option_rect.center).collidepoint(self.mouse_x, self.mouse_y)
+            or (self.context.rects.menu_rect.collidepoint(self.mouse_x, self.mouse_y) and not self.manager.menu_active)
         )
 
-        cursor = (
-            pygame.SYSTEM_CURSOR_HAND
-            if hovering
-            else pygame.SYSTEM_CURSOR_ARROW
-        )
-
-        pygame.mouse.set_cursor(cursor)
+        if hovering:
+            self.manager.set_active_cursor("pointing")
+        elif self.context.rects.draw_rect.collidepoint((self.mouse_x, self.mouse_y)) and self.turn == 1:
+            self.manager.set_active_cursor("pointing")
+        elif self.clicked:
+            self.manager.set_active_cursor("closed")
+        else:
+            self.manager.set_active_cursor("resting")
         
         self.update_card_hover_y()
         self.update_card_hover_x()
@@ -194,13 +197,17 @@ class GameState(State):
         #round overlay
         self.context.drawer.draw_round_overlay(self.round_overlay)
 
+        #cursor
+        self.context.drawer.draw_cursor(self.manager.active_cursor, self.mouse_x, self.mouse_y, self.context.surface_loader.game_surface)
+
         #final draw to display_surface
         self.context.screen.display_surface.blit(self.context.surface_loader.game_surface, (0,0))
 
         
 
     def exit(self):
-        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+        self.manager.set_active_cursor("resting")
+        
 
     def enter(self):
         for card in self.context.hand.cards:
@@ -717,6 +724,7 @@ class GameState(State):
         for card in self.context.hand.cards:
             if card == self.card_hovered:
                 card.target_y = card.base_y - 15
+                self.manager.set_active_cursor("open")
             else:
                 card.target_y = card.base_y
 

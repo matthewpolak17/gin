@@ -23,3 +23,7 @@ class TitleDrawer:
         count_text = self.context.text_renderer.lucky_coin_text
         text_rect = count_text.get_rect(midbottom=(coin_rect.centerx, coin_rect.top - coin_rect.height //4))
         self.context.surface_loader.title_surface.blit(count_text, text_rect)
+
+    def draw_cursor(self, cursor, mouse_x, mouse_y):
+        if cursor:
+            self.context.surface_loader.title_surface.blit(cursor, (mouse_x, mouse_y))

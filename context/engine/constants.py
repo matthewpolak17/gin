@@ -9,3 +9,9 @@ TAN = (255,222,133)
 CARD_MOVEMENT_SPEED = 120
 TITLE_WIPE_SPEED = 10
 CARD_SPACING = 0.8
+CURSOR_HOTSPOTS = {
+    "resting": (7, 0),
+    "pointing": (14, 0),
+    "closed": (8, 8),
+    "open": (8, 0),
+}
