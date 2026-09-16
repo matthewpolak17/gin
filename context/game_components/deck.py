@@ -5,6 +5,7 @@ class Deck:
     def __init__(self) -> None:
         self.cards = []
         #for filename in os.listdir("./assets/cards"):
-        for filename in os.listdir("./assets/images/custom_cards/new"):
+        #for filename in os.listdir("./assets/images/custom_cards/new"):
+        for filename in os.listdir("./assets/images/custom_cards/giggles"):
             card = Card(filename, None)
             self.cards.append(card)

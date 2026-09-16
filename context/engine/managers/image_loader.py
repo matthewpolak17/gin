@@ -46,7 +46,8 @@ class ImageLoader:
     def set_card_images(self, card_data):
         for name in card_data:
             #img = pygame.image.load(f'./assets/cards/{name}').convert_alpha()
-            img = pygame.image.load(f'./assets/images/custom_cards/new/{name}').convert_alpha()
+            #img = pygame.image.load(f'./assets/images/custom_cards/new/{name}').convert_alpha()
+            img = pygame.image.load(f'./assets/images/custom_cards/giggles/{name}').convert_alpha()
             self.card_images[name] = pygame.transform.smoothscale(img, (self.context.constants.CARD_WIDTH, self.context.constants.CARD_HEIGHT))
 
     def set_loading_images(self):
