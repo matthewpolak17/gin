@@ -1,3 +1,5 @@
+BASE_HEIGHT = 1080
+BASE_WIDTH = 1920
 CARD_WIDTH = 73
 CARD_HEIGHT = 98
 MENU_SPEED = 2600
@@ -15,3 +17,4 @@ CURSOR_HOTSPOTS = {
     "closed": (8, 8),
     "open": (8, 0),
 }
+

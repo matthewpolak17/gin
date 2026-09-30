@@ -5,10 +5,15 @@ class Screen:
     def __init__(self, context):
         self.context = context
         pygame.display.set_caption("Gin Rummy")
-        flags = pygame.NOFRAME | pygame.HWSURFACE | pygame.DOUBLEBUF
-        self.display_surface = pygame.display.set_mode((self.context.monitor.native_width, self.context.monitor.native_height), flags)
-        self.display_width = self.context.monitor.native_width
-        self.display_height = self.context.monitor.native_height
+        
+        self.display_width = self.context.constants.BASE_WIDTH
+        self.display_height = self.context.constants.BASE_HEIGHT
+
+        #flags = pygame.NOFRAME | pygame.HWSURFACE | pygame.DOUBLEBUF
+        flags = pygame.SCALED | pygame.FULLSCREEN | pygame.RESIZABLE
+        self.display_surface = pygame.display.set_mode((self.display_width, self.display_height), flags)
+
+        self.scale = self.display_height / self.context.constants.BASE_HEIGHT
 
         #menu dimensions
         self.menu_width = self.display_surface.get_width() / 8

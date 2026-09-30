@@ -3,8 +3,11 @@ import pygame
 class ImageLoader:
     def __init__(self, context):
         self.context = context
-
-        self.blue_back = pygame.transform.scale(pygame.image.load(r'./assets/images/blueback.png'), (73, 98))
+        self.card_size = (
+            round(self.context.constants.CARD_WIDTH * self.context.screen.scale),
+            round(self.context.constants.CARD_HEIGHT * self.context.screen.scale),
+        )
+        self.blue_back = pygame.transform.scale(pygame.image.load(r'./assets/images/blueback.png'), self.card_size)
         self.card_images = {}
 
         self.set_card_images(self.context.card_data)
@@ -45,10 +48,7 @@ class ImageLoader:
 
     def set_card_images(self, card_data):
         for name in card_data:
-            #img = pygame.image.load(f'./assets/cards/{name}').convert_alpha()
-            #img = pygame.image.load(f'./assets/images/custom_cards/new/{name}').convert_alpha()
-            img = pygame.image.load(f'./assets/images/custom_cards/giggles/{name}').convert_alpha()
-            #img = pygame.image.load(f'./assets/images/custom_cards/money/{name}').convert_alpha()
+            img = pygame.image.load(f'./assets/cards/{name}').convert_alpha()
             self.card_images[name] = pygame.transform.smoothscale(img, (self.context.constants.CARD_WIDTH, self.context.constants.CARD_HEIGHT))
 
     def set_loading_images(self):
@@ -95,3 +95,7 @@ class ImageLoader:
             image,
             (int(w * scale), int(h * scale))
     )
+
+    def load_pixel_art(self, path, size):
+        image = pygame.image.load(path).convert_alpha()
+        return pygame.transform.scale(image, size)   # nearest-neighbor, keeps edges hard
