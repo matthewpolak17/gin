@@ -1,4 +1,5 @@
 from context.engine.monitor_setup import Monitor
+from pygame._sdl2.video import Window, WINDOWPOS_CENTERED
 import pygame
 
 class Screen:
@@ -9,9 +10,12 @@ class Screen:
         self.display_width = self.context.constants.BASE_WIDTH
         self.display_height = self.context.constants.BASE_HEIGHT
 
-        #flags = pygame.NOFRAME | pygame.HWSURFACE | pygame.DOUBLEBUF
+        self.fullscreen = True
+
         flags = pygame.SCALED | pygame.FULLSCREEN | pygame.RESIZABLE
-        self.display_surface = pygame.display.set_mode((self.display_width, self.display_height), flags)
+        self.display_surface = pygame.display.set_mode(
+            (self.display_width, self.display_height), flags
+        )
 
         self.scale = self.display_height / self.context.constants.BASE_HEIGHT
 
@@ -28,3 +32,11 @@ class Screen:
         self.option_height = self.display_height / 15
         self.option_left = self.menu_x + self.menu_width / 2 - self.option_width / 2
         self.option_top = self.display_height / 11
+
+    def toggle_fullscreen(self):
+        pygame.display.toggle_fullscreen()
+        self.fullscreen = not self.fullscreen
+        if not self.fullscreen:
+            window = Window.from_display_module()
+            window.size = (1920, 1080)
+            window.position = WINDOWPOS_CENTERED
