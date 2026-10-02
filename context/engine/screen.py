@@ -18,6 +18,7 @@ class Screen:
         )
 
         self.scale = self.display_height / self.context.constants.BASE_HEIGHT
+        self.ui_scale = 1
 
         #menu dimensions
         self.menu_width = self.display_surface.get_width() / 8

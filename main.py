@@ -24,6 +24,11 @@ while state_manager.running:
         state_manager.handle_event(event)
         if event.type == pygame.KEYDOWN and event.key == pygame.K_F11:
             context.screen.toggle_fullscreen()
+            if context.screen.ui_scale == 1:
+                context.screen.ui_scale = 2
+            else:
+                context.screen.ui_scale = 1
+            context.image_loader.reload_sources()
 
     state_manager.update()
     state_manager.draw()
