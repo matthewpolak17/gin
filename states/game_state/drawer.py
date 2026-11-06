@@ -39,18 +39,8 @@ class Drawer:
     def draw_title_wipe_frame(self, frame, surface):
         surface.blit(self.context.surface_loader.game_surface, (0, 0), area=pygame.Rect(0, 0, frame, self.context.screen.display_height))
 
-    def draw_title_background(self):
-        frame = self.context.animator.title_background.frame
-        self.context.surface_loader.title_surface.blit(self.context.image_loader.title_background, (-frame, 0))
-        self.context.surface_loader.title_surface.blit(self.context.image_loader.title_background, (-frame + self.context.image_loader.title_background_width, 0))  
-        self.context.surface_loader.title_surface.blit(self.context.text_renderer.start_text, self.context.rects.start_rect)
-        self.context.surface_loader.title_surface.blit(self.context.text_renderer.multiplayer_text, self.context.rects.multiplayer_rect)
-    
-    def draw_title_text(self):
-        surface = self.context.text_renderer.title_text
-        x = (self.context.screen.display_width - surface.get_width()) // 2
-        y = (self.context.screen.display_height - surface.get_height()) * 5/12
-        self.context.surface_loader.title_surface.blit(surface, (x, y))
+
+
 
 # ==========================================
 # GAME SURFACE METHODS

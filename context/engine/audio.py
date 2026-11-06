@@ -15,7 +15,7 @@ class Audio:
         self.shuffle_sound = pygame.mixer.Sound("./assets/sfx/shuffle.wav")
         self.slide_sound = pygame.mixer.Sound("./assets/sfx/slide1.wav")
     
-    def start_networking_music(self):
+    def start_shop_music(self):
         pygame.mixer.music.load("./assets/music/connecting_middle.ogg")
         pygame.mixer.music.play(-1, 0, 2000)
 

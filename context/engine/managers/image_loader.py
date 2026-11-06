@@ -13,11 +13,10 @@ class ImageLoader:
         self.set_card_images(self.context.card_data)
         self.set_background()
         self.set_ui_elements()
-        self.set_networking_background()
+        self.set_shop_background()
         self.set_title_background()
         self.set_loading_images()
         self.set_coin_frames()
-        self.set_lucky_coin_frames()
         self.set_card_border_frames()
         self.set_icon()
         self.set_cursors()
@@ -37,9 +36,9 @@ class ImageLoader:
         self.pressed_button = pygame.image.load(r'./assets/images/ui/ui_button_pressed.png').convert_alpha()
         self.pressed_button =  self.scale_image(self.pressed_button, 0.35)
 
-    def set_networking_background(self):
-        self.networking_background = pygame.image.load(r'./assets/images/black.png').convert_alpha()
-        self.networking_background = pygame.transform.scale(self.networking_background, (self.context.screen.display_width, self.context.screen.display_height))
+    def set_shop_background(self):
+        self.shop_background = pygame.image.load(r'./assets/images/shop_background.png').convert_alpha()
+        self.shop_background = pygame.transform.scale(self.shop_background, (self.context.screen.display_width, self.context.screen.display_height))
 
     def set_title_background(self):
         self.title_background = pygame.image.load(f'./assets/images/title_background.png').convert_alpha()
@@ -75,13 +74,6 @@ class ImageLoader:
             image = pygame.image.load(f"./assets/images/frames/coin_frames/coin_frame_{i}.png").convert_alpha()
             image = self.scale_image(image, 0.6)
             self.coin_frames.append(image)
-
-    def set_lucky_coin_frames(self): 
-            self.lucky_coin_frames = []
-            for i in range(19):
-                image = pygame.image.load(f"./assets/images/frames/lucky_coin_frames/lucky_coin_frame_{i}.png").convert_alpha()
-                image = self.scale_image(image, 0.6)
-                self.lucky_coin_frames.append(image)
 
     def set_cursors(self):
         self.closed_hand_cursor = pygame.image.load(f"./assets/images/cursors/closed_hand.png").convert_alpha()

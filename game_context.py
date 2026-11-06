@@ -3,8 +3,10 @@ from context.game_components.hand import Hand
 from context.game_components.discard_pile import DiscardPile
 from states.game_state.drawer import Drawer
 from states.title_state.title_drawer import TitleDrawer
+from states.shop_state.shop_drawer import ShopDrawer
 from states.game_state.animator import Animator
 from states.title_state.title_animator import TitleAnimator
+from states.shop_state.shop_animator import ShopAnimator
 from context.engine.managers.text_renderer import TextRenderer
 from context.engine.managers.image_loader import ImageLoader
 from context.engine.managers.surface_loader import SurfaceLoader
@@ -47,8 +49,10 @@ class GameContext:
         self.ui_text = UI_Text(self)
         self.drawer = Drawer(self)
         self.title_drawer = TitleDrawer(self)
+        self.shop_drawer = ShopDrawer(self)
         self.animator = Animator(self)
         self.title_animator = TitleAnimator(self)
+        self.shop_animator = ShopAnimator(self)
         self.text_renderer = TextRenderer(self)
         self.image_loader = ImageLoader(self)
         self.rects = Rects(self)

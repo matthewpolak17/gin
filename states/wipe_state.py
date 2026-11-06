@@ -24,7 +24,7 @@ class WipeState(State):
 
     def draw(self):
         self.context.screen.display_surface.blit(self.to_surface, (0, 0))
-        self.context.drawer.draw_title_background()
+        self.context.title_drawer.draw_title_background()
         clip_width = self.context.screen.display_width - self.wipe.frame
         self.context.screen.display_surface.blit(
             self.context.surface_loader.title_surface, (0, 0),

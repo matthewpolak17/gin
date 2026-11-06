@@ -12,17 +12,13 @@ class TitleState(State):
         self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
         self.context.animator.animate_title_background()
         self.context.animator.animate_title_text()
-        self.context.title_animator.animate_coin()
-        self.context.title_animator.animate_lucky_coin()
         if self.context.animator.title_text.finished:
             self.prepare_wipe()
             self.manager.set("wipe")
         
     def draw(self):
-        self.context.drawer.draw_title_background()
-        self.context.drawer.draw_title_text()
-        self.context.title_drawer.draw_coin_frame()
-        self.context.title_drawer.draw_lucky_coin_frame()
+        self.context.title_drawer.draw_title_background()
+        self.context.title_drawer.draw_title_text()
         self.context.drawer.draw_cursor(self.manager.active_cursor, self.mouse_x, self.mouse_y, self.context.surface_loader.title_surface)
         self.context.screen.display_surface.blit(self.context.surface_loader.title_surface, (0,0))
         
@@ -48,7 +44,7 @@ class TitleState(State):
             if event.key == pygame.K_RETURN:
                 self.context.animator.title_text.start()
             if event.key == pygame.K_LSHIFT:
-                self.manager.set("networking")
+                self.manager.set("shop")
     
     def prepare_wipe(self):
         #prepares game screen

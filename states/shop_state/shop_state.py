@@ -1,20 +1,24 @@
 from states.state import State
 import pygame
 
-class NetworkingState(State):
+class ShopState(State):
     def __init__(self, manager, context):
         super().__init__(manager)
         self.context = context
+        self.mouse_x, self.mouse_y = (0, 0)
 
     def update(self):
-        pass
+        self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 
     def draw(self):
-        self.context.surface_loader.networking_surface.blit(self.context.image_loader.networking_background, (0,0))
-        self.context.surface_loader.networking_surface.blit(self.context.text_renderer.multiplayer_menu_text, self.context.rects.multiplayer_menu_rect)
-        self.context.animator.animate_loading(self.context.dt, self.context.surface_loader.networking_surface)
-        self.context.drawer.draw_menu(self.context.surface_loader.networking_surface, self.manager.menu_active, self.context.dt)
-        self.context.screen.display_surface.blit(self.context.surface_loader.networking_surface, (0,0))
+        #self.context.surface_loader.shop_surface.blit(self.context.image_loader.shop_background, (0,0))
+        #self.context.surface_loader.shop_surface.blit(self.context.text_renderer.multiplayer_menu_text, self.context.rects.multiplayer_menu_rect)
+        #self.context.animator.animate_loading(self.context.dt, self.context.surface_loader.shop_surface)
+        self.context.shop_drawer.draw_shop_background()
+        self.context.shop_drawer.draw_shop_underlay()
+        self.context.drawer.draw_menu(self.context.surface_loader.shop_surface, self.manager.menu_active, self.context.dt)
+        self.context.drawer.draw_cursor(self.manager.active_cursor, self.mouse_x, self.mouse_y, self.context.surface_loader.shop_surface)
+        self.context.screen.display_surface.blit(self.context.surface_loader.shop_surface, (0,0))
 
     def exit(self):
         pass
