@@ -26,8 +26,22 @@ class TextRenderer:
 
         #shop text
         self.shop_shop_text = self.context.ui_text.render_title("Shop", self.context.constants.TAN)
-        self.shop_buy_text = self.context.ui_text.render_small("Buy", self.context.constants.WHITE)
-        self.shop_collection_text = self.context.ui_text.render_small("Collection", self.context.constants.WHITE)
+        self.shop_buy_text = self.context.ui_text.render_dev_medium("Buy", self.context.constants.WHITE)
+        self.shop_collection_text = self.context.ui_text.render_dev_medium("Collection", self.context.constants.WHITE)
+        #shop items text
+        self.shop_common_text = self.context.ui_text.render_dev_large("Common", (71,71,71))
+        self.shop_uncommon_text = self.context.ui_text.render_dev_large("Uncommon", (79,93,164))
+        self.shop_rare_text = self.context.ui_text.render_dev_large("Rare", (215,138,17))
+        self.shop_legendary_text = self.context.ui_text.render_dev_large("Legendary", (215,201,0))
+        self.shop_common_price_text = self.context.ui_text.render_dev_large("$25", self.context.constants.WHITE)
+        self.shop_uncommon_price_text = self.context.ui_text.render_dev_large("$100", self.context.constants.WHITE)
+        self.shop_rare_price_text = self.context.ui_text.render_dev_large("$250", self.context.constants.WHITE)
+        self.shop_legendary_price_text = self.context.ui_text.render_dev_large("$500", self.context.constants.WHITE)
+        self.shop_common_collection_text = self.context.ui_text.render_dev_large("22/30", self.context.constants.WHITE)
+        self.shop_uncommon_collection_text = self.context.ui_text.render_dev_large("12/20", self.context.constants.WHITE)
+        self.shop_rare_collection_text = self.context.ui_text.render_dev_large("3/10", self.context.constants.WHITE)
+        self.shop_legendary_collection_text = self.context.ui_text.render_dev_large("0/3", self.context.constants.WHITE)
+        
 
     def update_score_text(self, hand_score, opp_score):
         self.player_score_text = self.context.ui_text.render_small(f"Player: {hand_score}", self.context.constants.WHITE)

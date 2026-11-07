@@ -25,3 +25,9 @@ class Rects:
         self.s_option_rect = pygame.Rect(self.context.screen.option_left, self.context.screen.option_top*4, self.context.screen.option_width, self.context.screen.option_height) #settings option
         self.qg_option_rect = pygame.Rect(self.context.screen.option_left, self.context.screen.option_top*5, self.context.screen.option_width, self.context.screen.option_height) #quit game option
 
+    def set_shop_button_rects(self, surface):
+        button_color = self.context.constants.WHITE
+        self.shop_common_rect = pygame.Rect(surface.get_width() * 8/100, surface.get_height() * 20/100, surface.get_width() * 20/100, 100)
+        self.shop_uncommon_rect = pygame.Rect(surface.get_width() * 8/100, surface.get_height() * 40/100, surface.get_width() * 20/100, 100)
+        self.shop_rare_rect = pygame.Rect(surface.get_width() * 8/100, surface.get_height() * 60/100, surface.get_width() * 20/100, 100)
+        self.shop_legendary_rect = pygame.Rect(surface.get_width() * 8/100, surface.get_height() * 80/100, surface.get_width() * 20/100, 100)

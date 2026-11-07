@@ -10,6 +10,10 @@ class UI_Text:
         self.title_size = 140
         self.title_font = pygame.font.Font('./assets/fonts/DEVROYSC.ttf', round(self.title_size))
 
+        self.dev_small_font = pygame.font.Font('./assets/fonts/DEVROYSC.ttf', 30)
+        self.dev_medium_font = pygame.font.Font('./assets/fonts/DEVROYSC.ttf', 35)
+        self.dev_large_font = pygame.font.Font('./assets/fonts/DEVROYSC.ttf', 50)
+
 
     def render_small(self, text, color=(255,222,133)):
         return self.small_font.render(text, True, color)
@@ -22,4 +26,13 @@ class UI_Text:
     
     def render_title(self, text, color=(255,222,133)):
         return self.title_font.render(text, True, color)
+
+    def render_dev_small(self, text, color=(255,222,133)):
+        return self.dev_small_font.render(text, True, color)
+
+    def render_dev_medium(self, text, color=(255,222,133)):
+            return self.dev_medium_font.render(text, True, color)
+    
+    def render_dev_large(self, text, color=(255,222,133)):
+            return self.dev_large_font.render(text, True, color)
         
