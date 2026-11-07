@@ -8,7 +8,7 @@ class UI_Text:
         self.medium_font = pygame.font.Font(None, 35)
         self.small_font = pygame.font.Font(None, 30)
         self.title_size = 140
-        self.title_font = pygame.font.Font('./assets/fonts/Mermaid1001.ttf', round(self.title_size))
+        self.title_font = pygame.font.Font('./assets/fonts/DEVROYSC.ttf', round(self.title_size))
 
 
     def render_small(self, text, color=(255,222,133)):

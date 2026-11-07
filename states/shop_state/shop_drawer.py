@@ -27,4 +27,5 @@ class ShopDrawer:
         self.context.surface_loader.shop_surface.blit(self.context.surface_loader.shop_underlay_surface, (self.context.screen.display_surface.get_width() / 6, 50))
 
     def draw_shop_text(self):
-        pass
+        self.context.surface_loader.shop_surface.blit(self.context.text_renderer.shop_shop_text, self.context.text_renderer.shop_shop_text.get_rect(center=(self.context.screen.display_surface.get_width() / 2, 150)))
+        self.context.surface_loader.shop_surface.blit(self.context.text_renderer.shop_buy_text, self.context.text_renderer.shop_buy_text.get_rect(center=(self.context.surface_loader.shop_underlay_surface.get_width(), 300)))

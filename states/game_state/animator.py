@@ -52,10 +52,10 @@ class Animator:
             self.title_text.update(self.context.dt)
             progress = self.title_text.frame / self.title_text.total_frames
             current_font_size = int(140 + 40 * progress)
-            self.context.ui_text.title_font = pygame.font.Font(r'assets\fonts\Mermaid1001.ttf', current_font_size)
+            self.context.ui_text.title_font = pygame.font.Font(r'assets\fonts\DEVROYSC.ttf', current_font_size)
             
             alpha = int(255 * (1-progress) ** 2) # compute alpha first
-            new_surface = self.context.ui_text.render_title("Gin Rummy", self.context.constants.TAN)
+            new_surface = self.context.ui_text.render_title("Ginfinity", self.context.constants.TAN)
             new_surface.set_alpha(alpha)
             self.context.text_renderer.title_text = new_surface
 

@@ -2,15 +2,14 @@ class TextRenderer:
     def __init__(self, context):
         self.context = context
 
-        self.start_text = self.context.ui_text.render_small("Press ENTER to Start")
-        self.multiplayer_text = self.context.ui_text.render_small("Press SHIFT for Shop")
+        self.start_title_text = self.context.ui_text.render_small("Press ENTER to Start")
+        self.shop_title_text = self.context.ui_text.render_small("Press SHIFT for Shop")
         self.coin_text = self.context.ui_text.render_medium(f'{self.context.coin_data["coin"]}', self.context.constants.TAN)
-        self.multiplayer_menu_text = self.context.ui_text.render_small("Start a room here", self.context.constants.WHITE)
         self.sort_rank_text = self.context.ui_text.render_small("Rank", self.context.constants.DARKGRAY)
         self.sort_suit_text = self.context.ui_text.render_small("Suit", self.context.constants.DARKGRAY)
         self.player_knock_text = self.context.ui_text.render_small("Knock", self.context.constants.DARKGRAY)
         self.discard_knock_text = self.context.ui_text.render_small("Discard one of the following cards", self.context.constants.WHITE)
-        self.title_text = self.context.ui_text.render_title("Gin Rummy", self.context.constants.TAN)
+        self.title_text = self.context.ui_text.render_title("Ginfinity", self.context.constants.TAN)
         self.shuffle_text = self.context.ui_text.render_medium("Shuffling ...", self.context.constants.WHITE)
 
         #menu text
@@ -24,6 +23,11 @@ class TextRenderer:
         self.continue_text = self.context.ui_text.render_small("Press Enter to continue", self.context.constants.WHITE)
         self.player_score_text = None
         self.opp_score_text = None
+
+        #shop text
+        self.shop_shop_text = self.context.ui_text.render_title("Shop", self.context.constants.TAN)
+        self.shop_buy_text = self.context.ui_text.render_small("Buy", self.context.constants.WHITE)
+        self.shop_collection_text = self.context.ui_text.render_small("Collection", self.context.constants.WHITE)
 
     def update_score_text(self, hand_score, opp_score):
         self.player_score_text = self.context.ui_text.render_small(f"Player: {hand_score}", self.context.constants.WHITE)

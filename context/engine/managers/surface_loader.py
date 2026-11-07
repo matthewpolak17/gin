@@ -22,3 +22,4 @@ class SurfaceLoader:
         self.shop_underlay_surface = pygame.Surface((self.context.screen.display_surface.get_width() * 2/3, self.context.screen.display_surface.get_height()), pygame.SRCALPHA)
         underlay_color = (0,0,0,90)
         pygame.draw.rect(self.shop_underlay_surface, underlay_color, (0, 0, self.context.screen.display_surface.get_width() * 2/3, self.context.screen.display_surface.get_height()), border_radius=30)
+        

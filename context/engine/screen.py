@@ -5,7 +5,7 @@ import pygame
 class Screen:
     def __init__(self, context):
         self.context = context
-        pygame.display.set_caption("Gin Rummy")
+        pygame.display.set_caption("Ginfinity")
         
         self.display_width = self.context.constants.BASE_WIDTH
         self.display_height = self.context.constants.BASE_HEIGHT

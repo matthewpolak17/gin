@@ -20,6 +20,6 @@ class TitleDrawer:
         frame = self.context.animator.title_background.frame
         self.context.surface_loader.title_surface.blit(self.context.image_loader.title_background, (-frame, 0))
         self.context.surface_loader.title_surface.blit(self.context.image_loader.title_background, (-frame + self.context.image_loader.title_background_width, 0))  
-        self.context.surface_loader.title_surface.blit(self.context.text_renderer.start_text, self.context.rects.start_rect)
-        self.context.surface_loader.title_surface.blit(self.context.text_renderer.multiplayer_text, self.context.rects.multiplayer_rect)
+        self.context.surface_loader.title_surface.blit(self.context.text_renderer.start_title_text, self.context.rects.start_rect)
+        self.context.surface_loader.title_surface.blit(self.context.text_renderer.shop_title_text, self.context.rects.shop_title_rect)
     

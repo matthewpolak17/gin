@@ -11,12 +11,10 @@ class ShopState(State):
         self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 
     def draw(self):
-        #self.context.surface_loader.shop_surface.blit(self.context.image_loader.shop_background, (0,0))
-        #self.context.surface_loader.shop_surface.blit(self.context.text_renderer.multiplayer_menu_text, self.context.rects.multiplayer_menu_rect)
-        #self.context.animator.animate_loading(self.context.dt, self.context.surface_loader.shop_surface)
         self.context.shop_drawer.draw_shop_background()
         self.context.shop_drawer.draw_shop_underlay()
         self.context.drawer.draw_menu(self.context.surface_loader.shop_surface, self.manager.menu_active, self.context.dt)
+        self.context.shop_drawer.draw_shop_text()
         self.context.drawer.draw_cursor(self.manager.active_cursor, self.mouse_x, self.mouse_y, self.context.surface_loader.shop_surface)
         self.context.screen.display_surface.blit(self.context.surface_loader.shop_surface, (0,0))
 

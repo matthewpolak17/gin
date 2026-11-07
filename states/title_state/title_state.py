@@ -28,8 +28,8 @@ class TitleState(State):
 
     def enter(self):
         self.context.animator.title_text.reset()
-        self.context.ui_text.title_font = pygame.font.Font(r'assets\fonts\Mermaid1001.ttf', 140)
-        new_surface = self.context.ui_text.render_title("Gin Rummy", self.context.constants.TAN)
+        self.context.ui_text.title_font = pygame.font.Font(r'assets\fonts\DEVROYSC.ttf', 140)
+        new_surface = self.context.ui_text.render_title("Ginfinity", self.context.constants.TAN)
         new_surface.set_alpha(255)
         self.context.text_renderer.title_text = new_surface
         self.context.ui_text
